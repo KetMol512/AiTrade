@@ -1,63 +1,62 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ternary Trade — Торговый кабинет</title>
-  <style>
-    /* Ваши стили */
-    :root{
-      --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
-      --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
-    }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{
-      margin:0; color:var(--text); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:
-        radial-gradient(60vw 40vh at 10% -10%, rgba(14,165,233,.12), transparent 40%),
-        radial-gradient(60vw 40vh at 110% 10%, rgba(99,102,241,.12), transparent 35%),
-        linear-gradient(180deg,#0b1220 0%, #0b1220 55%, #0f172a 100%);
-    }
-    body::before{
-      content:""; position:fixed; inset:0; pointer-events:none;
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: radial-gradient(80% 60% at 50% 10%, rgba(0,0,0,.5), transparent 100%);
-    }
-    .wrap{max-width:1100px; margin:0 auto; padding:20px}
-    header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid var(--border)}
-    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
-    .right{margin-left:auto}
-    .card{background:linear-gradient(180deg,var(--card),var(--soft)); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
-    .h1{font-weight:700; font-size:18px}
-    .h2{font-weight:600; font-size:16px}
-    .muted{color:var(--muted)}
-    .btn{background:var(--brand); color:#041018; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
-    .btn.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
-    .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
-    .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
-    .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
-    .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-    .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
-    .kpi .val{font-size:22px; font-weight:800}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    .table{width:100%; border-collapse:collapse}
-    .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
-    .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
-    .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
-    .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
-    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
-    .modal.open{display:flex}
-    .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
-    @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BoostEx Trade — Торговый кабинет </title>
+<style>
+  :root{
+    --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
+    --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{
+    margin:0; color:var(--text); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:
+      radial-gradient(60vw 40vh at 10% -10%, rgba(14,165,233,.12), transparent 40%),
+      radial-gradient(60vw 40vh at 110% 10%, rgba(99,102,241,.12), transparent 35%),
+      linear-gradient(180deg,#0b1220 0%, #0b1220 55%, #0f172a 100%);
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(80% 60% at 50% 10%, rgba(0,0,0,.5), transparent 100%);
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:20px}
+  header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid var(--border)}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .right{margin-left:auto}
+  .card{background:linear-gradient(180deg,var(--card),var(--soft)); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
+  .h1{font-weight:700; font-size:18px}
+  .h2{font-weight:600; font-size:16px}
+  .muted{color:var(--muted)}
+  .btn{background:var(--brand); color:#041018; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+  .btn.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
+  .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
+  .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
+  .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
+  .kpi .val{font-size:22px; font-weight:800}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .table{width:100%; border-collapse:collapse}
+  .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
+  .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
+  .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
+  .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
+  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
+  .modal.open{display:flex}
+  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
 <header>
   <div class="wrap row">
-    <div class="h1">Ternary Trade — торговый кабинет</div>
+    <div class="h1">BoostEx — торговый кабинет</div>
     <div class="row right">
       <span class="tag" id="statusTag">Оффлайн-симуляция</span>
       <button class="btn small" id="openDeposit">Депозит</button>
@@ -66,8 +65,16 @@
   </div>
 </header>
 
+<div class="row" style="margin-top:20px; justify-content:center;">
+  <script async src="https://telegram.org/js/telegram-widget.js?7"
+          data-telegram-login="BoostEx_Trade_Bot"
+          data-size="large" data-radius="10" data-auth-url="https://yourserver.com/auth/telegram">
+  </script>
+</div>
+
 <main class="wrap" id="app">
-  <section class="card">
+  <!-- Регистрация -->
+  <section class="card" id="login-section">
     <div class="row">
       <div class="h2">Вход</div>
       <span class="tag">Гостевой доступ</span>
@@ -80,16 +87,17 @@
     </div>
   </section>
 
+  <!-- Тарифы -->
+  <section class="card" id="plans">
+    <div class="h2">Выберите тариф</div>
+    <!-- Здесь будут отображаться тарифы -->
+  </section>
+
   <section class="kpis">
     <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
     <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
     <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
     <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
-  </section>
-
-  <section id="plans" class="card">
-    <div class="h2">Выберите тариф</div>
-    <!-- Тарифы будут отображены сюда -->
   </section>
 
   <section class="grid2">
@@ -102,13 +110,43 @@
       <div id="prices" class="muted" style="margin-top:6px">—</div>
     </div>
   </section>
-</main>
 
+  <!-- Графики -->
+  <section class="card">
+    <div class="row">
+      <div class="h2">Кривая капитала</div>
+      <div class="right row">
+        <select id="profile" class="select">
+          <option value="conservative">Conservative (15–25%/м)</option>
+          <option value="balanced" selected>Balanced (25–35%/м)</option>
+          <option value="aggressive">Aggressive (35–45%/м)</option>
+        </select>
+        <button class="btn small" id="startSim">Старт</button>
+        <button class="btn small ghost" id="stopSim">Пауза</button>
+        <button class="btn small ghost" id="resetSim">Сброс</button>
+      </div>
+    </div>
+    <div class="canvas-wrap" style="margin-top:10px"><canvas id="equityChart" width="1000" height="280"></canvas></div>
+  </section>
+
+  <!-- Сделки -->
+  <section class="card">
+    <div class="row">
+      <div class="h2">Сделки (последние)</div>
+      <div class="right row">
+        <select id="symbolFilter" class="select">
+          <option value="">Все инструменты</option>
+          <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+        </select>
+        <button
 <script>
+// Добавлены необходимые данные и функции для тарифов, сделок, и регистрации
 const state = {
   logged: false,
   token: null,
-  balances: { USDT: 640, BTC: 0.0142, ETH: 1.18, BNB: 4.2, SOL: 12.5, TON: 55 },
+  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:640, USDC:0, XRP:280 },
+  prices: { BTC:65000, ETH:3400, BNB:580, LTC:75, SOL:155, TON:6, TRX:0.12, USDT:1, USDC:1, XRP:0.55 },
+  equity: [], trades: [], simTimer: null, profile: 'balanced',
   plans: [
     { name: "Тариф 1", minAmount: 100, maxAmount: 700, duration: 10, interest: 0.13 },
     { name: "Тариф 2", minAmount: 3000, maxAmount: 9000, duration: 25, interest: 0.21 },
@@ -116,6 +154,7 @@ const state = {
   ]
 };
 
+// Рендер тарифов
 function renderPlans() {
   const plansContainer = document.getElementById('plans');
   plansContainer.innerHTML = state.plans.map(plan => `
@@ -129,6 +168,7 @@ function renderPlans() {
   `).join('');
 }
 
+// Активация тарифа
 function activatePlan(planName) {
   const plan = state.plans.find(p => p.name === planName);
   if (state.balances.USDT >= plan.minAmount && state.balances.USDT <= plan.maxAmount) {
@@ -139,15 +179,10 @@ function activatePlan(planName) {
   }
 }
 
+// Старт симуляции торгов
 function startTradeSimulation(plan) {
   const totalAmount = state.balances.USDT;
   const profit = totalAmount * plan.interest;
-  const endTime = Date.now() + (plan.duration * 24 * 60 * 60Прошу прощения за неудобства. Вот продолжение кода:
-
-### Часть 2: Логика тарифов и торговли
-
-```html
-  // Конец времени тарифа
   const endTime = Date.now() + (plan.duration * 24 * 60 * 60 * 1000); // длительность тарифа в миллисекундах
   const interval = setInterval(() => {
     if (Date.now() >= endTime) {
@@ -155,14 +190,13 @@ function startTradeSimulation(plan) {
       state.balances.USDT += profit; // возвращаем тело инвестиции + прибыль
       alert(`Торговля завершена. Ваш баланс увеличен на ${profit.toFixed(2)} USD.`);
       renderBalances();
-      state.activePlan = null;  // Завершаем текущий тариф
     } else {
       simulateTrade();
     }
   }, 1800000); // Каждые 30 минут будет происходить сделка (2 сделки в час)
 }
 
-// Симуляция торговых сделок
+// Симуляция торговой сделки
 function simulateTrade() {
   const syms = ['BTC', 'ETH', 'BNB', 'SOL', 'TON'];
   const sym = syms[Math.floor(Math.random() * syms.length)];
@@ -184,7 +218,7 @@ function pushTrade(sym, side, qty, price, pnl) {
   if (state.equity.length > 240) state.equity.shift();
 }
 
-// Отображение сделок в таблице
+// Отображение сделок
 function renderTrades() {
   const filt = document.getElementById('symbolFilter').value;
   const rows = (filt ? state.trades.filter(t => t.symbol === filt) : state.trades).slice(0, 80).map(t => {
@@ -194,12 +228,7 @@ function renderTrades() {
   document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
 
-// Отображение баланса
-function renderBalances() {
-  $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.';
-}
-
-// Отображение KPI
+// Обновление показателей (Баланс, Доход, Сделки)
 function renderKPIs() {
   const last = state.equity[state.equity.length - 1]?.e || 10000;
   document.getElementById('kpiEquity').textContent = fmtUSD(last);
@@ -209,10 +238,10 @@ function renderKPIs() {
   document.getElementById('kpiTrades').textContent = state.trades.length;
 }
 
-// Форматирование значений
+// Форматирование чисел для USD
 const fmtUSD = (v) => '$' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
 
-// Логика для логина
+// Функция для входа
 $('login').onclick = () => {
   const email = $('email').value.trim();
   const pass = $('pass').value.trim();
@@ -221,18 +250,22 @@ $('login').onclick = () => {
     state.token = Math.random().toString(36).slice(2);
     $('loginMsg').textContent = 'Вход выполнен';
     renderBalances();
-    renderPlans(); // Отобразим тарифы после входа
+    renderPlans(); // Отображаем тарифы
   } else {
     $('loginMsg').textContent = 'Неверный логин/пароль';
   }
 };
 
-// Инициализация
-seedEquity();
-renderPlans(); // Отобразим тарифы при загрузке
-renderPrices(); // Отобразим текущие цены
-renderTrades(); // Отобразим список сделок
-renderKPIs(); // Отобразим показатели
+// Рендер баланса
+function renderBalances() {
+  $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.';
+}
+
+seedEquity(); // Инициализация начального капитала
+renderPlans(); // Отображение тарифов
+renderPrices(); // Отображение курсов
+renderTrades(); // Отображение сделок
+renderKPIs(); // Отображение показателей
 </script>
 </body>
 </html>
