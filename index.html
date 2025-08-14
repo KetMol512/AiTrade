@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BoostEx Trade — Торговый кабинет</title>
+<title>BoostEx Trade — Торговый кабинет </title>
 <style>
   :root{
     --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
@@ -54,9 +54,11 @@
 <body>
 <header>
   <div class="wrap row">
-    <div class="h1">BoostEx — торговый кабинет</div>
+    <div class="h1">BoostEx — торговый кабинет (демо)</div>
     <div class="row right">
-      <span class="tag" id="statusTag">Онлайн</span>
+      <span class="tag" id="statusTag">Оффлайн-симуляция</span>
+      <button class="btn small" id="openDeposit">Депозит</button>
+      <button class="btn small ghost" id="openWithdraw">Вывод</button>
     </div>
   </div>
 </header>
@@ -73,10 +75,13 @@
   <section class="card">
     <div class="row">
       <div class="h2">Вход</div>
-      <span class="tag">Авторизация через Telegram</span>
+      <span class="tag">Гостевой доступ</span>
     </div>
     <div class="row" style="margin-top:8px">
-      <button class="btn small" id="login">Войти через Telegram</button>
+      <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
+      <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
+      <button class="btn" id="login">Войти</button>
+      <span id="loginMsg" class="muted"></span>
     </div>
   </section>
 
@@ -114,27 +119,4 @@ const state = {
   token: null,
   balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:640, USDC:0, XRP:280 },
   prices:   { BTC:65000, ETH:3400, BNB:580, LTC:75,  SOL:155, TON:6,  TRX:0.12, USDT:1,  USDC:1,  XRP:0.55 },
-  equity: [], trades: [], simTimer: null, profile: 'balanced',
-};
-
-function renderBalances(){ $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k,v])=>`${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.'; }
-function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
-function renderKPIs(){
-  const last = state.equity[state.equity.length-1]?.e || 10000;
-  document.getElementById('kpiEquity').textContent = fmtUSD(last);
-  const first30 = state.equity[Math.max(0, state.equity.length-30)]?.e || last;
-  const pnl = last - first30;
-  document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  document.getElementById('kpiTrades').textContent = state.trades.length;
-}
-
-function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
-
-function fmtUSD(v) {
-  return '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
-}
-
-seedEquity(); renderBalances(); renderPrices(); renderKPIs();
-</script>
-</body>
-</html>
+  equity: [], trades: [], simTimer: null, profile: '
