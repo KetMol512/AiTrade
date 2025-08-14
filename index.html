@@ -238,47 +238,4 @@ function drawChart() {
     minY = Math.min(...ys),
     maxY = Math.max(...ys);
   const sx = i => pad + (i * (w / (state.equity.length - 1))),
-    sy = v => pad + h - ((v - minY) / (maxY - minY)) * h;
-  ctx.strokeStyle = '#1f2937';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad + i * (h / 4);
-    ctx.beginPath();
-    ctx.moveTo(pad, y);
-    ctx.lineTo(pad + w, y);
-    ctx.stroke();
-  }
-  ctx.beginPath();
-  ctx.strokeStyle = '#06b6d4';
-  ctx.lineWidth = 2;
-  state.equity.forEach((p, i) => {
-    const x = sx(i),
-      y = sy(p.e);
-    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-  });
-  ctx.stroke();
-  const g = ctx.createLinearGradient(0, pad, 0, pad + h);
-  g.addColorStop(0, 'rgba(6,182,212,.35)');
-  g.addColorStop(1, 'rgba(6,182,212,0)');
-  ctx.lineTo(pad + w, pad + h);
-  ctx.lineTo(pad, pad + h);
-  ctx.closePath();
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.fillStyle = '#9ca3af';
-  ctx.font = '12px sans-serif';
-  ctx.fillText(fmtUSD(minY), 6, pad + h);
-  ctx.fillText(fmtUSD(maxY), 6, pad + 12);
-}
-
-// Инициализация данных
-seedEquity();
-drawChart();
-renderPrices();
-renderTrades();
-renderKPIs();
-
-// Функция для имитации торговли
-function tick() {
-  const syms = ['BTC', 'ETH', 'BNB', 'SOL', 'TON'];
-  const sym = syms[Math.floor
+    sy = v => pad + h - ((v - minY) / (maxY - minY
