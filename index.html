@@ -65,13 +65,6 @@
   </div>
 </header>
 
-<div class="row" style="margin-top:20px; justify-content:center;">
-  <script async src="https://telegram.org/js/telegram-widget.js?7"
-          data-telegram-login="BoostEx_Trade_Bot"
-          data-size="large" data-radius="10" data-auth-url="https://yourserver.com/auth/telegram">
-  </script>
-</div>
-
 <main class="wrap" id="app">
   <!-- Регистрация -->
   <section class="card" id="login-section">
@@ -90,7 +83,6 @@
   <!-- Тарифы -->
   <section class="card" id="plans">
     <div class="h2">Выберите тариф</div>
-    <!-- Здесь будут отображаться тарифы -->
   </section>
 
   <section class="kpis">
@@ -138,7 +130,16 @@
           <option value="">Все инструменты</option>
           <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
         </select>
-        <button
+        <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+      </div>
+    </div>
+    <table class="table" style="margin-top:6px">
+      <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
+      <tbody id="trades"></tbody>
+    </table>
+  </section>
+</main>
+
 <script>
 // Добавлены необходимые данные и функции для тарифов, сделок, и регистрации
 const state = {
@@ -208,64 +209,3 @@ function simulateTrade() {
   renderTrades();
   renderKPIs();
 }
-
-// Добавление сделки в историю
-function pushTrade(sym, side, qty, price, pnl) {
-  state.trades.unshift({ ts: Date.now(), symbol: sym, side, qty, price, pnl });
-  if (state.trades.length > 200) state.trades.pop();
-  const last = state.equity[state.equity.length - 1]?.e || 10000;
-  state.equity.push({ ts: Date.now(), e: +(last + pnl).toFixed(2) });
-  if (state.equity.length > 240) state.equity.shift();
-}
-
-// Отображение сделок
-function renderTrades() {
-  const filt = document.getElementById('symbolFilter').value;
-  const rows = (filt ? state.trades.filter(t => t.symbol === filt) : state.trades).slice(0, 80).map(t => {
-    const cls = t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-    return `<tr><td>${new Date(t.ts).toLocaleString()}</td><td>${t.symbol}</td><td>${t.side}</td><td>${t.qty}</td><td>${t.price}</td><td class="${cls}">${t.pnl >= 0 ? '+' : ''}${t.pnl.toFixed(2)}</td></tr>`;
-  }).join('');
-  document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
-}
-
-// Обновление показателей (Баланс, Доход, Сделки)
-function renderKPIs() {
-  const last = state.equity[state.equity.length - 1]?.e || 10000;
-  document.getElementById('kpiEquity').textContent = fmtUSD(last);
-  const first30 = state.equity[Math.max(0, state.equity.length - 30)]?.e || last;
-  const pnl = last - first30;
-  document.getElementById('kpiPnl').innerHTML = (pnl >= 0 ? '<span class="pnl-pos">+' : '<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  document.getElementById('kpiTrades').textContent = state.trades.length;
-}
-
-// Форматирование чисел для USD
-const fmtUSD = (v) => '$' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
-
-// Функция для входа
-$('login').onclick = () => {
-  const email = $('email').value.trim();
-  const pass = $('pass').value.trim();
-  if (email === 'admin@example.com' && pass === 'admin123') {
-    state.logged = true;
-    state.token = Math.random().toString(36).slice(2);
-    $('loginMsg').textContent = 'Вход выполнен';
-    renderBalances();
-    renderPlans(); // Отображаем тарифы
-  } else {
-    $('loginMsg').textContent = 'Неверный логин/пароль';
-  }
-};
-
-// Рендер баланса
-function renderBalances() {
-  $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.';
-}
-
-seedEquity(); // Инициализация начального капитала
-renderPlans(); // Отображение тарифов
-renderPrices(); // Отображение курсов
-renderTrades(); // Отображение сделок
-renderKPIs(); // Отображение показателей
-</script>
-</body>
-</html>
