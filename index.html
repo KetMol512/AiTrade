@@ -34,12 +34,14 @@
   .h2{font-weight:600; font-size:16px}
   .muted{color:var(--muted)}
   .btn{background:var(--brand); color:#041018; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+  .btn.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
   .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
   .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
   .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
   .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
   .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
   .kpi .val{font-size:22px; font-weight:800}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
   .table{width:100%; border-collapse:collapse}
   .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
   .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
@@ -48,7 +50,7 @@
   .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
   .modal.open{display:flex}
   .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
-  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -63,11 +65,10 @@
   </div>
 </header>
 
-<!-- Кнопка авторизации через Telegram -->
 <div class="row" style="margin-top:20px; justify-content:center;">
   <script async src="https://telegram.org/js/telegram-widget.js?7"
           data-telegram-login="BoostEx_Trade_Bot"
-          data-size="large" data-radius="10" data-auth-url="https://core.telegram.org/widgets/login">
+          data-size="large" data-radius="10" data-auth-url="https://yourserver.com/auth/telegram">
   </script>
 </div>
 
@@ -172,7 +173,117 @@
 </div>
 
 <script>
-// JavaScript функционал...
+const state = {
+  logged: false,
+  token: null,
+  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:640, USDC:0, XRP:280 },
+  prices:   { BTC:65000, ETH:3400, BNB:580, LTC:75,  SOL:155, TON:6,  TRX:0.12, USDT:1,  USDC:1,  XRP:0.55 },
+  equity: [], trades: [], simTimer: null, profile: 'balanced',
+};
+const $ = (id)=>document.getElementById(id);
+const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
+
+$('login').onclick = () => {
+  const email = $('email').value.trim(), pass = $('pass').value.trim();
+  if(email==='admin@example.com' && pass==='admin123'){
+    state.logged = true; state.token = Math.random().toString(36).slice(2);
+    $('loginMsg').textContent = 'Вход выполнен';
+    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs();
+  } else {$('loginMsg').textContent='Неверный логин/пароль';}
+};
+
+function renderBalances(){ $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k,v])=>`${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.'; }
+function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
+function renderKPIs(){
+  const last = state.equity[state.equity.length-1]?.e || 10000;
+  document.getElementById('kpiEquity').textContent = fmtUSD(last);
+  const first30 = state.equity[Math.max(0, state.equity.length-30)]?.e || last;
+  const pnl = last - first30;
+  document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
+  document.getElementById('kpiTrades').textContent = state.trades.length;
+}
+
+function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
+function drawChart(){
+  const cvs = document.getElementById('equityChart'), ctx = cvs.getContext('2d');
+  const pad=36, w=cvs.width-pad*2, h=cvs.height-pad*2;
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  const ys = state.equity.map(p=>p.e), minY=Math.min(...ys), maxY=Math.max(...ys);
+  const sx=i=>pad+(i*(w/(state.equity.length-1))), sy=v=>pad+h-((v-minY)/(maxY-minY))*h;
+  ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){ const y=pad+i*(h/4); ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+w,y); ctx.stroke(); }
+  ctx.beginPath(); ctx.strokeStyle='#06b6d4'; ctx.lineWidth=2;
+  state.equity.forEach((p,i)=>{ const x=sx(i), y=sy(p.e); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke();
+  const g=ctx.createLinearGradient(0,pad,0,pad+h); g.addColorStop(0,'rgba(6,182,212,.35)'); g.addColorStop(1,'rgba(6,182,212,0)');
+  ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+  ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
+}
+
+function pushTrade(sym, side, qty, price, pnl){
+  state.trades.unshift({ts: Date.now(), symbol:sym, side, qty, price, pnl});
+  if(state.trades.length>200) state.trades.pop();
+  const last = state.equity[state.equity.length-1]?.e || 10000;
+  state.equity.push({ts: Date.now(), e: +(last + pnl).toFixed(2)});
+  if(state.equity.length>240) state.equity.shift();
+}
+function renderTrades(){
+  const filt = document.getElementById('symbolFilter').value;
+  const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
+    const cls = t.pnl>=0?'pnl-pos':'pnl-neg';
+    return `<tr><td>${new Date(t.ts).toLocaleString()}</td><td>${t.symbol}</td><td>${t.side}</td><td>${t.qty}</td><td>${t.price}</td><td class="${cls}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td></tr>`;
+  }).join('');
+  document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
+}
+
+function profileRange(p){ if(p==='conservative')return[-8,12]; if(p==='aggressive')return[-20,30]; return[-12,18]; }
+function tick(){
+  const syms=['BTC','ETH','BNB','SOL','TON']; const sym=syms[Math.floor(Math.random()*syms.length)];
+  const side=Math.random()>.5?'BUY':'SELL'; const qty=+(Math.random()*(sym==='BTC'?0.005:sym==='ETH'?0.1:20)).toFixed(4);
+  const price=+(state.prices[sym]*(0.98+Math.random()*0.04)).toFixed(2);
+  const [minP,maxP]=profileRange(state.profile); const pnl=+((Math.random()*(maxP-minP)+minP)).toFixed(2);
+  pushTrade(sym,side,qty,price,pnl); drawChart(); renderTrades(); renderKPIs();
+}
+document.getElementById('startSim').onclick=()=>{ if(state.simTimer) return; state.simTimer=setInterval(tick, 1200); };
+document.getElementById('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; };
+document.getElementById('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
+document.getElementById('profile').onchange=(e)=>{ state.profile=e.target.value; };
+
+document.getElementById('exportCsv').onclick=()=>{
+  const header=['time','symbol','side','qty','price','pnl'];
+  const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl]);
+  const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
+};
+
+const modalDeposit=document.getElementById('modalDeposit'), modalWithdraw=document.getElementById('modalWithdraw');
+const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
+document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close(modalDeposit));
+document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close(modalWithdraw));
+document.getElementById('openDeposit').onclick = ()=> open(modalDeposit);
+document.getElementById('openWithdraw').onclick= ()=> open(modalWithdraw);
+
+document.getElementById('genAddr').onclick=()=>{
+  const asset=document.getElementById('depAsset').value;
+  const addr = asset.includes('TRC20') ? 'T'+Math.random().toString(36).slice(2,10).toUpperCase()+'...' :
+              asset==='BTC' ? 'bc1q'+Math.random().toString(36).slice(2,9)+'...' :
+              asset==='ETH' ? '0x'+Math.random().toString(16).slice(2,10)+'...' :
+              'EQ'+Math.random().toString(36).slice(2,10).toUpperCase()+'...';
+  document.getElementById('depInfo').innerHTML = `Адрес для ${asset}: <b>${addr}</b>`;
+  const c=document.getElementById('qr'), ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+  for(let y=0;y<22;y++) for(let x=0;x<22;x++){ const on=Math.random()>.5; ctx.fillStyle=on?'#e5e7eb':'#0b1220'; ctx.fillRect(10+x*9,10+y*9,8,8); }
+  document.getElementById('qrBox').style.display='block';
+};
+
+document.getElementById('wdSend').onclick=()=>{
+  const asset=document.getElementById('wdAsset').value, addr=document.getElementById('wdAddr').value.trim(), amt=+((document.getElementById('wdAmt').value)||0);
+  if(!addr || !amt){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
+  if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
+  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending (демо).</span>';
+  setTimeout(()=>close(modalWithdraw), 1200);
+};
+
+seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs();
 </script>
 </body>
 </html>
