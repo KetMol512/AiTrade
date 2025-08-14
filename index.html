@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ternary Trade — Торговый кабинет</title>
   <style>
-    /* Ваши стили остаются без изменений */
+    /* Ваши стили */
     :root{
       --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
       --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
@@ -87,6 +87,11 @@
     <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
   </section>
 
+  <section id="plans" class="card">
+    <div class="h2">Выберите тариф</div>
+    <!-- Тарифы будут отображены сюда -->
+  </section>
+
   <section class="grid2">
     <div class="card">
       <div class="h2">Балансы</div>
@@ -97,61 +102,20 @@
       <div id="prices" class="muted" style="margin-top:6px">—</div>
     </div>
   </section>
-
-  <section class="card">
-    <div class="row">
-      <div class="h2">Кривая капитала</div>
-      <div class="right row">
-        <select id="profile" class="select">
-          <option value="conservative">Conservative (15–25%/м)</option>
-          <option value="balanced" selected>Balanced (25–35%/м)</option>
-          <option value="aggressive">Aggressive (35–45%/м)</option>
-        </select>
-        <button class="btn small" id="startSim">Старт</button>
-        <button class="btn small ghost" id="stopSim">Пауза</button>
-        <button class="btn small ghost" id="resetSim">Сброс</button>
-      </div>
-    </div>
-    <div class="canvas-wrap" style="margin-top:10px"><canvas id="equityChart" width="1000" height="280"></canvas></div>
-  </section>
-
-  <section class="card">
-    <div class="row">
-      <div class="h2">Сделки (последние)</div>
-      <div class="right row">
-        <select id="symbolFilter" class="select">
-          <option value="">Все инструменты</option>
-          <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
-        </select>
-        <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
-      </div>
-    </div>
-    <table class="table" style="margin-top:6px">
-      <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
-      <tbody id="trades"></tbody>
-    </table>
-  </section>
 </main>
+
 <script>
-// Инициализация состояния пользователя
 const state = {
   logged: false,
   token: null,
-  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:640, USDC:0, XRP:280 },
-  prices:   { BTC:65000, ETH:3400, BNB:580, LTC:75, SOL:155, TON:6, TRX:0.12, USDT:1, USDC:1, XRP:0.55 },
-  equity: [],
-  trades: [],
-  simTimer: null,
-  profile: 'balanced',
-  activePlan: null,  // Для отслеживания активного тарифного плана
+  balances: { USDT: 640, BTC: 0.0142, ETH: 1.18, BNB: 4.2, SOL: 12.5, TON: 55 },
   plans: [
     { name: "Тариф 1", minAmount: 100, maxAmount: 700, duration: 10, interest: 0.13 },
     { name: "Тариф 2", minAmount: 3000, maxAmount: 9000, duration: 25, interest: 0.21 },
     { name: "Тариф 3", minAmount: 10000, maxAmount: 100000, duration: 47, interest: 0.35 }
-  ],
+  ]
 };
 
-// Функция для рендеринга тарифов
 function renderPlans() {
   const plansContainer = document.getElementById('plans');
   plansContainer.innerHTML = state.plans.map(plan => `
@@ -165,38 +129,40 @@ function renderPlans() {
   `).join('');
 }
 
-// Функция активации тарифного плана
 function activatePlan(planName) {
   const plan = state.plans.find(p => p.name === planName);
   if (state.balances.USDT >= plan.minAmount && state.balances.USDT <= plan.maxAmount) {
-    state.activePlan = plan;
-    alert(`Тариф ${plan.name} активирован! Доходность: ${(plan.interest * 100).toFixed(2)}%`);
-    // Начать торги по тарифу
-    startTrades(plan);
+    alert(`Тариф ${plan.name} активирован!`);
+    startTradeSimulation(plan);
   } else {
     alert('Недостаточно средств для активации этого тарифа.');
   }
 }
 
-// Функция для начала торговли по тарифу
-function startTrades(plan) {
+function startTradeSimulation(plan) {
   const totalAmount = state.balances.USDT;
   const profit = totalAmount * plan.interest;
+  const endTime = Date.now() + (plan.duration * 24 * 60 * 60Прошу прощения за неудобства. Вот продолжение кода:
+
+### Часть 2: Логика тарифов и торговли
+
+```html
+  // Конец времени тарифа
   const endTime = Date.now() + (plan.duration * 24 * 60 * 60 * 1000); // длительность тарифа в миллисекундах
   const interval = setInterval(() => {
     if (Date.now() >= endTime) {
       clearInterval(interval);
-      state.balances.USDT += profit;
+      state.balances.USDT += profit; // возвращаем тело инвестиции + прибыль
       alert(`Торговля завершена. Ваш баланс увеличен на ${profit.toFixed(2)} USD.`);
       renderBalances();
-      state.activePlan = null;
+      state.activePlan = null;  // Завершаем текущий тариф
     } else {
       simulateTrade();
     }
   }, 1800000); // Каждые 30 минут будет происходить сделка (2 сделки в час)
 }
 
-// Функция для симуляции сделок (торговля)
+// Симуляция торговых сделок
 function simulateTrade() {
   const syms = ['BTC', 'ETH', 'BNB', 'SOL', 'TON'];
   const sym = syms[Math.floor(Math.random() * syms.length)];
@@ -209,7 +175,16 @@ function simulateTrade() {
   renderKPIs();
 }
 
-// Функция для отображения сделок в таблице
+// Добавление сделки в историю
+function pushTrade(sym, side, qty, price, pnl) {
+  state.trades.unshift({ ts: Date.now(), symbol: sym, side, qty, price, pnl });
+  if (state.trades.length > 200) state.trades.pop();
+  const last = state.equity[state.equity.length - 1]?.e || 10000;
+  state.equity.push({ ts: Date.now(), e: +(last + pnl).toFixed(2) });
+  if (state.equity.length > 240) state.equity.shift();
+}
+
+// Отображение сделок в таблице
 function renderTrades() {
   const filt = document.getElementById('symbolFilter').value;
   const rows = (filt ? state.trades.filter(t => t.symbol === filt) : state.trades).slice(0, 80).map(t => {
@@ -219,12 +194,12 @@ function renderTrades() {
   document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
 
-// Функция для рендеринга баланса
+// Отображение баланса
 function renderBalances() {
   $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.';
 }
 
-// Функция для рендеринга KPI
+// Отображение KPI
 function renderKPIs() {
   const last = state.equity[state.equity.length - 1]?.e || 10000;
   document.getElementById('kpiEquity').textContent = fmtUSD(last);
@@ -234,7 +209,10 @@ function renderKPIs() {
   document.getElementById('kpiTrades').textContent = state.trades.length;
 }
 
-// Функция для регистрации
+// Форматирование значений
+const fmtUSD = (v) => '$' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+// Логика для логина
 $('login').onclick = () => {
   const email = $('email').value.trim();
   const pass = $('pass').value.trim();
@@ -243,7 +221,6 @@ $('login').onclick = () => {
     state.token = Math.random().toString(36).slice(2);
     $('loginMsg').textContent = 'Вход выполнен';
     renderBalances();
-    renderPrices();
     renderPlans(); // Отобразим тарифы после входа
   } else {
     $('loginMsg').textContent = 'Неверный логин/пароль';
@@ -251,5 +228,11 @@ $('login').onclick = () => {
 };
 
 // Инициализация
-seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs();
+seedEquity();
+renderPlans(); // Отобразим тарифы при загрузке
+renderPrices(); // Отобразим текущие цены
+renderTrades(); // Отобразим список сделок
+renderKPIs(); // Отобразим показатели
 </script>
+</body>
+</html>
