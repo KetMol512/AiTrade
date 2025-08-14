@@ -46,6 +46,10 @@
   .deal-list{font-size:13px; border-top:1px solid var(--border); margin-top:8px;}
   .deal-list th, .deal-list td{padding:6px 8px;}
   .deal-pnl-pos{color:var(--good);} .deal-pnl-neg{color:var(--bad);}
+  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
+  .modal.open{display:flex}
+  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -159,7 +163,7 @@
   </div>
 </main>
 
-<!-- Депозит/вывод -->
+<!-- Модалки депозит/вывод (display:none по умолчанию) -->
 <div class="modal" id="modalDeposit">
   <div class="sheet">
     <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
@@ -255,7 +259,7 @@ $('startTariffBtn').onclick = () => {
     finished: false,
     profit: 0,
     tradesTimer: null,
-    totalTrades: Math.round(trf.days * 5 * 24 / 24), // 5 сделок в минуту, X дней
+    totalTrades: Math.round(trf.days * 5 * 24 * 60), // 5 сделок в минуту * 60 минут * X дней
     doneTrades: 0,
     trades: []
   };
@@ -306,7 +310,11 @@ function scheduleTariffTrades(tariff) {
     };
     tariff.trades.push(tradeObj);
     state.trades.unshift(tradeObj); // В общий список
-    // Капитал: увеличиваем только если тариф завершён
+    // Капитал: увеличиваем сразу по каждой сделке
+    const last = state.equity.length
+      ? state.equity[state.equity.length-1].e
+      : 10000;
+    state.equity.push({ts: tradeObj.ts, e: +(last + pnl).toFixed(2)});
     drawChart(); renderTrades(); renderKPIs();
     tariff.doneTrades++;
     if (tariff.doneTrades >= tariff.totalTrades || Date.now() > tariff.end) {
@@ -324,10 +332,6 @@ function finishTariff(tariff) {
   renderBalances();
   renderTariffsList();
   renderMyTariffsTable();
-  // Капитал: добавляем точку на график
-  const last = state.equity[state.equity.length-1]?.e || 10000;
-  state.equity.push({ts: Date.now(), e: +(last + tariff.deposit + tariff.profit).toFixed(2)});
-  drawChart();
 }
 
 // Обновление KPI
