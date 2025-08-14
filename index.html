@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ternary Trade — Торговый кабинет</title>
   <style>
+    /* Ваши стили остаются без изменений */
     :root{
       --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
       --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
@@ -131,7 +132,6 @@
     </table>
   </section>
 </main>
-
 <script>
 // Инициализация состояния пользователя
 const state = {
@@ -143,115 +143,73 @@ const state = {
   trades: [],
   simTimer: null,
   profile: 'balanced',
+  activePlan: null,  // Для отслеживания активного тарифного плана
+  plans: [
+    { name: "Тариф 1", minAmount: 100, maxAmount: 700, duration: 10, interest: 0.13 },
+    { name: "Тариф 2", minAmount: 3000, maxAmount: 9000, duration: 25, interest: 0.21 },
+    { name: "Тариф 3", minAmount: 10000, maxAmount: 100000, duration: 47, interest: 0.35 }
+  ],
 };
 
-// Функции для рендеринга
-const $ = (id) => document.getElementById(id);
-const fmtUSD = (v) => '$' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 2 });
-
-// Функции для отображения баланса и данных
-function renderBalances() {
-  $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.';
+// Функция для рендеринга тарифов
+function renderPlans() {
+  const plansContainer = document.getElementById('plans');
+  plansContainer.innerHTML = state.plans.map(plan => `
+    <div class="plan">
+      <h3>${plan.name}</h3>
+      <p>Порог: ${plan.minAmount} - ${plan.maxAmount} USD</p>
+      <p>Доходность: ${(plan.interest * 100).toFixed(2)}%</p>
+      <p>Продолжительность: ${plan.duration} дней</p>
+      <button class="btn small" onclick="activatePlan('${plan.name}')">Запустить</button>
+    </div>
+  `).join('');
 }
 
-function renderPrices() {
-  $('prices').textContent = Object.entries(state.prices).map(([k, v]) => `${k}: ${fmtUSD(v)}`).join(' · ');
-}
-
-function renderKPIs() {
-  const last = state.equity[state.equity.length - 1]?.e || 10000;
-  document.getElementById('kpiEquity').textContent = fmtUSD(last);
-  const first30 = state.equity[Math.max(0, state.equity.length - 30)]?.e || last;
-  const pnl = last - first30;
-  document.getElementById('kpiPnl').innerHTML = (pnl >= 0 ? '<span class="pnl-pos">+' : '<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  document.getElementById('kpiTrades').textContent = state.trades.length;
-}
-
-function seedEquity() {
-  let e = 10000;
-  const pts = [];
-  for (let i = 0; i < 60; i++) {
-    e += (Math.random() - 0.45) * 25;
-    pts.push({ ts: Date.now() - (60 - i) * 3600000, e: +e.toFixed(2) });
+// Функция активации тарифного плана
+function activatePlan(planName) {
+  const plan = state.plans.find(p => p.name === planName);
+  if (state.balances.USDT >= plan.minAmount && state.balances.USDT <= plan.maxAmount) {
+    state.activePlan = plan;
+    alert(`Тариф ${plan.name} активирован! Доходность: ${(plan.interest * 100).toFixed(2)}%`);
+    // Начать торги по тарифу
+    startTrades(plan);
+  } else {
+    alert('Недостаточно средств для активации этого тарифа.');
   }
-  state.equity = pts;
 }
 
-function drawChart() {
-  const cvs = document.getElementById('equityChart');
-  const ctx = cvs.getContext('2d');
-  const pad = 36,
-    w = cvs.width - pad * 2,
-    h = cvs.height - pad * 2;
-  ctx.clearRect(0, 0, cvs.width, cvs.height);
-  const ys = state.equity.map(p => p.e),
-    minY = Math.min(...ys),
-    maxY = Math.max(...ys);
-  const sx = i => pad + (i * (w / (state.equity.length - 1))),
-    sy = v => pad + h - ((v - minY) / (maxY - minY)) * h;
-  ctx.strokeStyle = '#1f2937';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = pad + i * (h / 4);
-    ctx.beginPath();
-    ctx.moveTo(pad, y);
-    ctx.lineTo(pad + w, y);
-    ctx.stroke();
-  }
-  ctx.beginPath();
-  ctx.strokeStyle = '#06b6d4';
-  ctx.lineWidth = 2;
-  state.equity.forEach((p, i) => {
-    const x = sx(i),
-      y = sy(p.e);
-    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-  });
-  ctx.stroke();
-  const g = ctx.createLinearGradient(0, pad, 0, pad + h);
-  g.addColorStop(0, 'rgba(6,182,212,.35)');
-  g.addColorStop(1, 'rgba(6,182,212,0)');
-  ctx.lineTo(pad + w, pad + h);
-  ctx.lineTo(pad, pad + h);
-  ctx.closePath();
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.fillStyle = '#9ca3af';
-ctx.font = '12px sans-serif';
-  ctx.fillText(fmtUSD(minY), 6, pad + h);
-  ctx.fillText(fmtUSD(maxY), 6, pad + 12);
+// Функция для начала торговли по тарифу
+function startTrades(plan) {
+  const totalAmount = state.balances.USDT;
+  const profit = totalAmount * plan.interest;
+  const endTime = Date.now() + (plan.duration * 24 * 60 * 60 * 1000); // длительность тарифа в миллисекундах
+  const interval = setInterval(() => {
+    if (Date.now() >= endTime) {
+      clearInterval(interval);
+      state.balances.USDT += profit;
+      alert(`Торговля завершена. Ваш баланс увеличен на ${profit.toFixed(2)} USD.`);
+      renderBalances();
+      state.activePlan = null;
+    } else {
+      simulateTrade();
+    }
+  }, 1800000); // Каждые 30 минут будет происходить сделка (2 сделки в час)
 }
 
-// Инициализация тарифов и периодов
-function profileRange(p) {
-  if (p === 'conservative') return [-8, 12];
-  if (p === 'aggressive') return [-20, 30];
-  return [-12, 18];
-}
-
-function tick() {
+// Функция для симуляции сделок (торговля)
+function simulateTrade() {
   const syms = ['BTC', 'ETH', 'BNB', 'SOL', 'TON'];
   const sym = syms[Math.floor(Math.random() * syms.length)];
   const side = Math.random() > 0.5 ? 'BUY' : 'SELL';
   const qty = +(Math.random() * (sym === 'BTC' ? 0.005 : sym === 'ETH' ? 0.1 : 20)).toFixed(4);
   const price = +(state.prices[sym] * (0.98 + Math.random() * 0.04)).toFixed(2);
-  const [minP, maxP] = profileRange(state.profile);
-  const pnl = +((Math.random() * (maxP - minP) + minP)).toFixed(2);
+  const pnl = +(Math.random() * 2 - 1).toFixed(2);  // Симуляция небольшой прибыли/убытка
   pushTrade(sym, side, qty, price, pnl);
-  drawChart();
   renderTrades();
   renderKPIs();
 }
 
-// Логика добавления сделки в историю и обновления баланса
-function pushTrade(sym, side, qty, price, pnl) {
-  state.trades.unshift({ ts: Date.now(), symbol: sym, side, qty, price, pnl });
-  if (state.trades.length > 200) state.trades.pop();
-  const last = state.equity[state.equity.length - 1]?.e || 10000;
-  state.equity.push({ ts: Date.now(), e: +(last + pnl).toFixed(2) });
-  if (state.equity.length > 240) state.equity.shift();
-}
-
-// Отображение сделок в таблице
+// Функция для отображения сделок в таблице
 function renderTrades() {
   const filt = document.getElementById('symbolFilter').value;
   const rows = (filt ? state.trades.filter(t => t.symbol === filt) : state.trades).slice(0, 80).map(t => {
@@ -261,77 +219,37 @@ function renderTrades() {
   document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
 
-// Обработчики кнопок для симуляции торговли
-document.getElementById('startSim').onclick = () => { 
-  if (state.simTimer) return; 
-  state.simTimer = setInterval(tick, 1200); 
-};
+// Функция для рендеринга баланса
+function renderBalances() {
+  $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.';
+}
 
-document.getElementById('stopSim').onclick = () => { 
-  clearInterval(state.simTimer); 
-  state.simTimer = null; 
-};
+// Функция для рендеринга KPI
+function renderKPIs() {
+  const last = state.equity[state.equity.length - 1]?.e || 10000;
+  document.getElementById('kpiEquity').textContent = fmtUSD(last);
+  const first30 = state.equity[Math.max(0, state.equity.length - 30)]?.e || last;
+  const pnl = last - first30;
+  document.getElementById('kpiPnl').innerHTML = (pnl >= 0 ? '<span class="pnl-pos">+' : '<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
+  document.getElementById('kpiTrades').textContent = state.trades.length;
+}
 
-document.getElementById('resetSim').onclick = () => { 
-  state.trades = []; 
-  seedEquity(); 
-  drawChart(); 
-  renderTrades(); 
-  renderKPIs(); 
-};
-
-// Экспорт сделок в CSV
-document.getElementById('exportCsv').onclick = () => {
-  const header = ['time', 'symbol', 'side', 'qty', 'price', 'pnl'];
-  const rows = state.trades.map(t => [new Date(t.ts).toISOString(), t.symbol, t.side, t.qty, t.price, t.pnl]);
-  const csv = [header].concat(rows).map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'trades.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-// Функции для работы с депозитом
-const modalDeposit = document.getElementById('modalDeposit'), modalWithdraw = document.getElementById('modalWithdraw');
-const open = (m) => m.classList.add('open'), close = (m) => m.classList.remove('open');
-
-document.querySelectorAll('[data-close="deposit"]').forEach(b => b.onclick = () => close(modalDeposit));
-document.querySelectorAll('[data-close="withdraw"]').forEach(b => b.onclick = () => close(modalWithdraw));
-
-document.getElementById('openDeposit').onclick = () => open(modalDeposit);
-document.getElementById('openWithdraw').onclick = () => open(modalWithdraw);
-
-// Генерация адреса для депозита
-document.getElementById('genAddr').onclick = () => {
-  const asset = document.getElementById('depAsset').value;
-  const addr = asset.includes('TRC20') ? 'T' + Math.random().toString(36).slice(2, 10).toUpperCase() + '...' :
-    asset === 'BTC' ? 'bc1q' + Math.random().toString(36).slice(2, 9) + '...' :
-    asset === 'ETH' ? '0x' + Math.random().toString(16).slice(2, 10) + '...' :
-    'EQ' + Math.random().toString(36).slice(2, 10).toUpperCase() + '...';
-  document.getElementById('depInfo').innerHTML = `Адрес для ${asset}: <b>${addr}</b>`;
-  const c = document.getElementById('qr'), ctx = c.getContext('2d');
-  ctx.clearRect(0, 0, c.width, c.height);
-  for (let y = 0; y < 22; y++) for (let x = 0; x < 22; x++) {
-    const on = Math.random() > 0.5;
-    ctx.fillStyle = on ? '#e5e7eb' : '#0b1220';
-    ctx.fillRect(10 + x * 9, 10 + y * 9, 8, 8);
+// Функция для регистрации
+$('login').onclick = () => {
+  const email = $('email').value.trim();
+  const pass = $('pass').value.trim();
+  if (email === 'admin@example.com' && pass === 'admin123') {
+    state.logged = true;
+    state.token = Math.random().toString(36).slice(2);
+    $('loginMsg').textContent = 'Вход выполнен';
+    renderBalances();
+    renderPrices();
+    renderPlans(); // Отобразим тарифы после входа
+  } else {
+    $('loginMsg').textContent = 'Неверный логин/пароль';
   }
-  document.getElementById('qrBox').style.display = 'block';
 };
 
-// Обработка вывода средств
-document.getElementById('wdSend').onclick = () => {
-  const asset = document.getElementById('wdAsset').value, addr = document.getElementById('wdAddr').value.trim(), amt = +((document.getElementById('wdAmt').value) || 0);
-  if (!addr || !amt) { document.getElementById('wdMsg').innerHTML = '<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
-  if ((asset.includes('USDT') || asset.includes('USDC')) && amt < 50) { document.getElementById('wdMsg').innerHTML = '<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
-  document.getElementById('wdMsg').innerHTML = '<span class="pnl-pos">Заявка создана: статус Pending (демо).</span>';
-  setTimeout(() => close(modalWithdraw), 1200);
-};
-
+// Инициализация
 seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs();
 </script>
-</body>
-</html>
