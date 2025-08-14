@@ -38,19 +38,14 @@
   .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
   .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
   .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
-  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-  .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
-  .kpi .val{font-size:22px; font-weight:800}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-  .table{width:100%; border-collapse:collapse}
-  .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
-  .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
-  .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
-  .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
-  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
-  .modal.open{display:flex}
-  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
-  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
+  .tabs{display:flex; gap:8px; margin-bottom:18px;}
+  .tab{padding:8px 22px; border-radius:10px 10px 0 0; background:var(--soft); color:var(--text); cursor:pointer; font-weight:600; border:1px solid var(--border); border-bottom:none;}
+  .tab.active{background:var(--brand); color:#041018;}
+  .tariff-table{width:100%; border-collapse:collapse; margin-bottom:16px;}
+  .tariff-table th, .tariff-table td{padding:8px 10px; border-bottom:1px solid var(--border); font-size:13px;}
+  .deal-list{font-size:13px; border-top:1px solid var(--border); margin-top:8px;}
+  .deal-list th, .deal-list td{padding:6px 8px;}
+  .deal-pnl-pos{color:var(--good);} .deal-pnl-neg{color:var(--bad);}
 </style>
 </head>
 <body>
@@ -73,85 +68,98 @@
 </div>
 
 <main class="wrap" id="app">
-  <section class="card">
-    <div class="row">
-      <div class="h2">Вход</div>
-      <span class="tag">Гостевой доступ</span>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
-      <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
-      <button class="btn" id="login">Войти</button>
-      <span id="loginMsg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- Тарифная секция -->
-  <section class="card" id="tariffSection">
-    <div class="h2">Открыть новый тариф</div>
-    <div class="row" style="margin-top:10px">
-      <select id="tariffSelect" class="select">
-        <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
-        <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
-        <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
-      </select>
-      <input id="tariffDeposit" class="input" type="number" placeholder="Сумма ($)" style="width:140px">
-      <button class="btn" id="startTariffBtn">Запустить тариф</button>
-    </div>
-    <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
-  </section>
-
-  <!-- Список тарифов -->
-  <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
-    <div class="h2">Ваши тарифы</div>
-    <div id="tariffsList"></div>
-  </section>
-
-  <section class="kpis">
-    <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
-    <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
-    <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
-    <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
-  </section>
-
-  <section class="grid2">
-    <div class="card">
-      <div class="h2">Балансы</div>
-      <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
-    </div>
-    <div class="card">
-      <div class="h2">Курсы (USD) — топ-10</div>
-      <div id="prices" class="muted" style="margin-top:6px">—</div>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="row">
-      <div class="h2">Кривая капитала</div>
-    </div>
-    <div class="canvas-wrap" style="margin-top:10px; position:relative;">
-      <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="row">
-      <div class="h2">Сделки (последние)</div>
-      <div class="right row">
-        <select id="symbolFilter" class="select">
-          <option value="">Все инструменты</option>
-          <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
-        </select>
-        <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+  <div class="tabs">
+    <div class="tab active" id="tab-cabinet">Кабинет</div>
+    <div class="tab" id="tab-my-tariffs">Мои тарифы</div>
+  </div>
+  <div id="page-cabinet">
+    <section class="card">
+      <div class="row">
+        <div class="h2">Вход</div>
+        <span class="tag">Гостевой доступ</span>
       </div>
-    </div>
-    <table class="table" style="margin-top:6px">
-      <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
-      <tbody id="trades"></tbody>
-    </table>
-  </section>
+      <div class="row" style="margin-top:8px">
+        <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
+        <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
+        <button class="btn" id="login">Войти</button>
+        <span id="loginMsg" class="muted"></span>
+      </div>
+    </section>
+    <section class="card" id="tariffSection">
+      <div class="h2">Открыть новый тариф</div>
+      <div class="row" style="margin-top:10px">
+        <select id="tariffSelect" class="select">
+          <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
+          <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
+          <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
+        </select>
+        <input id="tariffDeposit" class="input" type="number" placeholder="Сумма ($)" style="width:140px">
+        <button class="btn" id="startTariffBtn">Запустить тариф</button>
+      </div>
+      <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
+    </section>
+    <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
+      <div class="h2">Ваши тарифы</div>
+      <div id="tariffsList"></div>
+    </section>
+    <section class="kpis">
+      <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
+      <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
+      <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
+      <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
+    </section>
+    <section class="grid2">
+      <div class="card">
+        <div class="h2">Балансы</div>
+        <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
+      </div>
+      <div class="card">
+        <div class="h2">Курсы (USD) — топ-10</div>
+        <div id="prices" class="muted" style="margin-top:6px">—</div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="row">
+        <div class="h2">Кривая капитала</div>
+      </div>
+      <div class="canvas-wrap" style="margin-top:10px; position:relative;">
+        <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
+      </div>
+    </section>
+    <section class="card">
+      <div class="row">
+        <div class="h2">Сделки (последние)</div>
+        <div class="right row">
+          <select id="symbolFilter" class="select">
+            <option value="">Все инструменты</option>
+            <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+          </select>
+          <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+        </div>
+      </div>
+      <table class="table" style="margin-top:6px">
+        <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
+        <tbody id="trades"></tbody>
+      </table>
+    </section>
+  </div>
+  <div id="page-my-tariffs" style="display:none;">
+    <section class="card">
+      <div class="h2">Открытые и завершённые тарифы</div>
+      <table class="tariff-table">
+        <thead>
+          <tr>
+            <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
+          </tr>
+        </thead>
+        <tbody id="myTariffsTable"></tbody>
+      </table>
+      <div id="myTariffsDeals"></div>
+    </section>
+  </div>
 </main>
 
+<!-- Депозит/вывод -->
 <div class="modal" id="modalDeposit">
   <div class="sheet">
     <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
@@ -168,7 +176,6 @@
     </div>
   </div>
 </div>
-
 <div class="modal" id="modalWithdraw">
   <div class="sheet">
     <div class="row"><div class="h2">Вывод средств</div><button class="btn small ghost right" data-close="withdraw">Закрыть</button></div>
@@ -205,6 +212,16 @@ const tariffs = {
   aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
 };
 
+// Вкладки
+function showTab(tab) {
+  $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
+  $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
+  $('page-cabinet').style.display = tab === 'cabinet' ? '' : 'none';
+  $('page-my-tariffs').style.display = tab === 'my-tariffs' ? '' : 'none';
+}
+$('tab-cabinet').onclick = ()=>showTab('cabinet');
+$('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
+
 // Вход
 $('login').onclick = () => {
   const email = $('email').value.trim(), pass = $('pass').value.trim();
@@ -238,7 +255,7 @@ $('startTariffBtn').onclick = () => {
     finished: false,
     profit: 0,
     tradesTimer: null,
-    totalTrades: Math.round(trf.days * 2 * 24 / 24),
+    totalTrades: Math.round(trf.days * 5 * 24 / 24), // 5 сделок в минуту, X дней
     doneTrades: 0,
     trades: []
   };
@@ -248,7 +265,7 @@ $('startTariffBtn').onclick = () => {
   $('tariffMsg').textContent = 'Тариф запущен!';
 };
 
-// Список тарифов
+// Список тарифов (в кабинете)
 function renderTariffsList() {
   const list = state.tariffs.map(t => {
     const trf = tariffs[t.type];
@@ -296,7 +313,8 @@ function scheduleTariffTrades(tariff) {
       finishTariff(tariff);
     }
     renderTariffsList();
-  }, 1800000); // 2 сделки/час
+    renderMyTariffsTable();
+  }, 12000); // 5 сделок в минуту = 12 секунд
 }
 
 function finishTariff(tariff) {
@@ -305,6 +323,7 @@ function finishTariff(tariff) {
   state.balances.USDT += tariff.deposit + tariff.profit;
   renderBalances();
   renderTariffsList();
+  renderMyTariffsTable();
   // Капитал: добавляем точку на график
   const last = state.equity[state.equity.length-1]?.e || 10000;
   state.equity.push({ts: Date.now(), e: +(last + tariff.deposit + tariff.profit).toFixed(2)});
@@ -326,7 +345,7 @@ function renderKPIs(){
 // Стартовая генерация капитала
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
 
-// Рисуем график капитала с метками сделок
+// График капитала с метками сделок
 function drawChart() {
   const cvs = document.getElementById('equityChart');
   const ctx = cvs.getContext('2d');
@@ -347,11 +366,10 @@ function drawChart() {
   ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif';
   ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
 
-  // Метки сделок на графике (только последние, чтобы не перегружать)
+  // Метки сделок (последние 100)
   const maxMarkers = 100;
   const tradesMarked = state.trades.slice(0, maxMarkers).reverse();
   tradesMarked.forEach((trade, i) => {
-    // Привяжем к капиталу, если есть
     const eqIdx = Math.max(0, state.equity.length - tradesMarked.length + i);
     const x = sx(eqIdx);
     const y = sy(state.equity[eqIdx]?.e || 10000);
@@ -361,7 +379,6 @@ function drawChart() {
     ctx.fill();
     ctx.strokeStyle = '#fff';
     ctx.stroke();
-    // Сохраняем координаты для popup
     trade._chart_x = x;
     trade._chart_y = y;
   });
@@ -381,7 +398,6 @@ $('equityChart').addEventListener('mousemove', (e) => {
   const mx = e.clientX - rect.left;
   const my = e.clientY - rect.top;
   let found = null;
-  // Проверяем только последние 100 сделок для быстродействия
   state.trades.slice(0,100).reverse().forEach(trade => {
     if (trade._chart_x && trade._chart_y &&
       Math.abs(mx - trade._chart_x) < 8 && Math.abs(my - trade._chart_y) < 8) found = trade;
@@ -414,7 +430,7 @@ function renderTrades(){
   document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
 
-// Экспорт CSV
+// CSV
 document.getElementById('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl','tariff'];
   const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl,t.tariffType||'']);
@@ -451,10 +467,51 @@ document.getElementById('wdSend').onclick=()=>{
   setTimeout(()=>close(modalWithdraw), 1200);
 };
 
+// --- Вкладка "Мои тарифы" ---
+function renderMyTariffsTable() {
+  let tariffsRows = state.tariffs.map(t=>{
+    const trf=tariffs[t.type];
+    return `<tr>
+      <td>${t.type}</td>
+      <td>${t.deposit}</td>
+      <td>${Math.round(trf.yield*100)}%</td>
+      <td>${t.profit.toFixed(2)}</td>
+      <td>${new Date(t.start).toLocaleDateString()}</td>
+      <td>${new Date(t.end).toLocaleDateString()}</td>
+      <td>${t.finished?'<span class="pnl-pos">Завершён</span>':'<span class="muted">В работе</span>'}</td>
+    </tr>`;
+  }).join('');
+  $('myTariffsTable').innerHTML = tariffsRows || `<tr><td colspan="7" class="muted">Нет тарифов</td></tr>`;
+
+  // Сделки по всем тарифам
+  let dealsHtml = '';
+  state.tariffs.forEach(tariff=>{
+    dealsHtml += `<div style="margin-top:16px"><b>Тариф ${tariff.type}, сумма $${tariff.deposit} (${tariff.finished?'Завершён':'В работе'})</b></div>
+      <table class="deal-list" style="width:100%"><thead>
+        <tr><th>Время</th><th>Инстр.</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr>
+      </thead><tbody>
+        ${tariff.trades.slice(-20).reverse().map(trade=>{
+          return `<tr>
+            <td>${new Date(trade.ts).toLocaleString()}</td>
+            <td>${trade.symbol}</td>
+            <td>${trade.side}</td>
+            <td>${trade.qty}</td>
+            <td>${trade.price}</td>
+            <td class="${trade.pnl>=0?'deal-pnl-pos':'deal-pnl-neg'}">${trade.pnl>=0?'+':''}${trade.pnl.toFixed(2)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody></table>`;
+  });
+  $('myTariffsDeals').innerHTML = dealsHtml || '<div class="muted" style="margin-top:12px">Пока нет сделок по тарифам</div>';
+}
+
 // Инициализация
 seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs(); renderTariffsList();
+showTab('cabinet');
 
-setInterval(()=>{drawChart(); renderTariffsList();}, 60000); // обновляем раз в минуту таймеры и график
+setInterval(()=>{
+  drawChart(); renderTariffsList(); renderMyTariffsTable();
+}, 60000); // обновляем раз в минуту таймеры и график
 </script>
 </body>
 </html>
