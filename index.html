@@ -114,7 +114,15 @@
             <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
             <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
           </select>
-          <input id="tariffDeposit" class="input" type="number" placeholder="Сумма ($)" style="width:140px">
+          <select id="tariffAsset" class="select">
+            <option>BTC</option>
+            <option>ETH</option>
+            <option>BNB</option>
+            <option>SOL</option>
+            <option>TON</option>
+            <option>USDT</option>
+          </select>
+          <input id="tariffDeposit" class="input" type="number" placeholder="Сумма" style="width:140px">
           <button class="btn" id="startTariffBtn">Запустить тариф</button>
         </div>
         <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
@@ -131,7 +139,7 @@
       </section>
       <section class="grid2">
         <div class="card">
-          <div class="h2"balances">100000</div>
+          <div class="h2">Балансы</div>
           <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
         </div>
         <div class="card">
@@ -262,19 +270,21 @@ $('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable()
 // Запуск тарифа
 $('startTariffBtn').onclick = () => {
   const type = $('tariffSelect').value;
+  const asset = $('tariffAsset').value;
   const deposit = +$('tariffDeposit').value;
   const trf = tariffs[type];
   if (!state.logged) { $('tariffMsg').textContent = 'Войдите в кабинет.'; return; }
   if (deposit < trf.min || deposit > trf.max) {
     $('tariffMsg').textContent = `Сумма должна быть от ${trf.min} до ${trf.max} USD для этого тарифа.`; return;
   }
-  if (state.balances.USDT < deposit) {
-    $('tariffMsg').textContent = 'Недостаточно средств на балансе.'; return;
+  if (state.balances[asset] === undefined || state.balances[asset] < deposit) {
+    $('tariffMsg').textContent = 'Недостаточно средств на балансе выбранной монеты.'; return;
   }
-  state.balances.USDT -= deposit;
+  state.balances[asset] -= deposit;
   const newTariff = {
     id: Math.random().toString(36).slice(2),
     type,
+    asset,
     deposit,
     start: Date.now(),
     end: Date.now() + trf.days * 24*3600*1000,
@@ -282,7 +292,6 @@ $('startTariffBtn').onclick = () => {
     finished: false,
     profit: 0,
     tradesTimer: null,
-    // Число сделок: расчетное, 2 сделки в минуту
     totalTrades: Math.round(trf.days * 24 * 60 * 2),
     doneTrades: 0,
     trades: []
@@ -298,7 +307,7 @@ function renderTariffsList() {
     const trf = tariffs[t.type];
     const daysLeft = t.finished ? 0 : Math.max(0, Math.ceil((t.end - Date.now()) / (24*3600*1000)));
     return `<div class="tag" style="margin-bottom:2px;">
-      <b>${t.type}</b> | Сумма: $${t.deposit} | Доход: <b>$${t.profit.toFixed(2)}</b> | Доходность: ${Math.round(trf.yield*100)}% | 
+      <b>${t.type}</b> | Монета: ${t.asset} | Сумма: $${t.deposit} | Доход: <b>$${t.profit.toFixed(2)}</b> | Доходность: ${Math.round(trf.yield*100)}% | 
       ${t.finished ? `<span class="pnl-pos">Завершён. Итог: $${(t.deposit + t.profit).toFixed(2)}</span>` : `Осталось: ${daysLeft}д`}
       </div>`;
   }).join('');
@@ -325,7 +334,6 @@ function scheduleTariffTrades(tariff) {
       ? avgPnl + Math.abs((Math.random() - 0.5) * std)
       : -Math.abs((Math.random() - 0.5) * std * 0.7);
 
-    // Последняя сделка корректирует, чтобы не превысить целевую прибыль
     if (tariff.doneTrades === tariff.totalTrades - 1) {
       pnl = totalProfit - tariff.profit;
     }
@@ -333,10 +341,10 @@ function scheduleTariffTrades(tariff) {
     tariff.profit += pnl;
     const tradeObj = {
       ts: Date.now(),
-      symbol: 'BTC',
+      symbol: tariff.asset,
       side: Math.random() > .5 ? 'BUY' : 'SELL',
       qty: +(Math.random() * 0.01).toFixed(4),
-      price: state.prices['BTC'],
+      price: state.prices[tariff.asset],
       pnl,
       tariffId: tariff.id,
       tariffType: tariff.type
@@ -360,7 +368,7 @@ function scheduleTariffTrades(tariff) {
 function finishTariff(tariff) {
   if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
   tariff.finished = true;
-  state.balances.USDT += tariff.deposit + tariff.profit;
+  state.balances[tariff.asset] += tariff.deposit + tariff.profit;
   renderBalances();
   renderTariffsList();
   renderMyTariffsTable();
@@ -501,7 +509,7 @@ function renderMyTariffsTable() {
 
   let dealsHtml = '';
   state.tariffs.forEach(tariff=>{
-    dealsHtml += `<div style="margin-top:16px"><b>Тариф ${tariff.type}, сумма $${tariff.deposit} (${tariff.finished?'Завершён':'В работе'})</b></div>
+    dealsHtml += `<div style="margin-top:16px"><b>Тариф ${tariff.type}, монета ${tariff.asset}, сумма $${tariff.deposit} (${tariff.finished?'Завершён':'В работе'})</b></div>
       <table class="deal-list" style="width:100%"><thead>
         <tr><th>Время</th><th>Инстр.</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr>
       </thead><tbody>
