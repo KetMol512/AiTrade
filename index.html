@@ -215,9 +215,6 @@
 </div>
 
 <script>
-/* ... JS как в предыдущем файле, только убираем все надписи "демо" и тому подобное ... */
-/// (Оставлен полностью рабочий JS, просто удалены строки с "демо" и аналогичным текстом)
-
 const state = {
   logged: false,
   token: null,
@@ -261,6 +258,7 @@ function showTab(tab) {
 }
 $('tab-cabinet').onclick = ()=>showTab('cabinet');
 $('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
+
 // Запуск тарифа
 $('startTariffBtn').onclick = () => {
   const type = $('tariffSelect').value;
@@ -284,7 +282,8 @@ $('startTariffBtn').onclick = () => {
     finished: false,
     profit: 0,
     tradesTimer: null,
-    totalTrades: Math.round(trf.days * 5 * 24 * 60), // 5 сделок в минуту * 60 минут * X дней
+    // Число сделок: расчетное, 2 сделки в минуту
+    totalTrades: Math.round(trf.days * 24 * 60 * 2),
     doneTrades: 0,
     trades: []
   };
@@ -293,6 +292,7 @@ $('startTariffBtn').onclick = () => {
   scheduleTariffTrades(newTariff);
   $('tariffMsg').textContent = 'Тариф запущен!';
 };
+
 function renderTariffsList() {
   const list = state.tariffs.map(t => {
     const trf = tariffs[t.type];
@@ -306,25 +306,36 @@ function renderTariffsList() {
   $('tariffsListSection').style.display = state.tariffs.length ? '' : 'none';
 }
 
+// Сделки и кривая капитала (прибыльных больше!)
 function scheduleTariffTrades(tariff) {
   const trf = tariffs[tariff.type];
   const totalProfit = tariff.deposit * trf.yield;
   const avgPnl = totalProfit / tariff.totalTrades;
   tariff.doneTrades = 0;
   tariff.profit = 0;
+  if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
+
   tariff.tradesTimer = setInterval(() => {
     if (tariff.finished) return;
-    const std = avgPnl * 0.2;
-    let pnl = avgPnl + (Math.random()-0.5)*std;
+
+    // Вероятность прибыли 80%
+    let isProfit = Math.random() < 0.8;
+    let std = avgPnl * 0.7;
+    let pnl = isProfit
+      ? avgPnl + Math.abs((Math.random() - 0.5) * std)
+      : -Math.abs((Math.random() - 0.5) * std * 0.7);
+
+    // Последняя сделка корректирует, чтобы не превысить целевую прибыль
     if (tariff.doneTrades === tariff.totalTrades - 1) {
       pnl = totalProfit - tariff.profit;
     }
+
     tariff.profit += pnl;
     const tradeObj = {
       ts: Date.now(),
       symbol: 'BTC',
       side: Math.random() > .5 ? 'BUY' : 'SELL',
-      qty: +(Math.random()*0.01).toFixed(4),
+      qty: +(Math.random() * 0.01).toFixed(4),
       price: state.prices['BTC'],
       pnl,
       tariffId: tariff.id,
@@ -333,9 +344,9 @@ function scheduleTariffTrades(tariff) {
     tariff.trades.push(tradeObj);
     state.trades.unshift(tradeObj);
     const last = state.equity.length
-      ? state.equity[state.equity.length-1].e
+      ? state.equity[state.equity.length - 1].e
       : 10000;
-    state.equity.push({ts: tradeObj.ts, e: +(last + pnl).toFixed(2)});
+    state.equity.push({ ts: tradeObj.ts, e: +(last + pnl).toFixed(2) });
     drawChart(); renderTrades(); renderKPIs();
     tariff.doneTrades++;
     if (tariff.doneTrades >= tariff.totalTrades || Date.now() > tariff.end) {
@@ -343,8 +354,9 @@ function scheduleTariffTrades(tariff) {
     }
     renderTariffsList();
     renderMyTariffsTable();
-  }, 12000);
+  }, 30000); // 2 сделки в минуту (30 сек)
 }
+
 function finishTariff(tariff) {
   if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
   tariff.finished = true;
