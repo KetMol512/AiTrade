@@ -102,24 +102,10 @@
   </header>
   <main class="wrap" id="app">
     <div class="tabs">
-      <div class="tab active" id="tab-main">Главная</div>
-      <div class="tab" id="tab-tariff">Тарифы</div>
+      <div class="tab active" id="tab-cabinet">Кабинет</div>
       <div class="tab" id="tab-my-tariffs">Мои тарифы</div>
-      <div class="tab" id="tab-convert">Конвертация</div>
     </div>
-    <div id="page-main">
-      <section class="card">
-        <div class="h2">Балансы</div>
-        <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
-      </section>
-      <section class="card">
-        <div class="h2">Кривая капитала</div>
-        <div class="canvas-wrap" style="margin-top:10px; position:relative;">
-          <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
-        </div>
-      </section>
-    </div>
-    <div id="page-tariff" style="display:none;">
+    <div id="page-cabinet2">
       <section class="card" id="tariffSection">
         <div class="h2">Открыть новый тариф</div>
         <div class="row" style="margin-top:10px">
@@ -145,6 +131,46 @@
         <div class="h2">Ваши тарифы</div>
         <div id="tariffsList"></div>
       </section>
+      <section class="kpis">
+        <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
+        <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
+        <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
+        <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
+      </section>
+      <section class="grid2">
+        <div class="card">
+          <div class="h2">Балансы</div>
+          <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
+        </div>
+        <div class="card">
+          <div class="h2">Курсы (USD) — топ-10</div>
+          <div id="prices" class="muted" style="margin-top:6px">—</div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="row">
+          <div class="h2">Кривая капитала</div>
+        </div>
+        <div class="canvas-wrap" style="margin-top:10px; position:relative;">
+          <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
+        </div>
+      </section>
+      <section class="card">
+        <div class="row">
+          <div class="h2">Сделки (последние)</div>
+          <div class="right row">
+            <select id="symbolFilter" class="select">
+              <option value="">Все инструменты</option>
+              <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+            </select>
+            <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+          </div>
+        </div>
+        <table class="table" style="margin-top:6px">
+          <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
+          <tbody id="trades"></tbody>
+        </table>
+      </section>
     </div>
     <div id="page-my-tariffs" style="display:none;">
       <section class="card">
@@ -152,43 +178,12 @@
         <table class="tariff-table">
           <thead>
             <tr>
-              <th>Тип</th><th>Монета</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
+              <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
             </tr>
           </thead>
           <tbody id="myTariffsTable"></tbody>
         </table>
         <div id="myTariffsDeals"></div>
-      </section>
-    </div>
-    <div id="page-convert" style="display:none;">
-      <section class="card">
-        <div class="h2">Конвертация активов</div>
-        <div class="row" style="margin-bottom:10px">
-          <select id="convFrom" class="select">
-            <option>BTC</option>
-            <option>ETH</option>
-            <option>BNB</option>
-            <option>SOL</option>
-            <option>TON</option>
-            <option>USDT</option>
-            <option>USDC</option>
-            <option>XRP</option>
-          </select>
-          <span style="font-weight:bold">→</span>
-          <select id="convTo" class="select">
-            <option>BTC</option>
-            <option>ETH</option>
-            <option>BNB</option>
-            <option>SOL</option>
-            <option>TON</option>
-            <option>USDT</option>
-            <option>USDC</option>
-            <option>XRP</option>
-          </select>
-          <input id="convAmount" class="input" type="number" placeholder="Сумма" style="width:120px">
-          <button class="btn" id="convBtn">Конвертировать</button>
-        </div>
-        <div id="convInfo" class="muted"></div>
       </section>
     </div>
   </main>
@@ -228,9 +223,6 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-// --- ВСЁ JS внутри этого блока ---
-
 const state = {
   logged: false,
   token: null,
@@ -260,29 +252,22 @@ $('authLoginBtn').onclick = () => {
     $('cabinetPage').style.display = '';
     $('mainHeader').style.display = 'none';
     $('mainHeaderShow').style.display = '';
-    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('main');
+    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
   } else {
     $('authMsg').textContent = 'Неверный email или пароль!';
   }
 };
-
-// Вкладки
+// ----- /АВТОРИЗАЦИЯ -----
 function showTab(tab) {
-  $('tab-main').classList.toggle('active', tab === 'main');
-  $('tab-tariff').classList.toggle('active', tab === 'tariff');
+  $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
   $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
-  $('tab-convert').classList.toggle('active', tab === 'convert');
-  $('page-main').style.display = tab === 'main' ? '' : 'none';
-  $('page-tariff').style.display = tab === 'tariff' ? '' : 'none';
+  $('page-cabinet2').style.display = tab === 'cabinet' ? '' : 'none';
   $('page-my-tariffs').style.display = tab === 'my-tariffs' ? '' : 'none';
-  $('page-convert').style.display = tab === 'convert' ? '' : 'none';
 }
-$('tab-main').onclick = ()=>showTab('main');
-$('tab-tariff').onclick = ()=>{showTab('tariff');};
+$('tab-cabinet').onclick = ()=>showTab('cabinet');
 $('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
-$('tab-convert').onclick = ()=>{showTab('convert');};
 
-// Тарифы
+// Запуск тарифа
 $('startTariffBtn').onclick = () => {
   const type = $('tariffSelect').value;
   const asset = $('tariffAsset').value;
@@ -341,6 +326,8 @@ function scheduleTariffTrades(tariff) {
 
   tariff.tradesTimer = setInterval(() => {
     if (tariff.finished) return;
+
+    // Вероятность прибыли 80%
     let isProfit = Math.random() < 0.8;
     let std = avgPnl * 0.7;
     let pnl = isProfit
@@ -390,11 +377,11 @@ function renderBalances(){ $('balances').textContent = state.logged ? Object.ent
 function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
 function renderKPIs(){
   const last = state.equity[state.equity.length-1]?.e || 10000;
-  document.getElementById('kpiEquity')?.textContent = fmtUSD(last);
+  document.getElementById('kpiEquity').textContent = fmtUSD(last);
   const first30 = state.equity[Math.max(0, state.equity.length-30)]?.e || last;
   const pnl = last - first30;
-  document.getElementById('kpiPnl')?.innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  document.getElementById('kpiTrades')?.textContent = state.trades.length;
+  document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
+  document.getElementById('kpiTrades').textContent = state.trades.length;
 }
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
 function drawChart() {
@@ -464,14 +451,14 @@ $('equityChart').addEventListener('mousemove', (e) => {
 });
 $('equityChart').addEventListener('mouseleave', ()=>{ popup.style.display='none'; });
 function renderTrades(){
-  const filt = document.getElementById('symbolFilter')?.value;
+  const filt = document.getElementById('symbolFilter').value;
   const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
     const cls = t.pnl>=0?'pnl-pos':'pnl-neg';
     return `<tr><td>${new Date(t.ts).toLocaleString()}</td><td>${t.symbol}</td><td>${t.side}</td><td>${t.qty}</td><td>${t.price}</td><td class="${cls}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td></tr>`;
   }).join('');
-  if ($('trades')) $('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
+  document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
-document.getElementById('exportCsv')?.onclick=()=>{
+document.getElementById('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl','tariff'];
   const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl,t.tariffType||'']);
   const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
@@ -505,40 +492,11 @@ document.getElementById('wdSend').onclick=()=>{
   setTimeout(()=>close(modalWithdraw), 1200);
 };
 
-// Конвертация
-$('convBtn').onclick = () => {
-  const from = $('convFrom').value;
-  const to = $('convTo').value;
-  const amount = +$('convAmount').value;
-  if (from === to) {
-    $('convInfo').textContent = 'Выберите разные монеты для конвертации.'; return;
-  }
-  if (!amount || amount <= 0) {
-    $('convInfo').textContent = 'Введите сумму для конвертации.'; return;
-  }
-  if (state.balances[from] === undefined || state.balances[from] < amount) {
-    $('convInfo').textContent = 'Недостаточно средств на балансе для конвертации.'; return;
-  }
-  // Конвертация по ценам
-  const priceFrom = state.prices[from], priceTo = state.prices[to];
-  if (!priceFrom || !priceTo) {
-    $('convInfo').textContent = 'Ошибка получения цен монет.'; return;
-  }
-  // Получаем сумму в целевой монете
-  const usd = amount * priceFrom;
-  const toAmount = usd / priceTo;
-  state.balances[from] -= amount;
-  state.balances[to] = (state.balances[to] || 0) + toAmount;
-  renderBalances();
-  $('convInfo').innerHTML = `<span class="pnl-pos">Конвертировано! Получено ${toAmount.toFixed(6)} ${to}.</span>`;
-};
-
 function renderMyTariffsTable() {
   let tariffsRows = state.tariffs.map(t=>{
     const trf=tariffs[t.type];
     return `<tr>
       <td>${t.type}</td>
-      <td>${t.asset}</td>
       <td>${t.deposit}</td>
       <td>${Math.round(trf.yield*100)}%</td>
       <td>${t.profit.toFixed(2)}</td>
@@ -547,7 +505,7 @@ function renderMyTariffsTable() {
       <td>${t.finished?'<span class="pnl-pos">Завершён</span>':'<span class="muted">В работе</span>'}</td>
     </tr>`;
   }).join('');
-  $('myTariffsTable').innerHTML = tariffsRows || `<tr><td colspan="8" class="muted">Нет тарифов</td></tr>`;
+  $('myTariffsTable').innerHTML = tariffsRows || `<tr><td colspan="7" class="muted">Нет тарифов</td></tr>`;
 
   let dealsHtml = '';
   state.tariffs.forEach(tariff=>{
@@ -570,12 +528,10 @@ function renderMyTariffsTable() {
   $('myTariffsDeals').innerHTML = dealsHtml || '<div class="muted" style="margin-top:12px">Пока нет сделок по тарифам</div>';
 }
 seedEquity();
-showTab('main');
+showTab('cabinet');
 setInterval(()=>{
   drawChart(); renderTariffsList(); renderMyTariffsTable();
 }, 60000);
-
-}); // конец DOMContentLoaded
 </script>
 </body>
 </html>
