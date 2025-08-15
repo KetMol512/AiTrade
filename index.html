@@ -228,6 +228,7 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 const state = {
   logged: false,
   token: null,
@@ -262,7 +263,6 @@ $('authLoginBtn').onclick = () => {
     $('authMsg').textContent = 'Неверный email или пароль!';
   }
 };
-// ----- /АВТОРИЗАЦИЯ -----
 
 // Вкладки
 function showTab(tab) {
@@ -388,11 +388,11 @@ function renderBalances(){ $('balances').textContent = state.logged ? Object.ent
 function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
 function renderKPIs(){
   const last = state.equity[state.equity.length-1]?.e || 10000;
-  document.getElementById('kpiEquity').textContent = fmtUSD(last);
+  document.getElementById('kpiEquity')?.textContent = fmtUSD(last);
   const first30 = state.equity[Math.max(0, state.equity.length-30)]?.e || last;
   const pnl = last - first30;
-  document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  document.getElementById('kpiTrades').textContent = state.trades.length;
+  document.getElementById('kpiPnl')?.innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
+  document.getElementById('kpiTrades')?.textContent = state.trades.length;
 }
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
 function drawChart() {
@@ -572,6 +572,7 @@ showTab('main');
 setInterval(()=>{
   drawChart(); renderTariffsList(); renderMyTariffsTable();
 }, 60000);
+}); // <--- конец DOMContentLoaded
 </script>
 </body>
 </html>
