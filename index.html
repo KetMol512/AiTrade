@@ -64,9 +64,9 @@
 <body>
 <header style="display:none" id="mainHeader">
   <div class="wrap row">
-    <div class="h1">BoostEx — торговый кабинет (демо)</div>
+    <div class="h1">BoostEx — торговый кабинет</div>
     <div class="row right">
-      <span class="tag" id="statusTag">Оффлайн-симуляция</span>
+      <span class="tag" id="statusTag"></span>
       <button class="btn small" id="openDeposit">Депозит</button>
       <button class="btn small ghost" id="openWithdraw">Вывод</button>
     </div>
@@ -86,16 +86,15 @@
         <button class="btn" id="authLoginBtn">Войти</button>
         <span id="authMsg" class="muted"></span>
       </div>
-      <div class="muted" style="margin-top:16px;font-size:13px;">Демо: используйте <b>admin@example.com / admin123</b></div>
     </section>
   </main>
 </div>
 <div id="cabinetPage" style="display:none">
   <header id="mainHeaderShow">
     <div class="wrap row">
-      <div class="h1">BoostEx — торговый кабинет (демо)</div>
+      <div class="h1">BoostEx — торговый кабинет</div>
       <div class="row right">
-        <span class="tag" id="statusTag2">Оффлайн-симуляция</span>
+        <span class="tag" id="statusTag2"></span>
         <button class="btn small" id="openDeposit">Депозит</button>
         <button class="btn small ghost" id="openWithdraw">Вывод</button>
       </div>
@@ -194,7 +193,7 @@
     </div>
     <div id="depInfo" class="muted" style="margin-top:10px">Выберите актив и сгенерируйте адрес пополнения.</div>
     <div id="qrBox" class="card" style="margin-top:10px; display:none">
-      <div class="muted">QR-код (псевдо)</div>
+      <div class="muted">QR-код</div>
       <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid var(--border); border-radius:10px"></canvas>
     </div>
   </div>
@@ -210,12 +209,15 @@
       <input id="wdAmt" class="input" placeholder="Сумма" type="number" step="0.0001" style="width:120px">
       <button class="btn small" id="wdSend">Отправить заявку</button>
     </div>
-    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit (демо).</div>
+    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit.</div>
     <div id="wdMsg" style="margin-top:8px"></div>
   </div>
 </div>
 
 <script>
+/* ... JS как в предыдущем файле, только убираем все надписи "демо" и тому подобное ... */
+/// (Оставлен полностью рабочий JS, просто удалены строки с "демо" и аналогичным текстом)
+
 const state = {
   logged: false,
   token: null,
@@ -234,7 +236,6 @@ const tariffs = {
   balanced:    { min: 3000, max: 9000, days: 25, yield: 0.21 },
   aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
 };
-
 // ----- АВТОРИЗАЦИЯ -----
 $('authLoginBtn').onclick = () => {
   const email = $('authEmail').value.trim();
@@ -246,15 +247,12 @@ $('authLoginBtn').onclick = () => {
     $('cabinetPage').style.display = '';
     $('mainHeader').style.display = 'none';
     $('mainHeaderShow').style.display = '';
-    // Инициализация кабинета:
     renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
   } else {
     $('authMsg').textContent = 'Неверный email или пароль!';
   }
 };
 // ----- /АВТОРИЗАЦИЯ -----
-
-// Вкладки
 function showTab(tab) {
   $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
   $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
@@ -263,7 +261,6 @@ function showTab(tab) {
 }
 $('tab-cabinet').onclick = ()=>showTab('cabinet');
 $('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
-
 // Запуск тарифа
 $('startTariffBtn').onclick = () => {
   const type = $('tariffSelect').value;
@@ -296,8 +293,6 @@ $('startTariffBtn').onclick = () => {
   scheduleTariffTrades(newTariff);
   $('tariffMsg').textContent = 'Тариф запущен!';
 };
-
-// Список тарифов (в кабинете)
 function renderTariffsList() {
   const list = state.tariffs.map(t => {
     const trf = tariffs[t.type];
@@ -311,7 +306,6 @@ function renderTariffsList() {
   $('tariffsListSection').style.display = state.tariffs.length ? '' : 'none';
 }
 
-// Сделки и кривая капитала
 function scheduleTariffTrades(tariff) {
   const trf = tariffs[tariff.type];
   const totalProfit = tariff.deposit * trf.yield;
@@ -337,8 +331,7 @@ function scheduleTariffTrades(tariff) {
       tariffType: tariff.type
     };
     tariff.trades.push(tradeObj);
-    state.trades.unshift(tradeObj); // В общий список
-    // Капитал: увеличиваем сразу по каждой сделке
+    state.trades.unshift(tradeObj);
     const last = state.equity.length
       ? state.equity[state.equity.length-1].e
       : 10000;
@@ -350,9 +343,8 @@ function scheduleTariffTrades(tariff) {
     }
     renderTariffsList();
     renderMyTariffsTable();
-  }, 12000); // 5 сделок в минуту = 12 секунд
+  }, 12000);
 }
-
 function finishTariff(tariff) {
   if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
   tariff.finished = true;
@@ -361,8 +353,6 @@ function finishTariff(tariff) {
   renderTariffsList();
   renderMyTariffsTable();
 }
-
-// Обновление KPI
 function renderBalances(){ $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k,v])=>`${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.'; }
 function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
 function renderKPIs(){
@@ -373,18 +363,12 @@ function renderKPIs(){
   document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
   document.getElementById('kpiTrades').textContent = state.trades.length;
 }
-
-// Стартовая генерация капитала
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
-
-// График капитала с метками сделок
 function drawChart() {
   const cvs = document.getElementById('equityChart');
   const ctx = cvs.getContext('2d');
   const pad = 36, w = cvs.width - pad * 2, h = cvs.height - pad * 2;
   ctx.clearRect(0, 0, cvs.width, cvs.height);
-
-  // Кривая капитала
   const ys = state.equity.map(p => p.e), minY = Math.min(...ys), maxY = Math.max(...ys);
   const sx = i => pad + (i * (w / (state.equity.length - 1)));
   const sy = v => pad + h - ((v - minY) / (maxY - minY)) * h;
@@ -397,8 +381,6 @@ function drawChart() {
   ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
   ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif';
   ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
-
-  // Метки сделок (последние 100)
   const maxMarkers = 100;
   const tradesMarked = state.trades.slice(0, maxMarkers).reverse();
   tradesMarked.forEach((trade, i) => {
@@ -415,8 +397,6 @@ function drawChart() {
     trade._chart_y = y;
   });
 }
-
-// Popup для сделок на графике
 const popup = document.createElement('div');
 popup.style.position = 'absolute'; popup.style.display = 'none';
 popup.style.background = '#0f172a'; popup.style.color = '#e5e7eb';
@@ -424,7 +404,6 @@ popup.style.padding = '8px 14px'; popup.style.borderRadius = '10px';
 popup.style.boxShadow = '0 2px 12px #0008'; popup.style.pointerEvents = 'none';
 popup.style.zIndex = 50;
 document.body.appendChild(popup);
-
 $('equityChart').addEventListener('mousemove', (e) => {
   const rect = $('equityChart').getBoundingClientRect();
   const mx = e.clientX - rect.left;
@@ -451,8 +430,6 @@ $('equityChart').addEventListener('mousemove', (e) => {
   }
 });
 $('equityChart').addEventListener('mouseleave', ()=>{ popup.style.display='none'; });
-
-// Сделки таблица
 function renderTrades(){
   const filt = document.getElementById('symbolFilter').value;
   const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
@@ -461,8 +438,6 @@ function renderTrades(){
   }).join('');
   document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
-
-// CSV
 document.getElementById('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl','tariff'];
   const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl,t.tariffType||'']);
@@ -470,8 +445,6 @@ document.getElementById('exportCsv').onclick=()=>{
   const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
 };
-
-// Модалки депозит/вывод
 const modalDeposit=document.getElementById('modalDeposit'), modalWithdraw=document.getElementById('modalWithdraw');
 const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
 document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close(modalDeposit));
@@ -495,11 +468,10 @@ document.getElementById('wdSend').onclick=()=>{
   const asset=document.getElementById('wdAsset').value, addr=document.getElementById('wdAddr').value.trim(), amt=+((document.getElementById('wdAmt').value)||0);
   if(!addr || !amt){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
   if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
-  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending (демо).</span>';
+  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
   setTimeout(()=>close(modalWithdraw), 1200);
 };
 
-// --- Вкладка "Мои тарифы" ---
 function renderMyTariffsTable() {
   let tariffsRows = state.tariffs.map(t=>{
     const trf=tariffs[t.type];
@@ -515,7 +487,6 @@ function renderMyTariffsTable() {
   }).join('');
   $('myTariffsTable').innerHTML = tariffsRows || `<tr><td colspan="7" class="muted">Нет тарифов</td></tr>`;
 
-  // Сделки по всем тарифам
   let dealsHtml = '';
   state.tariffs.forEach(tariff=>{
     dealsHtml += `<div style="margin-top:16px"><b>Тариф ${tariff.type}, сумма $${tariff.deposit} (${tariff.finished?'Завершён':'В работе'})</b></div>
@@ -536,14 +507,11 @@ function renderMyTariffsTable() {
   });
   $('myTariffsDeals').innerHTML = dealsHtml || '<div class="muted" style="margin-top:12px">Пока нет сделок по тарифам</div>';
 }
-
-// Инициализация
 seedEquity();
 showTab('cabinet');
-
 setInterval(()=>{
   drawChart(); renderTariffsList(); renderMyTariffsTable();
-}, 60000); // обновляем раз в минуту таймеры и график
+}, 60000);
 </script>
 </body>
 </html>
