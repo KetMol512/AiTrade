@@ -38,6 +38,18 @@
   .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
   .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
   .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
+  .kpi .val{font-size:22px; font-weight:800}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .table{width:100%; border-collapse:collapse}
+  .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
+  .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
+  .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
+  .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
+  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
+  .modal.open{display:flex}
+  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
   .tabs{display:flex; gap:8px; margin-bottom:18px;}
   .tab{padding:8px 22px; border-radius:10px 10px 0 0; background:var(--soft); color:var(--text); cursor:pointer; font-weight:600; border:1px solid var(--border); border-bottom:none;}
   .tab.active{background:var(--brand); color:#041018;}
@@ -46,14 +58,11 @@
   .deal-list{font-size:13px; border-top:1px solid var(--border); margin-top:8px;}
   .deal-list th, .deal-list td{padding:6px 8px;}
   .deal-pnl-pos{color:var(--good);} .deal-pnl-neg{color:var(--bad);}
-  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
-  .modal.open{display:flex}
-  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
   @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
-<header>
+<header style="display:none" id="mainHeader">
   <div class="wrap row">
     <div class="h1">BoostEx — торговый кабинет (демо)</div>
     <div class="row right">
@@ -63,105 +72,115 @@
     </div>
   </div>
 </header>
-
-<div class="row" style="margin-top:20px; justify-content:center;">
-  <script async src="https://telegram.org/js/telegram-widget.js?7"
-          data-telegram-login="BoostEx_Trade_Bot"
-          data-size="large" data-radius="10" data-auth-url="https://yourserver.com/auth/telegram">
-  </script>
+<div id="authPage" style="display:block">
+  <main class="wrap" style="max-width:400px; margin-top:50px;">
+    <section class="card">
+      <div class="h2" style="margin-bottom:12px;">Регистрация / Вход</div>
+      <div class="row" style="margin-bottom:12px;">
+        <input id="authEmail" class="input" style="min-width:220px" placeholder="email" />
+      </div>
+      <div class="row" style="margin-bottom:12px;">
+        <input id="authPass" class="input" style="min-width:220px" placeholder="пароль" type="password" />
+      </div>
+      <div class="row">
+        <button class="btn" id="authLoginBtn">Войти</button>
+        <span id="authMsg" class="muted"></span>
+      </div>
+      <div class="muted" style="margin-top:16px;font-size:13px;">Демо: используйте <b>admin@example.com / admin123</b></div>
+    </section>
+  </main>
 </div>
-
-<main class="wrap" id="app">
-  <div class="tabs">
-    <div class="tab active" id="tab-cabinet">Кабинет</div>
-    <div class="tab" id="tab-my-tariffs">Мои тарифы</div>
-  </div>
-  <div id="page-cabinet">
-    <section class="card">
-      <div class="row">
-        <div class="h2">Вход</div>
-        <span class="tag">Гостевой доступ</span>
+<div id="cabinetPage" style="display:none">
+  <header id="mainHeaderShow">
+    <div class="wrap row">
+      <div class="h1">BoostEx — торговый кабинет (демо)</div>
+      <div class="row right">
+        <span class="tag" id="statusTag2">Оффлайн-симуляция</span>
+        <button class="btn small" id="openDeposit">Депозит</button>
+        <button class="btn small ghost" id="openWithdraw">Вывод</button>
       </div>
-      <div class="row" style="margin-top:8px">
-        <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
-        <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
-        <button class="btn" id="login">Войти</button>
-        <span id="loginMsg" class="muted"></span>
-      </div>
-    </section>
-    <section class="card" id="tariffSection">
-      <div class="h2">Открыть новый тариф</div>
-      <div class="row" style="margin-top:10px">
-        <select id="tariffSelect" class="select">
-          <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
-          <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
-          <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
-        </select>
-        <input id="tariffDeposit" class="input" type="number" placeholder="Сумма ($)" style="width:140px">
-        <button class="btn" id="startTariffBtn">Запустить тариф</button>
-      </div>
-      <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
-    </section>
-    <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
-      <div class="h2">Ваши тарифы</div>
-      <div id="tariffsList"></div>
-    </section>
-    <section class="kpis">
-      <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
-      <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
-      <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
-      <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
-    </section>
-    <section class="grid2">
-      <div class="card">
-        <div class="h2">Балансы</div>
-        <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
-      </div>
-      <div class="card">
-        <div class="h2">Курсы (USD) — топ-10</div>
-        <div id="prices" class="muted" style="margin-top:6px">—</div>
-      </div>
-    </section>
-    <section class="card">
-      <div class="row">
-        <div class="h2">Кривая капитала</div>
-      </div>
-      <div class="canvas-wrap" style="margin-top:10px; position:relative;">
-        <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
-      </div>
-    </section>
-    <section class="card">
-      <div class="row">
-        <div class="h2">Сделки (последние)</div>
-        <div class="right row">
-          <select id="symbolFilter" class="select">
-            <option value="">Все инструменты</option>
-            <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+    </div>
+  </header>
+  <main class="wrap" id="app">
+    <div class="tabs">
+      <div class="tab active" id="tab-cabinet">Кабинет</div>
+      <div class="tab" id="tab-my-tariffs">Мои тарифы</div>
+    </div>
+    <div id="page-cabinet2">
+      <section class="card" id="tariffSection">
+        <div class="h2">Открыть новый тариф</div>
+        <div class="row" style="margin-top:10px">
+          <select id="tariffSelect" class="select">
+            <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
+            <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
+            <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
           </select>
-          <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+          <input id="tariffDeposit" class="input" type="number" placeholder="Сумма ($)" style="width:140px">
+          <button class="btn" id="startTariffBtn">Запустить тариф</button>
         </div>
-      </div>
-      <table class="table" style="margin-top:6px">
-        <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
-        <tbody id="trades"></tbody>
-      </table>
-    </section>
-  </div>
-  <div id="page-my-tariffs" style="display:none;">
-    <section class="card">
-      <div class="h2">Открытые и завершённые тарифы</div>
-      <table class="tariff-table">
-        <thead>
-          <tr>
-            <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
-          </tr>
-        </thead>
-        <tbody id="myTariffsTable"></tbody>
-      </table>
-      <div id="myTariffsDeals"></div>
-    </section>
-  </div>
-</main>
+        <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
+      </section>
+      <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
+        <div class="h2">Ваши тарифы</div>
+        <div id="tariffsList"></div>
+      </section>
+      <section class="kpis">
+        <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
+        <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
+        <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
+        <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
+      </section>
+      <section class="grid2">
+        <div class="card">
+          <div class="h2">Балансы</div>
+          <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
+        </div>
+        <div class="card">
+          <div class="h2">Курсы (USD) — топ-10</div>
+          <div id="prices" class="muted" style="margin-top:6px">—</div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="row">
+          <div class="h2">Кривая капитала</div>
+        </div>
+        <div class="canvas-wrap" style="margin-top:10px; position:relative;">
+          <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
+        </div>
+      </section>
+      <section class="card">
+        <div class="row">
+          <div class="h2">Сделки (последние)</div>
+          <div class="right row">
+            <select id="symbolFilter" class="select">
+              <option value="">Все инструменты</option>
+              <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+            </select>
+            <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+          </div>
+        </div>
+        <table class="table" style="margin-top:6px">
+          <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
+          <tbody id="trades"></tbody>
+        </table>
+      </section>
+    </div>
+    <div id="page-my-tariffs" style="display:none;">
+      <section class="card">
+        <div class="h2">Открытые и завершённые тарифы</div>
+        <table class="tariff-table">
+          <thead>
+            <tr>
+              <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="myTariffsTable"></tbody>
+        </table>
+        <div id="myTariffsDeals"></div>
+      </section>
+    </div>
+  </main>
+</div>
 
 <!-- Модалки депозит/вывод (display:none по умолчанию) -->
 <div class="modal" id="modalDeposit">
@@ -216,25 +235,34 @@ const tariffs = {
   aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
 };
 
+// ----- АВТОРИЗАЦИЯ -----
+$('authLoginBtn').onclick = () => {
+  const email = $('authEmail').value.trim();
+  const pass = $('authPass').value.trim();
+  if(email==='admin@example.com' && pass==='admin123') {
+    state.logged = true; state.token = Math.random().toString(36).slice(2);
+    $('authMsg').textContent = '';
+    $('authPage').style.display = 'none';
+    $('cabinetPage').style.display = '';
+    $('mainHeader').style.display = 'none';
+    $('mainHeaderShow').style.display = '';
+    // Инициализация кабинета:
+    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
+  } else {
+    $('authMsg').textContent = 'Неверный email или пароль!';
+  }
+};
+// ----- /АВТОРИЗАЦИЯ -----
+
 // Вкладки
 function showTab(tab) {
   $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
   $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
-  $('page-cabinet').style.display = tab === 'cabinet' ? '' : 'none';
+  $('page-cabinet2').style.display = tab === 'cabinet' ? '' : 'none';
   $('page-my-tariffs').style.display = tab === 'my-tariffs' ? '' : 'none';
 }
 $('tab-cabinet').onclick = ()=>showTab('cabinet');
 $('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
-
-// Вход
-$('login').onclick = () => {
-  const email = $('email').value.trim(), pass = $('pass').value.trim();
-  if(email==='admin@example.com' && pass==='admin123'){
-    state.logged = true; state.token = Math.random().toString(36).slice(2);
-    $('loginMsg').textContent = 'Вход выполнен';
-    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs();
-  } else {$('loginMsg').textContent='Неверный логин/пароль';}
-};
 
 // Запуск тарифа
 $('startTariffBtn').onclick = () => {
@@ -510,7 +538,7 @@ function renderMyTariffsTable() {
 }
 
 // Инициализация
-seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs(); renderTariffsList();
+seedEquity();
 showTab('cabinet');
 
 setInterval(()=>{
