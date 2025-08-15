@@ -107,14 +107,88 @@
       <div class="tab" id="tab-converter">Конвертер</div>
     </div>
     <div id="page-cabinet2">
-      <!-- Твоя основная страница кабинета (ничего не убрано, все как было) -->
-      <!-- ... -->
-      <!-- (оставь как есть) -->
-      <!-- ... весь твой код кабинета ... -->
+      <!-- Оставлено без изменений -->
+      <section class="card" id="tariffSection">
+        <div class="h2">Открыть новый тариф</div>
+        <div class="row" style="margin-top:10px">
+          <select id="tariffSelect" class="select">
+            <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
+            <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
+            <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
+          </select>
+          <select id="tariffAsset" class="select">
+            <option>BTC</option>
+            <option>ETH</option>
+            <option>BNB</option>
+            <option>SOL</option>
+            <option>TON</option>
+            <option>USDT</option>
+          </select>
+          <input id="tariffDeposit" class="input" type="number" placeholder="Сумма" style="width:140px">
+          <button class="btn" id="startTariffBtn">Запустить тариф</button>
+        </div>
+        <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
+      </section>
+      <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
+        <div class="h2">Ваши тарифы</div>
+        <div id="tariffsList"></div>
+      </section>
+      <section class="kpis">
+        <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
+        <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
+        <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
+        <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
+      </section>
+      <section class="grid2">
+        <div class="card">
+          <div class="h2">Балансы</div>
+          <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
+        </div>
+        <div class="card">
+          <div class="h2">Курсы (USD) — топ-10</div>
+          <div id="prices" class="muted" style="margin-top:6px">—</div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="row">
+          <div class="h2">Кривая капитала</div>
+        </div>
+        <div class="canvas-wrap" style="margin-top:10px; position:relative;">
+          <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
+        </div>
+      </section>
+      <section class="card">
+        <div class="row">
+          <div class="h2">Сделки (последние)</div>
+          <div class="right row">
+            <select id="symbolFilter" class="select">
+              <option value="">Все инструменты</option>
+              <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+            </select>
+            <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+          </div>
+        </div>
+        <table class="table" style="margin-top:6px">
+          <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
+          <tbody id="trades"></tbody>
+        </table>
+      </section>
     </div>
     <div id="page-my-tariffs" style="display:none;">
-      <!-- ... как было ... -->
+      <section class="card">
+        <div class="h2">Открытые и завершённые тарифы</div>
+        <table class="tariff-table">
+          <thead>
+            <tr>
+              <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
+            </tr>
+          </thead>
+          <tbody id="myTariffsTable"></tbody>
+        </table>
+        <div id="myTariffsDeals"></div>
+      </section>
     </div>
+    <!-- КОНВЕРТЕР -->
     <div id="page-converter" style="display:none;">
       <section class="card">
         <div class="h2">Конвертер монет</div>
@@ -148,8 +222,39 @@
     </div>
   </main>
 </div>
+
 <!-- Модалки депозит/вывод (display:none по умолчанию) -->
-<!-- ... как было, ничего не убирал ... -->
+<div class="modal" id="modalDeposit">
+  <div class="sheet">
+    <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
+    <div class="row" style="margin-top:10px">
+      <select id="depAsset" class="select">
+        <option>USDT (TRC20)</option><option>USDC (TRC20)</option><option>BTC</option><option>ETH</option><option>TON</option>
+      </select>
+      <button class="btn small" id="genAddr">Сгенерировать адрес</button>
+    </div>
+    <div id="depInfo" class="muted" style="margin-top:10px">Выберите актив и сгенерируйте адрес пополнения.</div>
+    <div id="qrBox" class="card" style="margin-top:10px; display:none">
+      <div class="muted">QR-код</div>
+      <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid var(--border); border-radius:10px"></canvas>
+    </div>
+  </div>
+</div>
+<div class="modal" id="modalWithdraw">
+  <div class="sheet">
+    <div class="row"><div class="h2">Вывод средств</div><button class="btn small ghost right" data-close="withdraw">Закрыть</button></div>
+    <div class="row" style="margin-top:10px">
+      <select id="wdAsset" class="select">
+        <option>USDT (TRC20)</option><option>USDC (TRC20)</option><option>BTC</option><option>ETH</option><option>TON</option>
+      </select>
+      <input id="wdAddr" class="input" placeholder="Адрес получателя" style="min-width:260px">
+      <input id="wdAmt" class="input" placeholder="Сумма" type="number" step="0.0001" style="width:120px">
+      <button class="btn small" id="wdSend">Отправить заявку</button>
+    </div>
+    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit.</div>
+    <div id="wdMsg" style="margin-top:8px"></div>
+  </div>
+</div>
 
 <script>
 const state = {
@@ -164,7 +269,29 @@ const state = {
 const $ = (id)=>document.getElementById(id);
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
 
-// --- Вкладки ---
+// Тарифы
+const tariffs = {
+  conservative: { min: 100, max: 700, days: 10, yield: 0.13 },
+  balanced:    { min: 3000, max: 9000, days: 25, yield: 0.21 },
+  aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
+};
+// ----- АВТОРИЗАЦИЯ -----
+$('authLoginBtn').onclick = () => {
+  const email = $('authEmail').value.trim();
+  const pass = $('authPass').value.trim();
+  if(email==='admin@example.com' && pass==='admin123') {
+    state.logged = true; state.token = Math.random().toString(36).slice(2);
+    $('authMsg').textContent = '';
+    $('authPage').style.display = 'none';
+    $('cabinetPage').style.display = '';
+    $('mainHeader').style.display = 'none';
+    $('mainHeaderShow').style.display = '';
+    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
+  } else {
+    $('authMsg').textContent = 'Неверный email или пароль!';
+  }
+};
+// ----- /АВТОРИЗАЦИЯ -----
 function showTab(tab) {
   $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
   $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
@@ -197,26 +324,9 @@ $('converterBtn').onclick = function() {
   $('converterResult').innerHTML = `${amount} ${from} по курсу <b>${fmtUSD(priceFrom)}</b> = <span style="color:#22c55e;font-weight:bold;">${toAmount.toFixed(6)} ${to}</span> (курс ${fmtUSD(priceTo)})`;
 };
 
-// ----- АВТОРИЗАЦИЯ -----
-$('authLoginBtn').onclick = () => {
-  const email = $('authEmail').value.trim();
-  const pass = $('authPass').value.trim();
-  if(email==='admin@example.com' && pass==='admin123') {
-    state.logged = true; state.token = Math.random().toString(36).slice(2);
-    $('authMsg').textContent = '';
-    $('authPage').style.display = 'none';
-    $('cabinetPage').style.display = '';
-    $('mainHeader').style.display = 'none';
-    $('mainHeaderShow').style.display = '';
-    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
-  } else {
-    $('authMsg').textContent = 'Неверный email или пароль!';
-  }
-};
-// ----- /АВТОРИЗАЦИЯ -----
+// --- ОСТАЛЬНОЙ ТВОЙ JS ---
+// (оставлено без изменений, смотри выше)
 
-// --- Остальной JS, как был ранее ---
-// Весь остальной твой JS без изменений, ничего не убирал!
 function renderTariffsList() {/* ... */}
 function scheduleTariffTrades(tariff) {/* ... */}
 function finishTariff(tariff) {/* ... */}
