@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BoostEx Trade — Торговый кабинет</title>
+<title>BoostEx Trade — Торговый кабинет </title>
 <style>
   :root{
     --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
@@ -50,146 +50,117 @@
   .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
   .modal.open{display:flex}
   .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
-  .tabs{display:flex; gap:8px; margin-bottom:18px;}
-  .tab{padding:8px 22px; border-radius:10px 10px 0 0; background:var(--soft); color:var(--text); cursor:pointer; font-weight:600; border:1px solid var(--border); border-bottom:none;}
-  .tab.active{background:var(--brand); color:#041018;}
-  .tariff-table{width:100%; border-collapse:collapse; margin-bottom:16px;}
-  .tariff-table th, .tariff-table td{padding:8px 10px; border-bottom:1px solid var(--border); font-size:13px;}
-  .deal-list{font-size:13px; border-top:1px solid var(--border); margin-top:8px;}
-  .deal-list th, .deal-list td{padding:6px 8px;}
-  .deal-pnl-pos{color:var(--good);} .deal-pnl-neg{color:var(--bad);}
   @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
-<header style="display:none" id="mainHeader">
+<header>
   <div class="wrap row">
-    <div class="h1">BoostEx — торговый кабинет</div>
+    <div class="h1">BoostEx — торговый кабинет (демо)</div>
     <div class="row right">
-      <span class="tag" id="statusTag"></span>
+      <span class="tag" id="statusTag">Оффлайн-симуляция</span>
       <button class="btn small" id="openDeposit">Депозит</button>
       <button class="btn small ghost" id="openWithdraw">Вывод</button>
     </div>
   </div>
 </header>
-<div id="authPage" style="display:block">
-  <main class="wrap" style="max-width:400px; margin-top:50px;">
-    <section class="card">
-      <div class="h2" style="margin-bottom:12px;">Регистрация / Вход</div>
-      <div class="row" style="margin-bottom:12px;">
-        <input id="authEmail" class="input" style="min-width:220px" placeholder="email" />
-      </div>
-      <div class="row" style="margin-bottom:12px;">
-        <input id="authPass" class="input" style="min-width:220px" placeholder="пароль" type="password" />
-      </div>
-      <div class="row">
-        <button class="btn" id="authLoginBtn">Войти</button>
-        <span id="authMsg" class="muted"></span>
-      </div>
-    </section>
-  </main>
-</div>
-<div id="cabinetPage" style="display:none">
-  <header id="mainHeaderShow">
-    <div class="wrap row">
-      <div class="h1">BoostEx — торговый кабинет</div>
-      <div class="row right">
-        <span class="tag" id="statusTag2"></span>
-        <button class="btn small" id="openDeposit">Депозит</button>
-        <button class="btn small ghost" id="openWithdraw">Вывод</button>
-      </div>
-    </div>
-  </header>
-  <main class="wrap" id="app">
-    <div class="tabs">
-      <div class="tab active" id="tab-cabinet">Кабинет</div>
-      <div class="tab" id="tab-my-tariffs">Мои тарифы</div>
-    </div>
-    <div id="page-cabinet2">
-      <section class="card" id="tariffSection">
-        <div class="h2">Открыть новый тариф</div>
-        <div class="row" style="margin-top:10px">
-          <select id="tariffSelect" class="select">
-            <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
-            <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
-            <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
-          </select>
-          <select id="tariffAsset" class="select">
-            <option>BTC</option>
-            <option>ETH</option>
-            <option>BNB</option>
-            <option>SOL</option>
-            <option>TON</option>
-            <option>USDT</option>
-          </select>
-          <input id="tariffDeposit" class="input" type="number" placeholder="Сумма" style="width:140px">
-          <button class="btn" id="startTariffBtn">Запустить тариф</button>
-        </div>
-        <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
-      </section>
-      <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
-        <div class="h2">Ваши тарифы</div>
-        <div id="tariffsList"></div>
-      </section>
-      <section class="kpis">
-        <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
-        <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
-        <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
-        <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
-      </section>
-      <section class="grid2">
-        <div class="card">
-          <div class="h2">Балансы</div>
-          <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
-        </div>
-        <div class="card">
-          <div class="h2">Курсы (USD) — топ-10</div>
-          <div id="prices" class="muted" style="margin-top:6px">—</div>
-        </div>
-      </section>
-      <section class="card">
-        <div class="row">
-          <div class="h2">Кривая капитала</div>
-        </div>
-        <div class="canvas-wrap" style="margin-top:10px; position:relative;">
-          <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
-        </div>
-      </section>
-      <section class="card">
-        <div class="row">
-          <div class="h2">Сделки (последние)</div>
-          <div class="right row">
-            <select id="symbolFilter" class="select">
-              <option value="">Все инструменты</option>
-              <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
-            </select>
-            <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
-          </div>
-        </div>
-        <table class="table" style="margin-top:6px">
-          <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
-          <tbody id="trades"></tbody>
-        </table>
-      </section>
-    </div>
-    <div id="page-my-tariffs" style="display:none;">
-      <section class="card">
-        <div class="h2">Открытые и завершённые тарифы</div>
-        <table class="tariff-table">
-          <thead>
-            <tr>
-              <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
-            </tr>
-          </thead>
-          <tbody id="myTariffsTable"></tbody>
-        </table>
-        <div id="myTariffsDeals"></div>
-      </section>
-    </div>
-  </main>
+
+<div class="row" style="margin-top:20px; justify-content:center;">
+  <script async src="https://telegram.org/js/telegram-widget.js?7"
+          data-telegram-login="BoostEx_Trade_Bot"
+          data-size="large" data-radius="10" data-auth-url="https://yourserver.com/auth/telegram">
+  </script>
 </div>
 
-<!-- Модалки депозит/вывод (display:none по умолчанию) -->
+<main class="wrap" id="app">
+  <section class="card">
+    <div class="row">
+      <div class="h2">Вход</div>
+      <span class="tag">Гостевой доступ</span>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
+      <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
+      <button class="btn" id="login">Войти</button>
+      <span id="loginMsg" class="muted"></span>
+    </div>
+  </section>
+
+  <!-- Тарифная секция -->
+  <section class="card" id="tariffSection">
+    <div class="h2">Выбор тарифа</div>
+    <div class="row" style="margin-top:10px">
+      <select id="tariffSelect" class="select">
+        <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
+        <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
+        <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
+      </select>
+      <input id="tariffDeposit" class="input" type="number" placeholder="Сумма ($)" style="width:140px">
+      <button class="btn" id="startTariffBtn">Запустить тариф</button>
+    </div>
+    <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
+  </section>
+
+  <!-- Активный тариф -->
+  <section class="card" id="activeTariffSection" style="display:none">
+    <div class="h2">Активный тариф</div>
+    <div id="activeTariffInfo" class="muted" style="margin-top:8px"></div>
+    <div id="tariffTimer" style="margin-top:6px"></div>
+  </section>
+
+  <section class="kpis">
+    <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
+    <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
+    <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
+    <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card">
+      <div class="h2">Балансы</div>
+      <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
+    </div>
+    <div class="card">
+      <div class="h2">Курсы (USD) — топ-10</div>
+      <div id="prices" class="muted" style="margin-top:6px">—</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <div class="h2">Кривая капитала</div>
+      <div class="right row">
+        <select id="profile" class="select">
+          <option value="conservative">Conservative (15–25%/м)</option>
+          <option value="balanced" selected>Balanced (25–35%/м)</option>
+          <option value="aggressive">Aggressive (35–45%/м)</option>
+        </select>
+        <button class="btn small" id="startSim">Старт</button>
+        <button class="btn small ghost" id="stopSim">Пауза</button>
+        <button class="btn small ghost" id="resetSim">Сброс</button>
+      </div>
+    </div>
+    <div class="canvas-wrap" style="margin-top:10px"><canvas id="equityChart" width="1000" height="280"></canvas></div>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <div class="h2">Сделки (последние)</div>
+      <div class="right row">
+        <select id="symbolFilter" class="select">
+          <option value="">Все инструменты</option>
+          <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
+        </select>
+        <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+      </div>
+    </div>
+    <table class="table" style="margin-top:6px">
+      <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
+      <tbody id="trades"></tbody>
+    </table>
+  </section>
+</main>
+
 <div class="modal" id="modalDeposit">
   <div class="sheet">
     <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
@@ -201,11 +172,12 @@
     </div>
     <div id="depInfo" class="muted" style="margin-top:10px">Выберите актив и сгенерируйте адрес пополнения.</div>
     <div id="qrBox" class="card" style="margin-top:10px; display:none">
-      <div class="muted">QR-код</div>
+      <div class="muted">QR-код (псевдо)</div>
       <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid var(--border); border-radius:10px"></canvas>
     </div>
   </div>
 </div>
+
 <div class="modal" id="modalWithdraw">
   <div class="sheet">
     <div class="row"><div class="h2">Вывод средств</div><button class="btn small ghost right" data-close="withdraw">Закрыть</button></div>
@@ -217,7 +189,7 @@
       <input id="wdAmt" class="input" placeholder="Сумма" type="number" step="0.0001" style="width:120px">
       <button class="btn small" id="wdSend">Отправить заявку</button>
     </div>
-    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit.</div>
+    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit (демо).</div>
     <div id="wdMsg" style="margin-top:8px"></div>
   </div>
 </div>
@@ -226,11 +198,10 @@
 const state = {
   logged: false,
   token: null,
-  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:120000, USDC:0, XRP:280 },
+  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:640, USDC:0, XRP:280 },
   prices:   { BTC:65000, ETH:3400, BNB:580, LTC:75,  SOL:155, TON:6,  TRX:0.12, USDT:1,  USDC:1,  XRP:0.55 },
-  equity: [], trades: [],
-  simTimer: null, profile: 'balanced',
-  tariffs: []
+  equity: [], trades: [], simTimer: null, profile: 'balanced',
+  tariff: null
 };
 const $ = (id)=>document.getElementById(id);
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
@@ -241,50 +212,31 @@ const tariffs = {
   balanced:    { min: 3000, max: 9000, days: 25, yield: 0.21 },
   aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
 };
-// ----- АВТОРИЗАЦИЯ -----
-$('authLoginBtn').onclick = () => {
-  const email = $('authEmail').value.trim();
-  const pass = $('authPass').value.trim();
-  if(email==='admin@example.com' && pass==='admin123') {
-    state.logged = true; state.token = Math.random().toString(36).slice(2);
-    $('authMsg').textContent = '';
-    $('authPage').style.display = 'none';
-    $('cabinetPage').style.display = '';
-    $('mainHeader').style.display = 'none';
-    $('mainHeaderShow').style.display = '';
-    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
-  } else {
-    $('authMsg').textContent = 'Неверный email или пароль!';
-  }
-};
-// ----- /АВТОРИЗАЦИЯ -----
-function showTab(tab) {
-  $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
-  $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
-  $('page-cabinet2').style.display = tab === 'cabinet' ? '' : 'none';
-  $('page-my-tariffs').style.display = tab === 'my-tariffs' ? '' : 'none';
-}
-$('tab-cabinet').onclick = ()=>showTab('cabinet');
-$('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
 
-// Запуск тарифа
+$('login').onclick = () => {
+  const email = $('email').value.trim(), pass = $('pass').value.trim();
+  if(email==='admin@example.com' && pass==='admin123'){
+    state.logged = true; state.token = Math.random().toString(36).slice(2);
+    $('loginMsg').textContent = 'Вход выполнен';
+    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs();
+  } else {$('loginMsg').textContent='Неверный логин/пароль';}
+};
+
+// --- Тарифная логика ---
 $('startTariffBtn').onclick = () => {
   const type = $('tariffSelect').value;
-  const asset = $('tariffAsset').value;
   const deposit = +$('tariffDeposit').value;
   const trf = tariffs[type];
   if (!state.logged) { $('tariffMsg').textContent = 'Войдите в кабинет.'; return; }
   if (deposit < trf.min || deposit > trf.max) {
     $('tariffMsg').textContent = `Сумма должна быть от ${trf.min} до ${trf.max} USD для этого тарифа.`; return;
   }
-  if (state.balances[asset] === undefined || state.balances[asset] < deposit) {
-    $('tariffMsg').textContent = 'Недостаточно средств на балансе выбранной монеты.'; return;
+  if (state.balances.USDT < deposit) {
+    $('tariffMsg').textContent = 'Недостаточно средств на балансе.'; return;
   }
-  state.balances[asset] -= deposit;
-  const newTariff = {
-    id: Math.random().toString(36).slice(2),
+  state.balances.USDT -= deposit;
+  state.tariff = {
     type,
-    asset,
     deposit,
     start: Date.now(),
     end: Date.now() + trf.days * 24*3600*1000,
@@ -292,87 +244,82 @@ $('startTariffBtn').onclick = () => {
     finished: false,
     profit: 0,
     tradesTimer: null,
-    totalTrades: Math.round(trf.days * 24 * 60 * 2),
-    doneTrades: 0,
-    trades: []
+    totalTrades: Math.round(trf.days * 2 * 24 / 24), // 2 сделки в час
+    doneTrades: 0
   };
-  state.tariffs.push(newTariff);
-  renderTariffsList();
-  scheduleTariffTrades(newTariff);
-  $('tariffMsg').textContent = 'Тариф запущен!';
+  $('tariffSection').style.display = 'none';
+  $('activeTariffSection').style.display = '';
+  updateActiveTariffInfo();
+  scheduleTariffTrades();
 };
 
-function renderTariffsList() {
-  const list = state.tariffs.map(t => {
-    const trf = tariffs[t.type];
-    const daysLeft = t.finished ? 0 : Math.max(0, Math.ceil((t.end - Date.now()) / (24*3600*1000)));
-    return `<div class="tag" style="margin-bottom:2px;">
-      <b>${t.type}</b> | Монета: ${t.asset} | Сумма: $${t.deposit} | Доход: <b>$${t.profit.toFixed(2)}</b> | Доходность: ${Math.round(trf.yield*100)}% | 
-      ${t.finished ? `<span class="pnl-pos">Завершён. Итог: $${(t.deposit + t.profit).toFixed(2)}</span>` : `Осталось: ${daysLeft}д`}
-      </div>`;
-  }).join('');
-  $('tariffsList').innerHTML = list || '<span class="muted">Нет активных тарифов</span>';
-  $('tariffsListSection').style.display = state.tariffs.length ? '' : 'none';
+function updateActiveTariffInfo() {
+  if (!state.tariff) return;
+  const trf = tariffs[state.tariff.type];
+  const daysLeft = Math.max(0, Math.ceil((state.tariff.end - Date.now()) / (24*3600*1000)));
+  $('activeTariffInfo').innerHTML =
+    `Тариф: <b>${state.tariff.type}</b><br>Сумма: <b>$${state.tariff.deposit}</b><br>
+    Доходность: <b>${Math.round(trf.yield*100)}%</b> за ${trf.days} дней<br>
+    Осталось дней: <b>${daysLeft}</b>`;
+  if (state.tariff.finished) {
+    $('tariffTimer').innerHTML = `<span class="pnl-pos">Тариф завершён! На баланс вернулось $${(state.tariff.deposit + state.tariff.profit).toFixed(2)}</span>`;
+  } else {
+    $('tariffTimer').innerHTML = `До завершения: <b>${formatTimer(state.tariff.end - Date.now())}</b>`;
+  }
+}
+function formatTimer(ms) {
+  if (ms<=0) return '00:00:00';
+  const d = Math.floor(ms/(24*3600*1000));
+  const h = Math.floor((ms%(24*3600*1000))/3600000);
+  const m = Math.floor((ms%3600000)/60000);
+  return `${d}д ${h}ч ${m}м`;
 }
 
-// Сделки и кривая капитала (прибыльных больше!)
-function scheduleTariffTrades(tariff) {
-  const trf = tariffs[tariff.type];
-  const totalProfit = tariff.deposit * trf.yield;
-  const avgPnl = totalProfit / tariff.totalTrades;
-  tariff.doneTrades = 0;
-  tariff.profit = 0;
-  if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
+// Моделируем сделки (2 в час, итоговая доходность тарифа)
+function scheduleTariffTrades() {
+  if (!state.tariff || state.tariff.finished) return;
+  const trf = tariffs[state.tariff.type];
+  const totalProfit = state.tariff.deposit * trf.yield;
+  const avgPnl = totalProfit / state.tariff.totalTrades;
+  state.tariff.doneTrades = 0;
+  state.tariff.profit = 0;
 
-  tariff.tradesTimer = setInterval(() => {
-    if (tariff.finished) return;
-
-    // Вероятность прибыли 80%
-    let isProfit = Math.random() < 0.8;
-    let std = avgPnl * 0.7;
-    let pnl = isProfit
-      ? avgPnl + Math.abs((Math.random() - 0.5) * std)
-      : -Math.abs((Math.random() - 0.5) * std * 0.7);
-
-    if (tariff.doneTrades === tariff.totalTrades - 1) {
-      pnl = totalProfit - tariff.profit;
+  state.tariff.tradesTimer = setInterval(() => {
+    if (!state.tariff || state.tariff.finished) return;
+    // Генерируем сделку, симулируем +/- стандартное отклонение
+    const std = avgPnl * 0.2;
+    let pnl = avgPnl + (Math.random()-0.5)*std;
+    if (state.tariff.doneTrades === state.tariff.totalTrades - 1) {
+      // Последняя — добивает до целевой доходности
+      pnl = totalProfit - state.tariff.profit;
     }
-
-    tariff.profit += pnl;
-    const tradeObj = {
-      ts: Date.now(),
-      symbol: tariff.asset,
-      side: Math.random() > .5 ? 'BUY' : 'SELL',
-      qty: +(Math.random() * 0.01).toFixed(4),
-      price: state.prices[tariff.asset],
-      pnl,
-      tariffId: tariff.id,
-      tariffType: tariff.type
-    };
-    tariff.trades.push(tradeObj);
-    state.trades.unshift(tradeObj);
-    const last = state.equity.length
-      ? state.equity[state.equity.length - 1].e
-      : 10000;
-    state.equity.push({ ts: tradeObj.ts, e: +(last + pnl).toFixed(2) });
+    state.tariff.profit += pnl;
+    pushTrade('BTC', Math.random()>.5?'BUY':'SELL', +(Math.random()*0.01).toFixed(4), state.prices['BTC'], pnl);
     drawChart(); renderTrades(); renderKPIs();
-    tariff.doneTrades++;
-    if (tariff.doneTrades >= tariff.totalTrades || Date.now() > tariff.end) {
-      finishTariff(tariff);
+    state.tariff.doneTrades++;
+    if (state.tariff.doneTrades >= state.tariff.totalTrades || Date.now() > state.tariff.end) {
+      finishTariff();
     }
-    renderTariffsList();
-    renderMyTariffsTable();
-  }, 30000); // 2 сделки в минуту (30 сек)
+    updateActiveTariffInfo();
+  }, 1800000); // каждые 30 минут, 2 сделки/час
 }
 
-function finishTariff(tariff) {
-  if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
-  tariff.finished = true;
-  state.balances[tariff.asset] += tariff.deposit + tariff.profit;
+function finishTariff() {
+  if (state.tariff.tradesTimer) clearInterval(state.tariff.tradesTimer);
+  state.tariff.finished = true;
+  state.balances.USDT += state.tariff.deposit + state.tariff.profit;
+  updateActiveTariffInfo();
   renderBalances();
-  renderTariffsList();
-  renderMyTariffsTable();
+  setTimeout(() => {
+    $('activeTariffSection').style.display = 'none';
+    $('tariffSection').style.display = '';
+    state.tariff = null;
+    renderBalances();
+  }, 8000); // 8 сек на уведомление
 }
+
+// --- /Тарифная логика ---
+
 function renderBalances(){ $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k,v])=>`${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.'; }
 function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
 function renderKPIs(){
@@ -382,74 +329,32 @@ function renderKPIs(){
   const pnl = last - first30;
   document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
   document.getElementById('kpiTrades').textContent = state.trades.length;
+  if (state.tariff) updateActiveTariffInfo();
 }
+
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
-function drawChart() {
-  const cvs = document.getElementById('equityChart');
-  const ctx = cvs.getContext('2d');
-  const pad = 36, w = cvs.width - pad * 2, h = cvs.height - pad * 2;
-  ctx.clearRect(0, 0, cvs.width, cvs.height);
-  const ys = state.equity.map(p => p.e), minY = Math.min(...ys), maxY = Math.max(...ys);
-  const sx = i => pad + (i * (w / (state.equity.length - 1)));
-  const sy = v => pad + h - ((v - minY) / (maxY - minY)) * h;
+function drawChart(){
+  const cvs = document.getElementById('equityChart'), ctx = cvs.getContext('2d');
+  const pad=36, w=cvs.width-pad*2, h=cvs.height-pad*2;
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  const ys = state.equity.map(p=>p.e), minY=Math.min(...ys), maxY=Math.max(...ys);
+  const sx=i=>pad+(i*(w/(state.equity.length-1))), sy=v=>pad+h-((v-minY)/(maxY-minY))*h;
   ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 1;
   for(let i=0;i<=4;i++){ const y=pad+i*(h/4); ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+w,y); ctx.stroke(); }
   ctx.beginPath(); ctx.strokeStyle='#06b6d4'; ctx.lineWidth=2;
-  state.equity.forEach((p, i) => { const x = sx(i), y = sy(p.e); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-  ctx.stroke();
+  state.equity.forEach((p,i)=>{ const x=sx(i), y=sy(p.e); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke();
   const g=ctx.createLinearGradient(0,pad,0,pad+h); g.addColorStop(0,'rgba(6,182,212,.35)'); g.addColorStop(1,'rgba(6,182,212,0)');
   ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
-  ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif';
-  ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
-  const maxMarkers = 100;
-  const tradesMarked = state.trades.slice(0, maxMarkers).reverse();
-  tradesMarked.forEach((trade, i) => {
-    const eqIdx = Math.max(0, state.equity.length - tradesMarked.length + i);
-    const x = sx(eqIdx);
-    const y = sy(state.equity[eqIdx]?.e || 10000);
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, 2 * Math.PI);
-    ctx.fillStyle = trade.pnl >= 0 ? '#22c55e' : '#ef4444';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.stroke();
-    trade._chart_x = x;
-    trade._chart_y = y;
-  });
+  ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
 }
-const popup = document.createElement('div');
-popup.style.position = 'absolute'; popup.style.display = 'none';
-popup.style.background = '#0f172a'; popup.style.color = '#e5e7eb';
-popup.style.padding = '8px 14px'; popup.style.borderRadius = '10px';
-popup.style.boxShadow = '0 2px 12px #0008'; popup.style.pointerEvents = 'none';
-popup.style.zIndex = 50;
-document.body.appendChild(popup);
-$('equityChart').addEventListener('mousemove', (e) => {
-  const rect = $('equityChart').getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  let found = null;
-  state.trades.slice(0,100).reverse().forEach(trade => {
-    if (trade._chart_x && trade._chart_y &&
-      Math.abs(mx - trade._chart_x) < 8 && Math.abs(my - trade._chart_y) < 8) found = trade;
-  });
-  if (found) {
-    const trf = state.tariffs.find(t=>t.id===found.tariffId);
-    popup.innerHTML = `
-      <b>${found.symbol}</b> ${found.side}<br>
-      Объем: ${found.qty}<br>
-      Цена: ${found.price}<br>
-      P&L: <span style="color:${found.pnl>=0?'#22c55e':'#ef4444'}">${found.pnl>=0?'+':''}${found.pnl.toFixed(2)}</span><br>
-      Тариф: <b>${found.tariffType || ''}</b>
-    `;
-    popup.style.left = (e.pageX + 10) + 'px';
-    popup.style.top = (e.pageY - 30) + 'px';
-    popup.style.display = '';
-  } else {
-    popup.style.display = 'none';
-  }
-});
-$('equityChart').addEventListener('mouseleave', ()=>{ popup.style.display='none'; });
+
+function pushTrade(sym, side, qty, price, pnl){
+  state.trades.unshift({ts: Date.now(), symbol:sym, side, qty, price, pnl});
+  if(state.trades.length>200) state.trades.pop();
+  const last = state.equity[state.equity.length-1]?.e || 10000;
+  state.equity.push({ts: Date.now(), e: +(last + pnl).toFixed(2)});
+  if(state.equity.length>240) state.equity.shift();
+}
 function renderTrades(){
   const filt = document.getElementById('symbolFilter').value;
   const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
@@ -458,13 +363,28 @@ function renderTrades(){
   }).join('');
   document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
+
+function profileRange(p){ if(p==='conservative')return[-8,12]; if(p==='aggressive')return[-20,30]; return[-12,18]; }
+function tick(){
+  const syms=['BTC','ETH','BNB','SOL','TON']; const sym=syms[Math.floor(Math.random()*syms.length)];
+  const side=Math.random()>.5?'BUY':'SELL'; const qty=+(Math.random()*(sym==='BTC'?0.005:sym==='ETH'?0.1:20)).toFixed(4);
+  const price=+(state.prices[sym]*(0.98+Math.random()*0.04)).toFixed(2);
+  const [minP,maxP]=profileRange(state.profile); const pnl=+((Math.random()*(maxP-minP)+minP)).toFixed(2);
+  pushTrade(sym,side,qty,price,pnl); drawChart(); renderTrades(); renderKPIs();
+}
+document.getElementById('startSim').onclick=()=>{ if(state.simTimer) return; state.simTimer=setInterval(tick, 1200); };
+document.getElementById('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; };
+document.getElementById('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
+document.getElementById('profile').onchange=(e)=>{ state.profile=e.target.value; };
+
 document.getElementById('exportCsv').onclick=()=>{
-  const header=['time','symbol','side','qty','price','pnl','tariff'];
-  const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl,t.tariffType||'']);
+  const header=['time','symbol','side','qty','price','pnl'];
+  const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl]);
   const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
 };
+
 const modalDeposit=document.getElementById('modalDeposit'), modalWithdraw=document.getElementById('modalWithdraw');
 const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
 document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close(modalDeposit));
@@ -488,50 +408,13 @@ document.getElementById('wdSend').onclick=()=>{
   const asset=document.getElementById('wdAsset').value, addr=document.getElementById('wdAddr').value.trim(), amt=+((document.getElementById('wdAmt').value)||0);
   if(!addr || !amt){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
   if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
-  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
+  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending (демо).</span>';
   setTimeout(()=>close(modalWithdraw), 1200);
 };
 
-function renderMyTariffsTable() {
-  let tariffsRows = state.tariffs.map(t=>{
-    const trf=tariffs[t.type];
-    return `<tr>
-      <td>${t.type}</td>
-      <td>${t.deposit}</td>
-      <td>${Math.round(trf.yield*100)}%</td>
-      <td>${t.profit.toFixed(2)}</td>
-      <td>${new Date(t.start).toLocaleDateString()}</td>
-      <td>${new Date(t.end).toLocaleDateString()}</td>
-      <td>${t.finished?'<span class="pnl-pos">Завершён</span>':'<span class="muted">В работе</span>'}</td>
-    </tr>`;
-  }).join('');
-  $('myTariffsTable').innerHTML = tariffsRows || `<tr><td colspan="7" class="muted">Нет тарифов</td></tr>`;
+seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs();
 
-  let dealsHtml = '';
-  state.tariffs.forEach(tariff=>{
-    dealsHtml += `<div style="margin-top:16px"><b>Тариф ${tariff.type}, монета ${tariff.asset}, сумма $${tariff.deposit} (${tariff.finished?'Завершён':'В работе'})</b></div>
-      <table class="deal-list" style="width:100%"><thead>
-        <tr><th>Время</th><th>Инстр.</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr>
-      </thead><tbody>
-        ${tariff.trades.slice(-20).reverse().map(trade=>{
-          return `<tr>
-            <td>${new Date(trade.ts).toLocaleString()}</td>
-            <td>${trade.symbol}</td>
-            <td>${trade.side}</td>
-            <td>${trade.qty}</td>
-            <td>${trade.price}</td>
-            <td class="${trade.pnl>=0?'deal-pnl-pos':'deal-pnl-neg'}">${trade.pnl>=0?'+':''}${trade.pnl.toFixed(2)}</td>
-          </tr>`;
-        }).join('')}
-      </tbody></table>`;
-  });
-  $('myTariffsDeals').innerHTML = dealsHtml || '<div class="muted" style="margin-top:12px">Пока нет сделок по тарифам</div>';
-}
-seedEquity();
-showTab('cabinet');
-setInterval(()=>{
-  drawChart(); renderTariffsList(); renderMyTariffsTable();
-}, 60000);
+setInterval(updateActiveTariffInfo, 60000); // обновляем раз в минуту таймер
 </script>
 </body>
 </html>
