@@ -1,65 +1,135 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BoostEx Trade — Торговый кабинет</title>
-<style>
-  :root{
-    --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
-    --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
-  }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{
-    margin:0; color:var(--text); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    background:
-      radial-gradient(60vw 40vh at 10% -10%, rgba(14,165,233,.12), transparent 40%),
-      radial-gradient(60vw 40vh at 110% 10%, rgba(99,102,241,.12), transparent 35%),
-      linear-gradient(180deg,#0b1220 0%, #0b1220 55%, #0f172a 100%);
-  }
-  body::before{
-    content:""; position:fixed; inset:0; pointer-events:none;
-    background-image:
-      linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(80% 60% at 50% 10%, rgba(0,0,0,.5), transparent 100%);
-  }
-  .wrap{max-width:1100px; margin:0 auto; padding:20px}
-  header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid var(--border)}
-  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
-  .right{margin-left:auto}
-  .card{background:linear-gradient(180deg,var(--card),var(--soft)); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
-  .h1{font-weight:700; font-size:18px}
-  .h2{font-weight:600; font-size:16px}
-  .muted{color:var(--muted)}
-  .btn{background:var(--brand); color:#041018; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
-  .btn.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
-  .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
-  .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
-  .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
-  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-  .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
-  .kpi .val{font-size:22px; font-weight:800}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-  .table{width:100%; border-collapse:collapse}
-  .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
-  .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
-  .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
-  .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
-  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
-  .modal.open{display:flex}
-  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
-  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
-  /* Toast notifications */
-  #toastBox {position:fixed;top:30px;right:30px;z-index:100;}
-  .toast {background:#222;border-radius:8px;color:#fff;padding:12px 20px;margin-bottom:10px;box-shadow:0 2px 12px #0002;opacity:0;transition:.3s;}
-  .toast.info {background:#06b6d4;}
-  .toast.success {background:#22c55e;}
-  .toast.error {background:#ef4444;}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoostEx Trade — Кабинет</title>
+  <style>
+    body {
+      margin:0; background:linear-gradient(120deg,#0b1220 0%,#06b6d4 100%);
+      font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      color:#e5e7eb;
+      min-height:100vh;
+    }
+    #app-center {
+      display:flex;align-items:center;justify-content:center;min-height:100vh;
+    }
+    .auth-card {
+      background:rgba(15,23,42,.98);
+      box-shadow:0 10px 30px #0008;
+      border-radius:24px;
+      padding:40px 32px 32px 32px;
+      min-width:340px;
+      max-width:95vw;
+      display:flex;flex-direction:column;align-items:center;
+      margin-top:-60px;
+    }
+    h1 {
+      font-size:2rem;font-weight:700;margin-bottom:10px;letter-spacing:1px;
+      text-shadow:0 2px 14px #06b6d4a0;
+    }
+    .tab-row {
+      display:flex;gap:10px;margin-bottom:16px;
+    }
+    .tab-btn {
+      background:transparent;
+      color:#06b6d4;
+      border:none;
+      font-weight:700;
+      font-size:15px;
+      padding:7px 18px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:.2s;
+      border:2px solid transparent;
+    }
+    .tab-btn.active {
+      background:#06b6d4;
+      color:#18324b;
+      border:2px solid #09d6f8;
+      box-shadow:0 2px 16px #06b6d4b0;
+    }
+    .form-row {
+      display:flex;flex-direction:column;gap:15px;width:100%;margin-bottom:18px;
+    }
+    .input {
+      background:#0b1220;
+      color:#e5e7eb;
+      border:1px solid #1f2937;
+      border-radius:10px;
+      padding:11px 14px;
+      outline:none;
+      font-size:15px;
+      transition:.2s;
+    }
+    .input:focus {
+      border-color:#06b6d4;
+      box-shadow:0 0 0 2px #06b6d430;
+    }
+    .btn {
+      background:#06b6d4;
+      color:#0b1220;
+      border:none;
+      border-radius:10px;
+      padding:11px 26px;
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      box-shadow:0 2px 10px #06b6d480;
+      transition:.2s;
+    }
+    .btn:active {background:#09d6f8;}
+    .msg {
+      margin-top:12px;
+      min-height:22px;
+      color:#ef4444;
+      font-size:15px;
+      text-align:center;
+    }
+    .muted {
+      color:#9ca3af;font-size:14px;text-align:center;margin-top:8px;
+    }
+    /* Кабинет */
+    .wrap{max-width:1100px; margin:0 auto; padding:20px}
+    header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid #1f2937}
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .right{margin-left:auto}
+    .card{background:linear-gradient(180deg,#0f172a,#0c1528); border:1px solid #1f2937; border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
+    .h1{font-weight:700; font-size:18px}
+    .h2{font-weight:600; font-size:16px}
+    .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
+    .btn.ghost{background:transparent; color:#e5e7eb; border:1px solid #1f2937}
+    .input, .select{background:#0b1220; color:#e5e7eb; border:1px solid #1f2937; border-radius:10px; padding:10px 12px; outline:none}
+    .input:focus, .select:focus{border-color:#1e40af; box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
+    .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+    .kpi{background:#0c1528; border:1px solid #1f2937; border-radius:12px; padding:12px}
+    .kpi .val{font-size:22px; font-weight:800}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .table{width:100%; border-collapse:collapse}
+    .table th,.table td{padding:10px; border-bottom:1px solid #1f2937; text-align:left}
+    .pnl-pos{color:#22c55e} .pnl-neg{color:#ef4444}
+    .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #1f2937; border-radius:999px; background:#0b1220; color:#cbd5e1}
+    .canvas-wrap{background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:10px}
+    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
+    .modal.open{display:flex}
+    .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid #1f2937; border-radius:16px; padding:18px; width:min(520px,92vw)}
+    #toastBox {position:fixed;top:30px;right:30px;z-index:100;}
+    .toast {background:#222;border-radius:8px;color:#fff;padding:12px 20px;margin-bottom:10px;box-shadow:0 2px 12px #0002;opacity:0;transition:.3s;}
+    .toast.info {background:#06b6d4;}
+    .toast.success {background:#22c55e;}
+    .toast.error {background:#ef4444;}
+    @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
+    @media(max-width:480px){
+      .wrap{padding:8px;}
+      .card{padding:8px;}
+    }
+  </style>
 </head>
 <body>
+<div id="app-center">
+  <!-- login/register form will be rendered here -->
+</div>
+<div id="app-cabinet" style="display:none">
 <header>
   <div class="wrap row">
     <div class="h1">BoostEx — торговый кабинет</div>
@@ -67,27 +137,15 @@
       <button class="btn small" id="openDeposit">Депозит</button>
       <button class="btn small ghost" id="openWithdraw">Вывод</button>
       <button class="btn small ghost" id="openHistory">История операций</button>
+      <button class="btn small ghost" id="logoutBtn">Выйти</button>
     </div>
   </div>
 </header>
-
-<main class="wrap" id="app">
+<main class="wrap" id="cabinetMain">
   <section class="card">
     <div class="row">
-      <div class="h2">Вход</div>
-      <span class="tag">Гостевой доступ</span>
+      <div class="h2">Выбор тарифа</div>
     </div>
-    <div class="row" style="margin-top:8px">
-      <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
-      <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
-      <button class="btn" id="login">Войти</button>
-      <span id="loginMsg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- Тарифная секция -->
-  <section class="card" id="tariffSection">
-    <div class="h2">Выбор тарифа</div>
     <div class="row" style="margin-top:10px">
       <select id="tariffSelect" class="select">
         <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
@@ -99,21 +157,17 @@
     </div>
     <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
   </section>
-
-  <!-- Активный тариф -->
   <section class="card" id="activeTariffSection" style="display:none">
     <div class="h2">Активный тариф</div>
     <div id="activeTariffInfo" class="muted" style="margin-top:8px"></div>
     <div id="tariffTimer" style="margin-top:6px"></div>
   </section>
-
   <section class="kpis">
     <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
     <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
     <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
     <div class="kpi"><div class="muted">Статус</div><div class="val" id="kpiStatus">Онлайн</div></div>
   </section>
-
   <section class="grid2">
     <div class="card">
       <div class="h2">Балансы</div>
@@ -124,7 +178,6 @@
       <div id="prices" class="muted" style="margin-top:6px">—</div>
     </div>
   </section>
-
   <section class="card">
     <div class="row">
       <div class="h2">Кривая капитала</div>
@@ -141,7 +194,6 @@
     </div>
     <div class="canvas-wrap" style="margin-top:10px"><canvas id="equityChart" width="1000" height="280"></canvas></div>
   </section>
-
   <section class="card">
     <div class="row">
       <div class="h2">Сделки (последние)</div>
@@ -159,7 +211,6 @@
     </table>
   </section>
 </main>
-
 <!-- История операций -->
 <div class="modal" id="modalHistory">
   <div class="sheet">
@@ -167,7 +218,6 @@
     <div id="historyContent" style="margin-top:10px"></div>
   </div>
 </div>
-
 <div class="modal" id="modalDeposit">
   <div class="sheet">
     <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
@@ -180,11 +230,10 @@
     <div id="depInfo" class="muted" style="margin-top:10px">Выберите актив и сгенерируйте адрес пополнения.</div>
     <div id="qrBox" class="card" style="margin-top:10px; display:none">
       <div class="muted">QR-код (псевдо)</div>
-      <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid var(--border); border-radius:10px"></canvas>
+      <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid #1f2937; border-radius:10px"></canvas>
     </div>
   </div>
 </div>
-
 <div class="modal" id="modalWithdraw">
   <div class="sheet">
     <div class="row"><div class="h2">Вывод средств</div><button class="btn small ghost right" data-close="withdraw">Закрыть</button></div>
@@ -200,13 +249,124 @@
     <div id="wdMsg" style="margin-top:8px"></div>
   </div>
 </div>
-
-<!-- Toast notifications -->
 <div id="toastBox"></div>
-
+</div>
 <script>
-const API_URL = "https://yourserver.com/api"; // укажи свой адрес сервера
+const API_URL = "https://yourserver.com/api"; // замените на свой бэкенд-адрес
 
+// --------- SPA Логика переключения между auth и cabinet ---------
+const $ = id => document.getElementById(id);
+function showCabinet() {
+  document.getElementById('app-center').style.display = 'none';
+  document.getElementById('app-cabinet').style.display = '';
+}
+function showAuth() {
+  document.getElementById('app-cabinet').style.display = 'none';
+  document.getElementById('app-center').style.display = 'flex';
+}
+// --------- AUTH UI render ---------
+function renderAuthForm() {
+  document.getElementById('app-center').innerHTML = `
+    <div class="auth-card">
+      <h1>BoostEx Trade</h1>
+      <div class="tab-row">
+        <button class="tab-btn active" id="tabLogin">Вход</button>
+        <button class="tab-btn" id="tabReg">Регистрация</button>
+      </div>
+      <form id="loginForm">
+        <div class="form-row" id="loginFields">
+          <input class="input" id="loginEmail" type="email" placeholder="Email" autocomplete="username" />
+          <input class="input" id="loginPass" type="password" placeholder="Пароль" autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn" id="loginBtn">Войти</button>
+        <div class="msg" id="loginMsg"></div>
+      </form>
+      <form id="regForm" style="display:none">
+        <div class="form-row" id="regFields">
+          <input class="input" id="regEmail" type="email" placeholder="Email" autocomplete="username" />
+          <input class="input" id="regPass" type="password" placeholder="Пароль" autocomplete="new-password" />
+          <input class="input" id="regPass2" type="password" placeholder="Повторите пароль" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn" id="regBtn">Зарегистрироваться</button>
+        <div class="msg" id="regMsg"></div>
+      </form>
+      <div class="muted">Данные защищены. Платформа не хранит приватные ключи и пароли в открытом виде.</div>
+    </div>
+  `;
+  // Tab logic
+  $('tabLogin').onclick = () => {
+    $('tabLogin').classList.add('active'); $('tabReg').classList.remove('active');
+    $('loginForm').style.display = ''; $('regForm').style.display = 'none';
+  };
+  $('tabReg').onclick = () => {
+    $('tabReg').classList.add('active'); $('tabLogin').classList.remove('active');
+    $('loginForm').style.display = 'none'; $('regForm').style.display = '';
+  };
+
+  // Вход
+  $('loginForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $('loginEmail').value.trim();
+    const pass = $('loginPass').value.trim();
+    $('loginMsg').textContent = '';
+    if(!email || !pass){ $('loginMsg').textContent = 'Введите email и пароль.'; return; }
+    $('loginBtn').disabled = true;
+    try {
+      const resp = await fetch(API_URL+"/login", {
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email, pass})
+      });
+      const data = await resp.json();
+      if(data.token){
+        localStorage.setItem('token', data.token);
+        showCabinet();
+        await refreshAll();
+      } else {
+        $('loginMsg').textContent = data.error || "Ошибка авторизации";
+      }
+    } catch(e){
+      $('loginMsg').textContent = "Ошибка соединения";
+    }
+    $('loginBtn').disabled = false;
+  };
+  // Регистрация
+  $('regForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $('regEmail').value.trim();
+    const pass = $('regPass').value.trim();
+    const pass2 = $('regPass2').value.trim();
+    $('regMsg').textContent = '';
+    if(!email || !pass || !pass2){ $('regMsg').textContent = 'Заполните все поля.'; return; }
+    if(pass !== pass2){ $('regMsg').textContent = 'Пароли не совпадают.'; return; }
+    if(pass.length < 6){ $('regMsg').textContent = 'Пароль минимум 6 символов.'; return; }
+    $('regBtn').disabled = true;
+    try {
+      const resp = await fetch(API_URL+"/register", {
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email, pass})
+      });
+      const data = await resp.json();
+      if(data.success){
+        $('regMsg').style.color = "#22c55e";
+        $('regMsg').textContent = "Регистрация успешна! Теперь войдите.";
+        setTimeout(()=>{$('tabLogin').click()}, 1500);
+      } else {
+        $('regMsg').textContent = data.error || "Ошибка регистрации";
+      }
+    } catch(e){
+      $('regMsg').textContent = "Ошибка соединения";
+    }
+    $('regBtn').disabled = false;
+  };
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  showAuth();
+  renderAuthForm();
+}
+
+// --------- Кабинет JS ---------
 const state = {
   logged: false,
   token: null,
@@ -215,12 +375,11 @@ const state = {
   equity: [], trades: [], simTimer: null, profile: 'balanced',
   tariff: null, history: []
 };
-const $ = (id)=>document.getElementById(id);
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
 
-// История операций
+// --------- Toasts ---------
 function showToast(msg, type='info', timeout=2200){
-  const box = document.getElementById('toastBox');
+  const box = $('toastBox');
   const el = document.createElement('div');
   el.className = 'toast ' + type;
   el.innerHTML = msg;
@@ -231,31 +390,23 @@ function showToast(msg, type='info', timeout=2200){
     setTimeout(()=>box.removeChild(el), 300);
   }, timeout);
 }
+
+// --------- История операций ---------
 function logHistory(type, details){
   state.history.unshift({type, details, ts: Date.now()});
   renderHistory();
 }
-document.getElementById('openHistory').onclick = ()=> open(modalHistory);
-document.querySelectorAll('[data-close="history"]').forEach(b=>b.onclick=()=>close(modalHistory));
+$('openHistory').onclick = ()=> open($('modalHistory'));
+document.querySelectorAll('[data-close="history"]').forEach(b=>b.onclick=()=>close($('modalHistory')));
 function renderHistory(){
   $('historyContent').innerHTML = state.history.length
     ? state.history.map(h=>`<div>${new Date(h.ts).toLocaleString()} — <b>${h.type}</b>: ${h.details}</div>`).join('')
     : '<div class="muted">Пусто</div>';
 }
 
-// --- API функции ---
-async function apiLogin(email, pass){
-  const r = await fetch(API_URL+"/login", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({email, pass})
-  });
-  if(!r.ok) return null;
-  return await r.json();
-}
+// --------- API функции ---------
 async function apiGetBalances(token){
-  const r = await fetch(API_URL+"/balances", {
-    headers:{"Authorization":"Bearer "+token}
-  });
+  const r = await fetch(API_URL+"/balances", { headers:{"Authorization":"Bearer "+token} });
   if(!r.ok) return {};
   return await r.json();
 }
@@ -266,43 +417,24 @@ async function apiGetPrices(){
 }
 async function apiStartTariff(token, type, deposit){
   const r = await fetch(API_URL+"/tariff/start", {
-    method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
     body:JSON.stringify({type, deposit})
   });
   return r.ok ? await r.json() : null;
 }
 async function apiGetTariff(token){
-  const r = await fetch(API_URL+"/tariff", {
-    headers:{"Authorization":"Bearer "+token}
-  });
+  const r = await fetch(API_URL+"/tariff", { headers:{"Authorization":"Bearer "+token} });
   return r.ok ? await r.json() : null;
 }
 async function apiWithdraw(token, asset, addr, amt){
   const r = await fetch(API_URL+"/withdraw", {
-    method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
     body:JSON.stringify({asset, addr, amt})
   });
   return r.ok ? await r.json() : null;
 }
 
-// --- Вход ---
-$('login').onclick = async () => {
-  const email = $('email').value.trim(), pass = $('pass').value.trim();
-  showToast('Вход...', 'info');
-  const resp = await apiLogin(email, pass);
-  if(resp && resp.token){
-    state.logged = true; state.token = resp.token;
-    $('loginMsg').textContent = 'Вход выполнен';
-    logHistory('Вход', email);
-    showToast('Вход выполнен!', 'success');
-    await refreshAll();
-  } else {
-    $('loginMsg').textContent='Неверный логин/пароль';
-    showToast('Ошибка входа', 'error');
-  }
-};
-
-// --- Тарифная логика через API ---
+// --------- Тарифная логика через API ---------
 $('startTariffBtn').onclick = async () => {
   const type = $('tariffSelect').value;
   const deposit = +$('tariffDeposit').value;
@@ -320,21 +452,17 @@ $('startTariffBtn').onclick = async () => {
     showToast('Ошибка тарифа', 'error');
   }
 };
-
 async function refreshTariff(){
   if(!state.logged) return;
   const tariff = await apiGetTariff(state.token);
   state.tariff = tariff;
   if(tariff && tariff.active){
-    $('tariffSection').style.display = 'none';
     $('activeTariffSection').style.display = '';
     updateActiveTariffInfo();
   } else {
-    $('tariffSection').style.display = '';
     $('activeTariffSection').style.display = 'none';
   }
 }
-
 function updateActiveTariffInfo() {
   if (!state.tariff) return;
   const trf = state.tariff;
@@ -356,7 +484,7 @@ function formatTimer(ms) {
   return `${d}д ${h}ч ${m}м`;
 }
 
-// --- Балансы и курсы через API ---
+// --------- Балансы и курсы через API ---------
 async function refreshBalances(){
   if(!state.logged) return $('balances').textContent = 'Войдите, чтобы увидеть баланс.';
   const balances = await apiGetBalances(state.token);
@@ -370,7 +498,7 @@ async function refreshPrices(){
   $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · ');
 }
 
-// --- KPI ---
+// --------- KPI ---------
 function renderKPIs(){
   const last = state.tariff?.equity || 10000;
   $('kpiEquity').textContent = fmtUSD(last);
@@ -381,7 +509,7 @@ function renderKPIs(){
   if (state.tariff) updateActiveTariffInfo();
 }
 
-// --- Сделки (пример через локальный state, можно сделать через API) ---
+// --------- Сделки ---------
 function renderTrades(){
   const filt = $('symbolFilter').value;
   const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
@@ -391,15 +519,12 @@ function renderTrades(){
   $('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
 
-// --- Депозит ---
-const modalDeposit=$('modalDeposit'), modalWithdraw=$('modalWithdraw');
+// --------- Депозит ---------
 const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
-document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close(modalDeposit));
-document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close(modalWithdraw);
-
-$('openDeposit').onclick = ()=> open(modalDeposit);
-$('openWithdraw').onclick= ()=> open(modalWithdraw);
-
+document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close($('modalDeposit')));
+document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close($('modalWithdraw'));
+$('openDeposit').onclick = ()=> open($('modalDeposit'));
+$('openWithdraw').onclick= ()=> open($('modalWithdraw'));
 $('genAddr').onclick=()=>{
   const asset=$('depAsset').value;
   const addr = asset.includes('TRC20') ? 'T'+Math.random().toString(36).slice(2,10).toUpperCase()+'...' :
@@ -414,7 +539,7 @@ $('genAddr').onclick=()=>{
   showToast('Адрес сгенерирован', 'info');
 };
 
-// --- Вывод средств ---
+// --------- Вывод средств ---------
 $('wdSend').onclick=async()=>{
   const asset=$('wdAsset').value, addr=$('wdAddr').value.trim(), amt=+($('wdAmt').value||0);
   if(!addr || !amt){ $('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
@@ -425,7 +550,7 @@ $('wdSend').onclick=async()=>{
     $('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
     logHistory('Вывод', `${asset} на ${addr}, сумма ${amt}`);
     showToast('Заявка отправлена!', 'success');
-    setTimeout(()=>close(modalWithdraw), 1200);
+    setTimeout(()=>close($('modalWithdraw')), 1200);
     await refreshBalances();
   } else {
     $('wdMsg').innerHTML='<span class="pnl-neg">Ошибка: '+(resp?.error||'Не удалось отправить заявку')+'</span>';
@@ -433,7 +558,7 @@ $('wdSend').onclick=async()=>{
   }
 };
 
-// --- CSV экспорт (остался локально, можно сделать через API) ---
+// --------- CSV экспорт ---------
 $('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl'];
   const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl]);
@@ -442,7 +567,7 @@ $('exportCsv').onclick=()=>{
   const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
 };
 
-// --- Демо-симуляция убрана, но пример локальной статистики оставлен для графика ---
+// --------- Кривая капитала ---------
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
 function drawChart(){
   const cvs = $('equityChart'), ctx = cvs.getContext('2d');
@@ -459,7 +584,7 @@ function drawChart(){
   ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
 }
 
-// --- Симуляция капитала (локально, можно подключить к API) ---
+// --------- Симуляция капитала ---------
 function profileRange(p){ if(p==='conservative')return[-8,12]; if(p==='aggressive')return[-20,30]; return[-12,18]; }
 function tick(){
   const syms=['BTC','ETH','BNB','SOL','TON']; const sym=syms[Math.floor(Math.random()*syms.length)];
@@ -478,15 +603,35 @@ $('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; 
 $('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
 $('profile').onchange=(e)=>{ state.profile=e.target.value; };
 
-// --- Обновление на старте ---
+// --------- Логаут ---------
+$('logoutBtn').onclick = logout;
+
+// --------- INIT ---------
 async function refreshAll(){
+  state.token = localStorage.getItem('token');
+  state.logged = !!state.token;
+  if(!state.logged) { showAuth(); renderAuthForm(); return; }
+  showCabinet();
   await refreshBalances();
   await refreshPrices();
   await refreshTariff();
   renderTrades();
+  seedEquity();
+  drawChart();
+  renderHistory();
+  renderKPIs();
 }
 
-seedEquity(); drawChart(); renderTrades(); renderHistory(); renderKPIs();
+window.onload = () => {
+  if(localStorage.getItem('token')) {
+    showCabinet();
+    refreshAll();
+  } else {
+    showAuth();
+    renderAuthForm();
+  }
+};
+
 setInterval(updateActiveTariffInfo, 60000);
 </script>
 </body>
