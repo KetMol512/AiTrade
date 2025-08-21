@@ -209,6 +209,7 @@
     </table>
   </section>
 </main>
+<!-- История операций -->
 <div class="modal" id="modalHistory">
   <div class="sheet">
     <div class="row"><div class="h2">История операций</div><button class="btn small ghost right" data-close="history">Закрыть</button></div>
@@ -249,8 +250,7 @@
 <div id="toastBox"></div>
 </div>
 <script>
-const API_URL = "https://yourserver.com/api"; // замените на свой бэкенд-адрес
-
+const API_URL = "https://yourserver.com/api";
 const $ = id => document.getElementById(id);
 
 function showCabinet() {
@@ -359,6 +359,7 @@ function logout() {
   renderAuthForm();
 }
 
+// --------- Кабинет JS ---------
 const state = {
   logged: false,
   token: null,
@@ -368,7 +369,6 @@ const state = {
   tariff: null, history: []
 };
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
-
 function showToast(msg, type='info', timeout=2200){
   const box = $('toastBox');
   const el = document.createElement('div');
@@ -393,32 +393,19 @@ function renderHistory(){
     : '<div class="muted">Пусто</div>';
 }
 async function apiGetBalances(token){
-  const r = await fetch(API_URL+"/balances", { headers:{"Authorization":"Bearer "+token} });
-  if(!r.ok) return {};
-  return await r.json();
+  return {}; // заменить на реальный API
 }
 async function apiGetPrices(){
-  const r = await fetch(API_URL+"/prices");
-  if(!r.ok) return {};
-  return await r.json();
+  return {BTC: 65000, ETH: 3500, BNB: 600, SOL: 140, TON: 7.2}; // пример
 }
 async function apiStartTariff(token, type, deposit){
-  const r = await fetch(API_URL+"/tariff/start", {
-    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
-    body:JSON.stringify({type, deposit})
-  });
-  return r.ok ? await r.json() : null;
+  return {success:true}; // заменить на реальный API
 }
 async function apiGetTariff(token){
-  const r = await fetch(API_URL+"/tariff", { headers:{"Authorization":"Bearer "+token} });
-  return r.ok ? await r.json() : null;
+  return null; // заменить на реальный API
 }
 async function apiWithdraw(token, asset, addr, amt){
-  const r = await fetch(API_URL+"/withdraw", {
-    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
-    body:JSON.stringify({asset, addr, amt})
-  });
-  return r.ok ? await r.json() : null;
+  return {success:true}; // заменить на реальный API
 }
 $('startTariffBtn').onclick = async () => {
   const type = $('tariffSelect').value;
@@ -438,41 +425,13 @@ $('startTariffBtn').onclick = async () => {
   }
 };
 async function refreshTariff(){
-  if(!state.logged) return;
-  const tariff = await apiGetTariff(state.token);
-  state.tariff = tariff;
-  if(tariff && tariff.active){
-    $('activeTariffSection').style.display = '';
-    updateActiveTariffInfo();
-  } else {
-    $('activeTariffSection').style.display = 'none';
-  }
+  state.tariff = null;
+  $('activeTariffSection').style.display = 'none';
 }
-function updateActiveTariffInfo() {
-  if (!state.tariff) return;
-  const trf = state.tariff;
-  $('activeTariffInfo').innerHTML =
-    `Тариф: <b>${trf.type}</b><br>Сумма: <b>$${trf.deposit}</b><br>
-    Доходность: <b>${Math.round(trf.targetYield*100)}%</b> за ${trf.days} дней<br>
-    Осталось дней: <b>${trf.daysLeft}</b>`;
-  if (trf.finished) {
-    $('tariffTimer').innerHTML = `<span class="pnl-pos">Тариф завершён! На баланс вернулось $${(trf.deposit + trf.profit).toFixed(2)}</span>`;
-  } else {
-    $('tariffTimer').innerHTML = `До завершения: <b>${formatTimer(trf.msLeft)}</b>`;
-  }
-}
-function formatTimer(ms) {
-  if (ms<=0) return '00:00:00';
-  const d = Math.floor(ms/(24*3600*1000));
-  const h = Math.floor((ms%(24*3600*1000))/3600000);
-  const m = Math.floor((ms%3600000)/60000);
-  return `${d}д ${h}ч ${m}м`;
-}
+function updateActiveTariffInfo() {}
+function formatTimer(ms) {return '00:00:00'}
 async function refreshBalances(){
-  if(!state.logged) return $('balances').textContent = 'Войдите, чтобы увидеть баланс.';
-  const balances = await apiGetBalances(state.token);
-  state.balances = balances;
-  $('balances').textContent = Object.entries(state.balances).map(([k,v])=>`${k}: ${v}`).join(' · ');
+  $('balances').textContent = 'USDT: 1000 · BTC: 0.01 · ETH: 0.15';
   renderKPIs();
 }
 async function refreshPrices(){
@@ -481,21 +440,14 @@ async function refreshPrices(){
   $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · ');
 }
 function renderKPIs(){
-  const last = state.tariff?.equity || 10000;
-  $('kpiEquity').textContent = fmtUSD(last);
-  const pnl = state.tariff?.profit || 0;
-  $('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  $('kpiTrades').textContent = state.tariff?.doneTrades || 0;
-  $('kpiStatus').textContent = state.logged ? "Онлайн" : "Оффлайн";
-  if (state.tariff) updateActiveTariffInfo();
+  $('kpiEquity').textContent = fmtUSD(10000);
+  $('kpiPnl').innerHTML = '<span class="pnl-pos">+1200.00</span>';
+  $('kpiTrades').textContent = 36;
+  $('kpiStatus').textContent = "Онлайн";
 }
 function renderTrades(){
-  const filt = $('symbolFilter').value;
-  const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
-    const cls = t.pnl>=0?'pnl-pos':'pnl-neg';
-    return `<tr><td>${new Date(t.ts).toLocaleString()}</td><td>${t.symbol}</td><td>${t.side}</td><td>${t.qty}</td><td>${t.price}</td><td class="${cls}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td></tr>`;
-  }).join('');
-  $('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
+  $('trades').innerHTML = `<tr><td>2025-08-21 13:15</td><td>BTC</td><td>BUY</td><td>0.003</td><td>65000</td><td class="pnl-pos">+80.00</td></tr>
+  <tr><td>2025-08-21 12:55</td><td>ETH</td><td>SELL</td><td>0.07</td><td>3400</td><td class="pnl-neg">-32.00</td></tr>`;
 }
 const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
 document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close($('modalDeposit')));
@@ -534,7 +486,7 @@ $('wdSend').onclick=async()=>{
 };
 $('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl'];
-  const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl]);
+  const rows=[["2025-08-21 13:15","BTC","BUY","0.003","65000","80"],["2025-08-21 12:55","ETH","SELL","0.07","3400","-32"]];
   const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
   const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
@@ -554,24 +506,15 @@ function drawChart(){
   ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
   ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
 }
-function profileRange(p){ if(p==='conservative')return[-8,12]; if(p==='aggressive')return[-20,30]; return[-12,18]; }
-function tick(){
-  const syms=['BTC','ETH','BNB','SOL','TON']; const sym=syms[Math.floor(Math.random()*syms.length)];
-  const side=Math.random()>.5?'BUY':'SELL'; const qty=+(Math.random()*(sym==='BTC'?0.005:sym==='ETH'?0.1:20)).toFixed(4);
-  const price=+(state.prices[sym]*(0.98+Math.random()*0.04)).toFixed(2);
-  const [minP,maxP]=profileRange(state.profile); const pnl=+((Math.random()*(maxP-minP)+minP)).toFixed(2);
-  state.trades.unshift({ts: Date.now(), symbol:sym, side, qty, price, pnl});
-  if(state.trades.length>200) state.trades.pop();
-  const last = state.equity[state.equity.length-1]?.e || 10000;
-  state.equity.push({ts: Date.now(), e: +(last + pnl).toFixed(2)});
-  if(state.equity.length>240) state.equity.shift();
-  drawChart(); renderTrades(); renderKPIs();
-}
 $('startSim').onclick=()=>{ if(state.simTimer) return; state.simTimer=setInterval(tick, 1200); };
 $('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; };
 $('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
 $('profile').onchange=(e)=>{ state.profile=e.target.value; };
 $('logoutBtn').onclick = logout;
+function tick(){
+  // Симуляция сделки и капитала
+  // Можно заменить на реальную API-логику!
+}
 async function refreshAll(){
   state.token = localStorage.getItem('token');
   state.logged = !!state.token;
@@ -586,7 +529,7 @@ async function refreshAll(){
   renderHistory();
   renderKPIs();
 }
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', function() {
   if(localStorage.getItem('token')) {
     showCabinet();
     refreshAll();
@@ -594,7 +537,7 @@ window.onload = () => {
     showAuth();
     renderAuthForm();
   }
-};
+});
 setInterval(updateActiveTariffInfo, 60000);
 </script>
 </body>
