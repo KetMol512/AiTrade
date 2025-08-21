@@ -126,9 +126,7 @@
   </style>
 </head>
 <body>
-<div id="app-center">
-  <!-- login/register form will be rendered here -->
-</div>
+<div id="app-center"></div>
 <div id="app-cabinet" style="display:none">
 <header>
   <div class="wrap row">
@@ -211,7 +209,6 @@
     </table>
   </section>
 </main>
-<!-- История операций -->
 <div class="modal" id="modalHistory">
   <div class="sheet">
     <div class="row"><div class="h2">История операций</div><button class="btn small ghost right" data-close="history">Закрыть</button></div>
@@ -254,19 +251,19 @@
 <script>
 const API_URL = "https://yourserver.com/api"; // замените на свой бэкенд-адрес
 
-// --------- SPA Логика переключения между auth и cabinet ---------
 const $ = id => document.getElementById(id);
+
 function showCabinet() {
-  document.getElementById('app-center').style.display = 'none';
-  document.getElementById('app-cabinet').style.display = '';
+  $('app-center').style.display = 'none';
+  $('app-cabinet').style.display = '';
 }
 function showAuth() {
-  document.getElementById('app-cabinet').style.display = 'none';
-  document.getElementById('app-center').style.display = 'flex';
+  $('app-cabinet').style.display = 'none';
+  $('app-center').style.display = 'flex';
 }
-// --------- AUTH UI render ---------
+
 function renderAuthForm() {
-  document.getElementById('app-center').innerHTML = `
+  $('app-center').innerHTML = `
     <div class="auth-card">
       <h1>BoostEx Trade</h1>
       <div class="tab-row">
@@ -293,7 +290,6 @@ function renderAuthForm() {
       <div class="muted">Данные защищены. Платформа не хранит приватные ключи и пароли в открытом виде.</div>
     </div>
   `;
-  // Tab logic
   $('tabLogin').onclick = () => {
     $('tabLogin').classList.add('active'); $('tabReg').classList.remove('active');
     $('loginForm').style.display = ''; $('regForm').style.display = 'none';
@@ -302,8 +298,6 @@ function renderAuthForm() {
     $('tabReg').classList.add('active'); $('tabLogin').classList.remove('active');
     $('loginForm').style.display = 'none'; $('regForm').style.display = '';
   };
-
-  // Вход
   $('loginForm').onsubmit = async (e) => {
     e.preventDefault();
     const email = $('loginEmail').value.trim();
@@ -329,7 +323,6 @@ function renderAuthForm() {
     }
     $('loginBtn').disabled = false;
   };
-  // Регистрация
   $('regForm').onsubmit = async (e) => {
     e.preventDefault();
     const email = $('regEmail').value.trim();
@@ -366,7 +359,6 @@ function logout() {
   renderAuthForm();
 }
 
-// --------- Кабинет JS ---------
 const state = {
   logged: false,
   token: null,
@@ -377,7 +369,6 @@ const state = {
 };
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
 
-// --------- Toasts ---------
 function showToast(msg, type='info', timeout=2200){
   const box = $('toastBox');
   const el = document.createElement('div');
@@ -390,8 +381,6 @@ function showToast(msg, type='info', timeout=2200){
     setTimeout(()=>box.removeChild(el), 300);
   }, timeout);
 }
-
-// --------- История операций ---------
 function logHistory(type, details){
   state.history.unshift({type, details, ts: Date.now()});
   renderHistory();
@@ -403,8 +392,6 @@ function renderHistory(){
     ? state.history.map(h=>`<div>${new Date(h.ts).toLocaleString()} — <b>${h.type}</b>: ${h.details}</div>`).join('')
     : '<div class="muted">Пусто</div>';
 }
-
-// --------- API функции ---------
 async function apiGetBalances(token){
   const r = await fetch(API_URL+"/balances", { headers:{"Authorization":"Bearer "+token} });
   if(!r.ok) return {};
@@ -433,8 +420,6 @@ async function apiWithdraw(token, asset, addr, amt){
   });
   return r.ok ? await r.json() : null;
 }
-
-// --------- Тарифная логика через API ---------
 $('startTariffBtn').onclick = async () => {
   const type = $('tariffSelect').value;
   const deposit = +$('tariffDeposit').value;
@@ -483,8 +468,6 @@ function formatTimer(ms) {
   const m = Math.floor((ms%3600000)/60000);
   return `${d}д ${h}ч ${m}м`;
 }
-
-// --------- Балансы и курсы через API ---------
 async function refreshBalances(){
   if(!state.logged) return $('balances').textContent = 'Войдите, чтобы увидеть баланс.';
   const balances = await apiGetBalances(state.token);
@@ -497,8 +480,6 @@ async function refreshPrices(){
   state.prices = prices;
   $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · ');
 }
-
-// --------- KPI ---------
 function renderKPIs(){
   const last = state.tariff?.equity || 10000;
   $('kpiEquity').textContent = fmtUSD(last);
@@ -508,8 +489,6 @@ function renderKPIs(){
   $('kpiStatus').textContent = state.logged ? "Онлайн" : "Оффлайн";
   if (state.tariff) updateActiveTariffInfo();
 }
-
-// --------- Сделки ---------
 function renderTrades(){
   const filt = $('symbolFilter').value;
   const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
@@ -518,8 +497,6 @@ function renderTrades(){
   }).join('');
   $('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
 }
-
-// --------- Депозит ---------
 const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
 document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close($('modalDeposit')));
 document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close($('modalWithdraw'));
@@ -538,8 +515,6 @@ $('genAddr').onclick=()=>{
   logHistory('Депозит', `Сгенерирован адрес для ${asset}`);
   showToast('Адрес сгенерирован', 'info');
 };
-
-// --------- Вывод средств ---------
 $('wdSend').onclick=async()=>{
   const asset=$('wdAsset').value, addr=$('wdAddr').value.trim(), amt=+($('wdAmt').value||0);
   if(!addr || !amt){ $('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
@@ -557,8 +532,6 @@ $('wdSend').onclick=async()=>{
     showToast('Ошибка вывода', 'error');
   }
 };
-
-// --------- CSV экспорт ---------
 $('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl'];
   const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl]);
@@ -566,8 +539,6 @@ $('exportCsv').onclick=()=>{
   const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
 };
-
-// --------- Кривая капитала ---------
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
 function drawChart(){
   const cvs = $('equityChart'), ctx = cvs.getContext('2d');
@@ -583,8 +554,6 @@ function drawChart(){
   ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
   ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
 }
-
-// --------- Симуляция капитала ---------
 function profileRange(p){ if(p==='conservative')return[-8,12]; if(p==='aggressive')return[-20,30]; return[-12,18]; }
 function tick(){
   const syms=['BTC','ETH','BNB','SOL','TON']; const sym=syms[Math.floor(Math.random()*syms.length)];
@@ -602,11 +571,7 @@ $('startSim').onclick=()=>{ if(state.simTimer) return; state.simTimer=setInterva
 $('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; };
 $('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
 $('profile').onchange=(e)=>{ state.profile=e.target.value; };
-
-// --------- Логаут ---------
 $('logoutBtn').onclick = logout;
-
-// --------- INIT ---------
 async function refreshAll(){
   state.token = localStorage.getItem('token');
   state.logged = !!state.token;
@@ -621,7 +586,6 @@ async function refreshAll(){
   renderHistory();
   renderKPIs();
 }
-
 window.onload = () => {
   if(localStorage.getItem('token')) {
     showCabinet();
@@ -631,7 +595,6 @@ window.onload = () => {
     renderAuthForm();
   }
 };
-
 setInterval(updateActiveTariffInfo, 60000);
 </script>
 </body>
