@@ -28,27 +28,6 @@
       font-size:2rem;font-weight:700;margin-bottom:10px;letter-spacing:1px;
       text-shadow:0 2px 14px #06b6d4a0;
     }
-    .tab-row {
-      display:flex;gap:10px;margin-bottom:16px;
-    }
-    .tab-btn {
-      background:transparent;
-      color:#06b6d4;
-      border:none;
-      font-weight:700;
-      font-size:15px;
-      padding:7px 18px;
-      border-radius:8px;
-      cursor:pointer;
-      transition:.2s;
-      border:2px solid transparent;
-    }
-    .tab-btn.active {
-      background:#06b6d4;
-      color:#18324b;
-      border:2px solid #09d6f8;
-      box-shadow:0 2px 16px #06b6d4b0;
-    }
     .form-row {
       display:flex;flex-direction:column;gap:15px;width:100%;margin-bottom:18px;
     }
@@ -88,6 +67,26 @@
     }
     .muted {
       color:#9ca3af;font-size:14px;text-align:center;margin-top:8px;
+    }
+    .switcher {
+      margin-bottom:18px;
+      text-align:center;
+    }
+    .switcher button {
+      background:transparent;
+      color:#06b6d4;
+      border:none;
+      font-weight:700;
+      font-size:15px;
+      cursor:pointer;
+      text-decoration:underline;
+      margin:0 8px;
+      transition:color .2s;
+    }
+    .switcher button.active {
+      color:#fff;
+      text-decoration:none;
+      cursor:default;
     }
     /* Кабинет */
     .wrap{max-width:1100px; margin:0 auto; padding:20px}
@@ -209,7 +208,7 @@
     </table>
   </section>
 </main>
-<!-- История операций -->
+<!-- Модальные окна -->
 <div class="modal" id="modalHistory">
   <div class="sheet">
     <div class="row"><div class="h2">История операций</div><button class="btn small ghost right" data-close="history">Закрыть</button></div>
@@ -266,9 +265,9 @@ function renderAuthForm() {
   $('app-center').innerHTML = `
     <div class="auth-card">
       <h1>BoostEx Trade</h1>
-      <div class="tab-row">
-        <button class="tab-btn active" id="tabLogin">Вход</button>
-        <button class="tab-btn" id="tabReg">Регистрация</button>
+      <div class="switcher">
+        <button id="switchLogin" class="active">Вход</button> | 
+        <button id="switchReg">Регистрация</button>
       </div>
       <form id="loginForm">
         <div class="form-row" id="loginFields">
@@ -290,12 +289,12 @@ function renderAuthForm() {
       <div class="muted">Данные защищены. Платформа не хранит приватные ключи и пароли в открытом виде.</div>
     </div>
   `;
-  $('tabLogin').onclick = () => {
-    $('tabLogin').classList.add('active'); $('tabReg').classList.remove('active');
+  $('switchLogin').onclick = () => {
+    $('switchLogin').classList.add('active'); $('switchReg').classList.remove('active');
     $('loginForm').style.display = ''; $('regForm').style.display = 'none';
   };
-  $('tabReg').onclick = () => {
-    $('tabReg').classList.add('active'); $('tabLogin').classList.remove('active');
+  $('switchReg').onclick = () => {
+    $('switchReg').classList.add('active'); $('switchLogin').classList.remove('active');
     $('loginForm').style.display = 'none'; $('regForm').style.display = '';
   };
   $('loginForm').onsubmit = async (e) => {
@@ -342,7 +341,7 @@ function renderAuthForm() {
       if(data.success){
         $('regMsg').style.color = "#22c55e";
         $('regMsg').textContent = "Регистрация успешна! Теперь войдите.";
-        setTimeout(()=>{$('tabLogin').click()}, 1500);
+        setTimeout(()=>{$('switchLogin').click()}, 1500);
       } else {
         $('regMsg').textContent = data.error || "Ошибка регистрации";
       }
