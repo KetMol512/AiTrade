@@ -305,18 +305,16 @@ function renderAuthForm() {
     if(!email || !pass){ $('loginMsg').textContent = 'Введите email и пароль.'; return; }
     $('loginBtn').disabled = true;
     try {
-      const resp = await fetch(API_URL+"/login", {
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({email, pass})
-      });
-      const data = await resp.json();
-      if(data.token){
-        localStorage.setItem('token', data.token);
+      // --- Замените на свой backend! ---
+      // Пример успешного входа:
+      if(email && pass) {
+        localStorage.setItem('token', 'demo-token');
         showCabinet();
         await refreshAll();
       } else {
-        $('loginMsg').textContent = data.error || "Ошибка авторизации";
+        $('loginMsg').textContent = "Ошибка авторизации";
       }
+      // ----
     } catch(e){
       $('loginMsg').textContent = "Ошибка соединения";
     }
@@ -333,18 +331,16 @@ function renderAuthForm() {
     if(pass.length < 6){ $('regMsg').textContent = 'Пароль минимум 6 символов.'; return; }
     $('regBtn').disabled = true;
     try {
-      const resp = await fetch(API_URL+"/register", {
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({email, pass})
-      });
-      const data = await resp.json();
-      if(data.success){
+      // --- Замените на свой backend! ---
+      // Пример успешной регистрации:
+      if(email && pass && pass === pass2) {
         $('regMsg').style.color = "#22c55e";
         $('regMsg').textContent = "Регистрация успешна! Теперь войдите.";
         setTimeout(()=>{$('switchLogin').click()}, 1500);
       } else {
-        $('regMsg').textContent = data.error || "Ошибка регистрации";
+        $('regMsg').textContent = "Ошибка регистрации";
       }
+      // ----
     } catch(e){
       $('regMsg').textContent = "Ошибка соединения";
     }
@@ -367,7 +363,9 @@ const state = {
   equity: [], trades: [], simTimer: null, profile: 'balanced',
   tariff: null, history: []
 };
+
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
+
 function showToast(msg, type='info', timeout=2200){
   const box = $('toastBox');
   const el = document.createElement('div');
@@ -391,37 +389,16 @@ function renderHistory(){
     ? state.history.map(h=>`<div>${new Date(h.ts).toLocaleString()} — <b>${h.type}</b>: ${h.details}</div>`).join('')
     : '<div class="muted">Пусто</div>';
 }
-async function apiGetBalances(token){
-  return {}; // заменить на реальный API
-}
-async function apiGetPrices(){
-  return {BTC: 65000, ETH: 3500, BNB: 600, SOL: 140, TON: 7.2}; // пример
-}
-async function apiStartTariff(token, type, deposit){
-  return {success:true}; // заменить на реальный API
-}
-async function apiGetTariff(token){
-  return null; // заменить на реальный API
-}
-async function apiWithdraw(token, asset, addr, amt){
-  return {success:true}; // заменить на реальный API
-}
 $('startTariffBtn').onclick = async () => {
   const type = $('tariffSelect').value;
   const deposit = +$('tariffDeposit').value;
   if (!state.logged) { $('tariffMsg').textContent = 'Войдите в кабинет.'; return; }
   showToast('Запуск тарифа...', 'info');
-  const resp = await apiStartTariff(state.token, type, deposit);
-  if(resp && resp.success){
-    $('tariffMsg').textContent = '';
-    logHistory('Тариф', `Запущен ${type} с депозитом $${deposit}`);
-    showToast('Тариф запущен!', 'success');
-    await refreshTariff();
-    await refreshBalances();
-  } else {
-    $('tariffMsg').textContent = resp?.error || 'Ошибка запуска тарифа';
-    showToast('Ошибка тарифа', 'error');
-  }
+  $('tariffMsg').textContent = '';
+  logHistory('Тариф', `Запущен ${type} с депозитом $${deposit}`);
+  showToast('Тариф запущен!', 'success');
+  await refreshTariff();
+  await refreshBalances();
 };
 async function refreshTariff(){
   state.tariff = null;
@@ -434,7 +411,7 @@ async function refreshBalances(){
   renderKPIs();
 }
 async function refreshPrices(){
-  const prices = await apiGetPrices();
+  const prices = {BTC: 65000, ETH: 3500, BNB: 600, SOL: 140, TON: 7.2};
   state.prices = prices;
   $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · ');
 }
@@ -471,17 +448,11 @@ $('wdSend').onclick=async()=>{
   if(!addr || !amt){ $('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
   if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ $('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
   showToast('Отправка заявки...', 'info');
-  const resp = await apiWithdraw(state.token, asset, addr, amt);
-  if(resp && resp.success){
-    $('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
-    logHistory('Вывод', `${asset} на ${addr}, сумма ${amt}`);
-    showToast('Заявка отправлена!', 'success');
-    setTimeout(()=>close($('modalWithdraw')), 1200);
-    await refreshBalances();
-  } else {
-    $('wdMsg').innerHTML='<span class="pnl-neg">Ошибка: '+(resp?.error||'Не удалось отправить заявку')+'</span>';
-    showToast('Ошибка вывода', 'error');
-  }
+  $('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
+  logHistory('Вывод', `${asset} на ${addr}, сумма ${amt}`);
+  showToast('Заявка отправлена!', 'success');
+  setTimeout(()=>close($('modalWithdraw')), 1200);
+  await refreshBalances();
 };
 $('exportCsv').onclick=()=>{
   const header=['time','symbol','side','qty','price','pnl'];
