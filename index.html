@@ -1,148 +1,96 @@
+L B, [21.08.2025 17:13]
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BoostEx Trade — Кабинет</title>
-  <style>
-    body {
-      margin:0; background:linear-gradient(120deg,#0b1220 0%,#06b6d4 100%);
-      font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      color:#e5e7eb;
-      min-height:100vh;
-    }
-    #app-center {
-      display:flex;align-items:center;justify-content:center;min-height:100vh;
-    }
-    .auth-card {
-      background:rgba(15,23,42,.98);
-      box-shadow:0 10px 30px #0008;
-      border-radius:24px;
-      padding:40px 32px 32px 32px;
-      min-width:340px;
-      max-width:95vw;
-      display:flex;flex-direction:column;align-items:center;
-      margin-top:-60px;
-    }
-    h1 {
-      font-size:2rem;font-weight:700;margin-bottom:10px;letter-spacing:1px;
-      text-shadow:0 2px 14px #06b6d4a0;
-    }
-    .form-row {
-      display:flex;flex-direction:column;gap:15px;width:100%;margin-bottom:18px;
-    }
-    .input {
-      background:#0b1220;
-      color:#e5e7eb;
-      border:1px solid #1f2937;
-      border-radius:10px;
-      padding:11px 14px;
-      outline:none;
-      font-size:15px;
-      transition:.2s;
-    }
-    .input:focus {
-      border-color:#06b6d4;
-      box-shadow:0 0 0 2px #06b6d430;
-    }
-    .btn {
-      background:#06b6d4;
-      color:#0b1220;
-      border:none;
-      border-radius:10px;
-      padding:11px 26px;
-      font-weight:700;
-      font-size:16px;
-      cursor:pointer;
-      box-shadow:0 2px 10px #06b6d480;
-      transition:.2s;
-    }
-    .btn:active {background:#09d6f8;}
-    .msg {
-      margin-top:12px;
-      min-height:22px;
-      color:#ef4444;
-      font-size:15px;
-      text-align:center;
-    }
-    .muted {
-      color:#9ca3af;font-size:14px;text-align:center;margin-top:8px;
-    }
-    .switcher {
-      margin-bottom:18px;
-      text-align:center;
-    }
-    .switcher button {
-      background:transparent;
-      color:#06b6d4;
-      border:none;
-      font-weight:700;
-      font-size:15px;
-      cursor:pointer;
-      text-decoration:underline;
-      margin:0 8px;
-      transition:color .2s;
-    }
-    .switcher button.active {
-      color:#fff;
-      text-decoration:none;
-      cursor:default;
-    }
-    /* Кабинет */
-    .wrap{max-width:1100px; margin:0 auto; padding:20px}
-    header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid #1f2937}
-    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
-    .right{margin-left:auto}
-    .card{background:linear-gradient(180deg,#0f172a,#0c1528); border:1px solid #1f2937; border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
-    .h1{font-weight:700; font-size:18px}
-    .h2{font-weight:600; font-size:16px}
-    .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
-    .btn.ghost{background:transparent; color:#e5e7eb; border:1px solid #1f2937}
-    .input, .select{background:#0b1220; color:#e5e7eb; border:1px solid #1f2937; border-radius:10px; padding:10px 12px; outline:none}
-    .input:focus, .select:focus{border-color:#1e40af; box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
-    .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-    .kpi{background:#0c1528; border:1px solid #1f2937; border-radius:12px; padding:12px}
-    .kpi .val{font-size:22px; font-weight:800}
-    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-    .table{width:100%; border-collapse:collapse}
-    .table th,.table td{padding:10px; border-bottom:1px solid #1f2937; text-align:left}
-    .pnl-pos{color:#22c55e} .pnl-neg{color:#ef4444}
-    .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid #1f2937; border-radius:999px; background:#0b1220; color:#cbd5e1}
-    .canvas-wrap{background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:10px}
-    .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
-    .modal.open{display:flex}
-    .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid #1f2937; border-radius:16px; padding:18px; width:min(520px,92vw)}
-    #toastBox {position:fixed;top:30px;right:30px;z-index:100;}
-    .toast {background:#222;border-radius:8px;color:#fff;padding:12px 20px;margin-bottom:10px;box-shadow:0 2px 12px #0002;opacity:0;transition:.3s;}
-    .toast.info {background:#06b6d4;}
-    .toast.success {background:#22c55e;}
-    .toast.error {background:#ef4444;}
-    @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
-    @media(max-width:480px){
-      .wrap{padding:8px;}
-      .card{padding:8px;}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BoostEx Trade — Торговый кабинет </title>
+<style>
+  :root{
+    --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
+    --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{
+    margin:0; color:var(--text); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:
+      radial-gradient(60vw 40vh at 10% -10%, rgba(14,165,233,.12), transparent 40%),
+      radial-gradient(60vw 40vh at 110% 10%, rgba(99,102,241,.12), transparent 35%),
+      linear-gradient(180deg,#0b1220 0%, #0b1220 55%, #0f172a 100%);
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(80% 60% at 50% 10%, rgba(0,0,0,.5), transparent 100%);
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:20px}
+  header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid var(--border)}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .right{margin-left:auto}
+  .card{background:linear-gradient(180deg,var(--card),var(--soft)); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
+  .h1{font-weight:700; font-size:18px}
+  .h2{font-weight:600; font-size:16px}
+  .muted{color:var(--muted)}
+  .btn{background:var(--brand); color:#041018; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
+  .btn.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
+  .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
+  .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
+  .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
+  .kpi .val{font-size:22px; font-weight:800}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .table{width:100%; border-collapse:collapse}
+  .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
+  .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
+  .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
+  .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
+  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
+  .modal.open{display:flex}
+  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
+</style>
 </head>
 <body>
-<div id="app-center"></div>
-<div id="app-cabinet" style="display:none">
 <header>
   <div class="wrap row">
-    <div class="h1">BoostEx — торговый кабинет</div>
+    <div class="h1">BoostEx — торговый кабинет (демо)</div>
     <div class="row right">
+      <span class="tag" id="statusTag">Оффлайн-симуляция</span>
       <button class="btn small" id="openDeposit">Депозит</button>
       <button class="btn small ghost" id="openWithdraw">Вывод</button>
-      <button class="btn small ghost" id="openHistory">История операций</button>
-      <button class="btn small ghost" id="logoutBtn">Выйти</button>
     </div>
   </div>
 </header>
-<main class="wrap" id="cabinetMain">
+
+L B, [21.08.2025 17:13]
+<div class="row" style="margin-top:20px; justify-content:center;">
+  <script async src="https://telegram.org/js/telegram-widget.js?7"
+          data-telegram-login="BoostEx_Trade_Bot"
+          data-size="large" data-radius="10" data-auth-url="https://yourserver.com/auth/telegram">
+  </script>
+</div>
+
+<main class="wrap" id="app">
   <section class="card">
     <div class="row">
-      <div class="h2">Выбор тарифа</div>
+      <div class="h2">Вход</div>
+      <span class="tag">Гостевой доступ</span>
     </div>
+    <div class="row" style="margin-top:8px">
+      <input id="email" class="input" style="min-width:240px" placeholder="email" value="admin@example.com" />
+      <input id="pass"  class="input" style="min-width:180px" placeholder="password" value="admin123" type="password" />
+      <button class="btn" id="login">Войти</button>
+      <span id="loginMsg" class="muted"></span>
+    </div>
+  </section>
+
+  <!-- Тарифная секция -->
+  <section class="card" id="tariffSection">
+    <div class="h2">Выбор тарифа</div>
     <div class="row" style="margin-top:10px">
       <select id="tariffSelect" class="select">
         <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
@@ -154,17 +102,21 @@
     </div>
     <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
   </section>
+
+  <!-- Активный тариф -->
   <section class="card" id="activeTariffSection" style="display:none">
     <div class="h2">Активный тариф</div>
     <div id="activeTariffInfo" class="muted" style="margin-top:8px"></div>
     <div id="tariffTimer" style="margin-top:6px"></div>
   </section>
+
   <section class="kpis">
     <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
     <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
     <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
-    <div class="kpi"><div class="muted">Статус</div><div class="val" id="kpiStatus">Онлайн</div></div>
+    <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
   </section>
+
   <section class="grid2">
     <div class="card">
       <div class="h2">Балансы</div>
@@ -175,6 +127,7 @@
       <div id="prices" class="muted" style="margin-top:6px">—</div>
     </div>
   </section>
+
   <section class="card">
     <div class="row">
       <div class="h2">Кривая капитала</div>
@@ -191,7 +144,9 @@
     </div>
     <div class="canvas-wrap" style="margin-top:10px"><canvas id="equityChart" width="1000" height="280"></canvas></div>
   </section>
-  <section class="card">
+
+L B, [21.08.2025 17:13]
+<section class="card">
     <div class="row">
       <div class="h2">Сделки (последние)</div>
       <div class="right row">
@@ -208,13 +163,7 @@
     </table>
   </section>
 </main>
-<!-- Модальные окна -->
-<div class="modal" id="modalHistory">
-  <div class="sheet">
-    <div class="row"><div class="h2">История операций</div><button class="btn small ghost right" data-close="history">Закрыть</button></div>
-    <div id="historyContent" style="margin-top:10px"></div>
-  </div>
-</div>
+
 <div class="modal" id="modalDeposit">
   <div class="sheet">
     <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
@@ -227,10 +176,11 @@
     <div id="depInfo" class="muted" style="margin-top:10px">Выберите актив и сгенерируйте адрес пополнения.</div>
     <div id="qrBox" class="card" style="margin-top:10px; display:none">
       <div class="muted">QR-код (псевдо)</div>
-      <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid #1f2937; border-radius:10px"></canvas>
+      <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid var(--border); border-radius:10px"></canvas>
     </div>
   </div>
 </div>
+
 <div class="modal" id="modalWithdraw">
   <div class="sheet">
     <div class="row"><div class="h2">Вывод средств</div><button class="btn small ghost right" data-close="withdraw">Закрыть</button></div>
@@ -242,228 +192,154 @@
       <input id="wdAmt" class="input" placeholder="Сумма" type="number" step="0.0001" style="width:120px">
       <button class="btn small" id="wdSend">Отправить заявку</button>
     </div>
-    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit.</div>
+    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit (демо).</div>
     <div id="wdMsg" style="margin-top:8px"></div>
   </div>
 </div>
-<div id="toastBox"></div>
-</div>
+
 <script>
-const API_URL = "https://yourserver.com/api";
-const $ = id => document.getElementById(id);
-
-function showCabinet() {
-  $('app-center').style.display = 'none';
-  $('app-cabinet').style.display = '';
-}
-function showAuth() {
-  $('app-cabinet').style.display = 'none';
-  $('app-center').style.display = 'flex';
-}
-
-function renderAuthForm() {
-  $('app-center').innerHTML = `
-    <div class="auth-card">
-      <h1>BoostEx Trade</h1>
-      <div class="switcher">
-        <button id="switchLogin" class="active">Вход</button> | 
-        <button id="switchReg">Регистрация</button>
-      </div>
-      <form id="loginForm">
-        <div class="form-row" id="loginFields">
-          <input class="input" id="loginEmail" type="email" placeholder="Email" autocomplete="username" />
-          <input class="input" id="loginPass" type="password" placeholder="Пароль" autocomplete="current-password" />
-        </div>
-        <button type="submit" class="btn" id="loginBtn">Войти</button>
-        <div class="msg" id="loginMsg"></div>
-      </form>
-      <form id="regForm" style="display:none">
-        <div class="form-row" id="regFields">
-          <input class="input" id="regEmail" type="email" placeholder="Email" autocomplete="username" />
-          <input class="input" id="regPass" type="password" placeholder="Пароль" autocomplete="new-password" />
-          <input class="input" id="regPass2" type="password" placeholder="Повторите пароль" autocomplete="new-password" />
-        </div>
-        <button type="submit" class="btn" id="regBtn">Зарегистрироваться</button>
-        <div class="msg" id="regMsg"></div>
-      </form>
-      <div class="muted">Данные защищены. Платформа не хранит приватные ключи и пароли в открытом виде.</div>
-    </div>
-  `;
-  $('switchLogin').onclick = () => {
-    $('switchLogin').classList.add('active'); $('switchReg').classList.remove('active');
-    $('loginForm').style.display = ''; $('regForm').style.display = 'none';
-  };
-  $('switchReg').onclick = () => {
-    $('switchReg').classList.add('active'); $('switchLogin').classList.remove('active');
-    $('loginForm').style.display = 'none'; $('regForm').style.display = '';
-  };
-  $('loginForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const email = $('loginEmail').value.trim();
-    const pass = $('loginPass').value.trim();
-    $('loginMsg').textContent = '';
-    if(!email || !pass){ $('loginMsg').textContent = 'Введите email и пароль.'; return; }
-    $('loginBtn').disabled = true;
-    try {
-      // --- Замените на свой backend! ---
-      // Пример успешного входа:
-      if(email && pass) {
-        localStorage.setItem('token', 'demo-token');
-        showCabinet();
-        await refreshAll();
-      } else {
-        $('loginMsg').textContent = "Ошибка авторизации";
-      }
-      // ----
-    } catch(e){
-      $('loginMsg').textContent = "Ошибка соединения";
-    }
-    $('loginBtn').disabled = false;
-  };
-  $('regForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const email = $('regEmail').value.trim();
-    const pass = $('regPass').value.trim();
-    const pass2 = $('regPass2').value.trim();
-    $('regMsg').textContent = '';
-    if(!email || !pass || !pass2){ $('regMsg').textContent = 'Заполните все поля.'; return; }
-    if(pass !== pass2){ $('regMsg').textContent = 'Пароли не совпадают.'; return; }
-    if(pass.length < 6){ $('regMsg').textContent = 'Пароль минимум 6 символов.'; return; }
-    $('regBtn').disabled = true;
-    try {
-      // --- Замените на свой backend! ---
-      // Пример успешной регистрации:
-      if(email && pass && pass === pass2) {
-        $('regMsg').style.color = "#22c55e";
-        $('regMsg').textContent = "Регистрация успешна! Теперь войдите.";
-        setTimeout(()=>{$('switchLogin').click()}, 1500);
-      } else {
-        $('regMsg').textContent = "Ошибка регистрации";
-      }
-      // ----
-    } catch(e){
-      $('regMsg').textContent = "Ошибка соединения";
-    }
-    $('regBtn').disabled = false;
-  };
-}
-
-function logout() {
-  localStorage.removeItem('token');
-  showAuth();
-  renderAuthForm();
-}
-
-// --------- Кабинет JS ---------
 const state = {
   logged: false,
   token: null,
-  balances: {},
-  prices: {},
+  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:640, USDC:0, XRP:280 },
+  prices:   { BTC:65000, ETH:3400, BNB:580, LTC:75,  SOL:155, TON:6,  TRX:0.12, USDT:1,  USDC:1,  XRP:0.55 },
   equity: [], trades: [], simTimer: null, profile: 'balanced',
-  tariff: null, history: []
+  tariff: null
 };
-
+const $ = (id)=>document.getElementById(id);
 const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
 
-function showToast(msg, type='info', timeout=2200){
-  const box = $('toastBox');
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.innerHTML = msg;
-  box.appendChild(el);
-  setTimeout(()=>el.style.opacity='1', 50);
-  setTimeout(()=>{
-    el.style.opacity='0';
-    setTimeout(()=>box.removeChild(el), 300);
-  }, timeout);
-}
-function logHistory(type, details){
-  state.history.unshift({type, details, ts: Date.now()});
-  renderHistory();
-}
-$('openHistory').onclick = ()=> open($('modalHistory'));
-document.querySelectorAll('[data-close="history"]').forEach(b=>b.onclick=()=>close($('modalHistory')));
-function renderHistory(){
-  $('historyContent').innerHTML = state.history.length
-    ? state.history.map(h=>`<div>${new Date(h.ts).toLocaleString()} — <b>${h.type}</b>: ${h.details}</div>`).join('')
-    : '<div class="muted">Пусто</div>';
-}
-$('startTariffBtn').onclick = async () => {
+// Тарифы
+const tariffs = {
+  conservative: { min: 100, max: 700, days: 10, yield: 0.13 },
+  balanced:    { min: 3000, max: 9000, days: 25, yield: 0.21 },
+  aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
+};
+
+$('login').onclick = () => {
+  const email = $('email').value.trim(), pass = $('pass').value.trim();
+  if(email==='admin@example.com' && pass==='admin123'){
+    state.logged = true; state.token = Math.random().toString(36).slice(2);
+    $('loginMsg').textContent = 'Вход выполнен';
+    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs();
+  } else {$('loginMsg').textContent='Неверный логин/пароль';}
+};
+
+L B, [21.08.2025 17:13]
+// --- Тарифная логика ---
+$('startTariffBtn').onclick = () => {
   const type = $('tariffSelect').value;
   const deposit = +$('tariffDeposit').value;
+  const trf = tariffs[type];
   if (!state.logged) { $('tariffMsg').textContent = 'Войдите в кабинет.'; return; }
-  showToast('Запуск тарифа...', 'info');
-  $('tariffMsg').textContent = '';
-  logHistory('Тариф', `Запущен ${type} с депозитом $${deposit}`);
-  showToast('Тариф запущен!', 'success');
-  await refreshTariff();
-  await refreshBalances();
+  if (deposit < trf.min  deposit > trf.max) {
+    $('tariffMsg').textContent = `Сумма должна быть от ${trf.min} до ${trf.max} USD для этого тарифа.`; return;
+  }
+  if (state.balances.USDT < deposit) {
+    $('tariffMsg').textContent = 'Недостаточно средств на балансе.'; return;
+  }
+  state.balances.USDT -= deposit;
+  state.tariff = {
+    type,
+    deposit,
+    start: Date.now(),
+    end: Date.now() + trf.days * 24*3600*1000,
+    targetYield: trf.yield,
+    finished: false,
+    profit: 0,
+    tradesTimer: null,
+    totalTrades: Math.round(trf.days * 2 * 24 / 24), // 2 сделки в час
+    doneTrades: 0
+  };
+  $('tariffSection').style.display = 'none';
+  $('activeTariffSection').style.display = '';
+  updateActiveTariffInfo();
+  scheduleTariffTrades();
 };
-async function refreshTariff(){
-  state.tariff = null;
-  $('activeTariffSection').style.display = 'none';
+
+function updateActiveTariffInfo() {
+  if (!state.tariff) return;
+  const trf = tariffs[state.tariff.type];
+  const daysLeft = Math.max(0, Math.ceil((state.tariff.end - Date.now()) / (24*3600*1000)));
+  $('activeTariffInfo').innerHTML =
+    `Тариф: <b>${state.tariff.type}</b><br>Сумма: <b>$${state.tariff.deposit}</b><br>
+    Доходность: <b>${Math.round(trf.yield*100)}%</b> за ${trf.days} дней<br>
+    Осталось дней: <b>${daysLeft}</b>`;
+  if (state.tariff.finished) {
+    $('tariffTimer').innerHTML = `<span class="pnl-pos">Тариф завершён! На баланс вернулось $${(state.tariff.deposit + state.tariff.profit).toFixed(2)}</span>`;
+  } else {
+    $('tariffTimer').innerHTML = `До завершения: <b>${formatTimer(state.tariff.end - Date.now())}</b>`;
+  }
 }
-function updateActiveTariffInfo() {}
-function formatTimer(ms) {return '00:00:00'}
-async function refreshBalances(){
-  $('balances').textContent = 'USDT: 1000 · BTC: 0.01 · ETH: 0.15';
-  renderKPIs();
+function formatTimer(ms) {
+  if (ms<=0) return '00:00:00';
+  const d = Math.floor(ms/(24*3600*1000));
+  const h = Math.floor((ms%(24*3600*1000))/3600000);
+  const m = Math.floor((ms%3600000)/60000);
+  return `${d}д ${h}ч ${m}м`;
 }
-async function refreshPrices(){
-  const prices = {BTC: 65000, ETH: 3500, BNB: 600, SOL: 140, TON: 7.2};
-  state.prices = prices;
-  $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · ');
+
+// Моделируем сделки (2 в час, итоговая доходность тарифа)
+function scheduleTariffTrades() {
+  if (!state.tariff  state.tariff.finished) return;
+  const trf = tariffs[state.tariff.type];
+  const totalProfit = state.tariff.deposit * trf.yield;
+  const avgPnl = totalProfit / state.tariff.totalTrades;
+  state.tariff.doneTrades = 0;
+  state.tariff.profit = 0;
+
+  state.tariff.tradesTimer = setInterval(() => {
+    if (!state.tariff  state.tariff.finished) return;
+    // Генерируем сделку, симулируем +/- стандартное отклонение
+    const std = avgPnl * 0.2;
+    let pnl = avgPnl + (Math.random()-0.5)*std;
+    if (state.tariff.doneTrades === state.tariff.totalTrades - 1) {
+      // Последняя — добивает до целевой доходности
+      pnl = totalProfit - state.tariff.profit;
+    }
+    state.tariff.profit += pnl;
+    pushTrade('BTC', Math.random()>.5?'BUY':'SELL', +(Math.random()*0.01).toFixed(4), state.prices['BTC'], pnl);
+    drawChart(); renderTrades(); renderKPIs();
+    state.tariff.doneTrades++;
+    if (state.tariff.doneTrades >= state.tariff.totalTrades  Date.now() > state.tariff.end) {
+      finishTariff();
+    }
+    updateActiveTariffInfo();
+  }, 1800000); // каждые 30 минут, 2 сделки/час
 }
+
+function finishTariff() {
+  if (state.tariff.tradesTimer) clearInterval(state.tariff.tradesTimer);
+  state.tariff.finished = true;
+  state.balances.USDT += state.tariff.deposit + state.tariff.profit;
+  updateActiveTariffInfo();
+  renderBalances();
+  setTimeout(() => {
+    $('activeTariffSection').style.display = 'none';
+    $('tariffSection').style.display = '';
+    state.tariff = null;
+    renderBalances();
+  }, 8000); // 8 сек на уведомление
+}
+
+// --- /Тарифная логика ---
+
+L B, [21.08.2025 17:13]
+function renderBalances(){ $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k,v])=>${k}: ${v}).join(' · ') : 'Войдите, чтобы увидеть баланс.'; }
+function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>${k}: ${fmtUSD(v)}).join(' · '); }
 function renderKPIs(){
-  $('kpiEquity').textContent = fmtUSD(10000);
-  $('kpiPnl').innerHTML = '<span class="pnl-pos">+1200.00</span>';
-  $('kpiTrades').textContent = 36;
-  $('kpiStatus').textContent = "Онлайн";
+  const last = state.equity[state.equity.length-1]?.e  10000;
+  document.getElementById('kpiEquity').textContent = fmtUSD(last);
+  const first30 = state.equity[Math.max(0, state.equity.length-30)]?.e  last;
+  const pnl = last - first30;
+  document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
+  document.getElementById('kpiTrades').textContent = state.trades.length;
+  if (state.tariff) updateActiveTariffInfo();
 }
-function renderTrades(){
-  $('trades').innerHTML = `<tr><td>2025-08-21 13:15</td><td>BTC</td><td>BUY</td><td>0.003</td><td>65000</td><td class="pnl-pos">+80.00</td></tr>
-  <tr><td>2025-08-21 12:55</td><td>ETH</td><td>SELL</td><td>0.07</td><td>3400</td><td class="pnl-neg">-32.00</td></tr>`;
-}
-const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
-document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close($('modalDeposit')));
-document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close($('modalWithdraw'));
-$('openDeposit').onclick = ()=> open($('modalDeposit'));
-$('openWithdraw').onclick= ()=> open($('modalWithdraw'));
-$('genAddr').onclick=()=>{
-  const asset=$('depAsset').value;
-  const addr = asset.includes('TRC20') ? 'T'+Math.random().toString(36).slice(2,10).toUpperCase()+'...' :
-              asset==='BTC' ? 'bc1q'+Math.random().toString(36).slice(2,9)+'...' :
-              asset==='ETH' ? '0x'+Math.random().toString(16).slice(2,10)+'...' :
-              'EQ'+Math.random().toString(36).slice(2,10).toUpperCase()+'...';
-  $('depInfo').innerHTML = `Адрес для ${asset}: <b>${addr}</b>`;
-  const c=$('qr'), ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-  for(let y=0;y<22;y++) for(let x=0;x<22;x++){ const on=Math.random()>.5; ctx.fillStyle=on?'#e5e7eb':'#0b1220'; ctx.fillRect(10+x*9,10+y*9,8,8); }
-  $('qrBox').style.display='block';
-  logHistory('Депозит', `Сгенерирован адрес для ${asset}`);
-  showToast('Адрес сгенерирован', 'info');
-};
-$('wdSend').onclick=async()=>{
-  const asset=$('wdAsset').value, addr=$('wdAddr').value.trim(), amt=+($('wdAmt').value||0);
-  if(!addr || !amt){ $('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
-  if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ $('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
-  showToast('Отправка заявки...', 'info');
-  $('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
-  logHistory('Вывод', `${asset} на ${addr}, сумма ${amt}`);
-  showToast('Заявка отправлена!', 'success');
-  setTimeout(()=>close($('modalWithdraw')), 1200);
-  await refreshBalances();
-};
-$('exportCsv').onclick=()=>{
-  const header=['time','symbol','side','qty','price','pnl'];
-  const rows=[["2025-08-21 13:15","BTC","BUY","0.003","65000","80"],["2025-08-21 12:55","ETH","SELL","0.07","3400","-32"]];
-  const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
-};
+
 function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
 function drawChart(){
-  const cvs = $('equityChart'), ctx = cvs.getContext('2d');
+  const cvs = document.getElementById('equityChart'), ctx = cvs.getContext('2d');
   const pad=36, w=cvs.width-pad*2, h=cvs.height-pad*2;
   ctx.clearRect(0,0,cvs.width,cvs.height);
   const ys = state.equity.map(p=>p.e), minY=Math.min(...ys), maxY=Math.max(...ys);
@@ -476,39 +352,75 @@ function drawChart(){
   ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
   ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
 }
-$('startSim').onclick=()=>{ if(state.simTimer) return; state.simTimer=setInterval(tick, 1200); };
-$('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; };
-$('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
-$('profile').onchange=(e)=>{ state.profile=e.target.value; };
-$('logoutBtn').onclick = logout;
+
+function pushTrade(sym, side, qty, price, pnl){
+  state.trades.unshift({ts: Date.now(), symbol:sym, side, qty, price, pnl});
+  if(state.trades.length>200) state.trades.pop();
+  const last = state.equity[state.equity.length-1]?.e  10000;
+  state.equity.push({ts: Date.now(), e: +(last + pnl).toFixed(2)});
+  if(state.equity.length>240) state.equity.shift();
+}
+function renderTrades(){
+  const filt = document.getElementById('symbolFilter').value;
+  const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
+    const cls = t.pnl>=0?'pnl-pos':'pnl-neg';
+    return `<tr><td>${new Date(t.ts).toLocaleString()}</td><td>${t.symbol}</td><td>${t.side}</td><td>${t.qty}</td><td>${t.price}</td><td class="${cls}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td></tr>`;
+  }).join('');
+  document.getElementById('trades').innerHTML = rows  <tr><td colspan="6" class="muted">Сделок пока нет</td></tr>;
+}
+
+function profileRange(p){ if(p==='conservative')return[-8,12]; if(p==='aggressive')return[-20,30]; return[-12,18]; }
 function tick(){
-  // Симуляция сделки и капитала
-  // Можно заменить на реальную API-логику!
+  const syms=['BTC','ETH','BNB','SOL','TON']; const sym=syms[Math.floor(Math.random()*syms.length)];
+  const side=Math.random()>.5?'BUY':'SELL'; const qty=+(Math.random()*(sym==='BTC'?0.005:sym==='ETH'?0.1:20)).toFixed(4);
+  const price=+(state.prices[sym]*(0.98+Math.random()*0.04)).toFixed(2);
+  const [minP,maxP]=profileRange(state.profile); const pnl=+((Math.random()*(maxP-minP)+minP)).toFixed(2);
+  pushTrade(sym,side,qty,price,pnl); drawChart(); renderTrades(); renderKPIs();
 }
-async function refreshAll(){
-  state.token = localStorage.getItem('token');
-  state.logged = !!state.token;
-  if(!state.logged) { showAuth(); renderAuthForm(); return; }
-  showCabinet();
-  await refreshBalances();
-  await refreshPrices();
-  await refreshTariff();
-  renderTrades();
-  seedEquity();
-  drawChart();
-  renderHistory();
-  renderKPIs();
-}
-document.addEventListener('DOMContentLoaded', function() {
-  if(localStorage.getItem('token')) {
-    showCabinet();
-    refreshAll();
-  } else {
-    showAuth();
-    renderAuthForm();
-  }
-});
-setInterval(updateActiveTariffInfo, 60000);
+document.getElementById('startSim').onclick=()=>{ if(state.simTimer) return; state.simTimer=setInterval(tick, 1200); };
+document.getElementById('stopSim').onclick =()=>{ clearInterval(state.simTimer); state.simTimer=null; };
+document.getElementById('resetSim').onclick=()=>{ state.trades=[]; seedEquity(); drawChart(); renderTrades(); renderKPIs(); };
+document.getElementById('profile').onchange=(e)=>{ state.profile=e.target.value; };
+
+L B, [21.08.2025 17:13]
+document.getElementById('exportCsv').onclick=()=>{
+  const header=['time','symbol','side','qty','price','pnl'];
+  const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl]);
+  const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
+};
+
+const modalDeposit=document.getElementById('modalDeposit'), modalWithdraw=document.getElementById('modalWithdraw');
+const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
+document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close(modalDeposit));
+document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close(modalWithdraw));
+document.getElementById('openDeposit').onclick = ()=> open(modalDeposit);
+document.getElementById('openWithdraw').onclick= ()=> open(modalWithdraw);
+
+document.getElementById('genAddr').onclick=()=>{
+  const asset=document.getElementById('depAsset').value;
+  const addr = asset.includes('TRC20') ? 'T'+Math.random().toString(36).slice(2,10).toUpperCase()+'...' :
+              asset==='BTC' ? 'bc1q'+Math.random().toString(36).slice(2,9)+'...' :
+              asset==='ETH' ? '0x'+Math.random().toString(16).slice(2,10)+'...' :
+              'EQ'+Math.random().toString(36).slice(2,10).toUpperCase()+'...';
+  document.getElementById('depInfo').innerHTML = Адрес для ${asset}: <b>${addr}</b>;
+  const c=document.getElementById('qr'), ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+  for(let y=0;y<22;y++) for(let x=0;x<22;x++){ const on=Math.random()>.5; ctx.fillStyle=on?'#e5e7eb':'#0b1220'; ctx.fillRect(10+x*9,10+y*9,8,8); }
+  document.getElementById('qrBox').style.display='block';
+};
+
+document.getElementById('wdSend').onclick=()=>{
+  const asset=document.getElementById('wdAsset').value, addr=document.getElementById('wdAddr').value.trim(), amt=+((document.getElementById('wdAmt').value)0);
+  if(!addr  !amt){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
+  if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
+  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending (демо).</span>';
+  setTimeout(()=>close(modalWithdraw), 1200);
+};
+
+seedEquity(); drawChart(); renderPrices(); renderTrades(); renderKPIs();
+
+setInterval(updateActiveTariffInfo, 60000); // обновляем раз в минуту таймер
 </script>
 </body>
 </html>
