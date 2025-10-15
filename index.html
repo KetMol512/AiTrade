@@ -1,659 +1,674 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BoostEx — Trading Bot & Wallet (Demo auth + Telegram)</title>
-  <style>
-    :root{
-      --bg:#0f1724; --card:#0b1220; --muted:#9aa8bd; --accent:#6ee7b7; --accent-2:#60a5fa;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071124 0%, #041026 100%);color:#e6eef6}
-    .app {max-width:1200px;margin:28px auto;padding:20px;display:grid;grid-template-columns:320px 1fr;gap:20px;}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;box-shadow: 0 4px 20px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
-    header.card{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#022}
-    h1{margin:0;font-size:18px}
-    .muted{color:var(--muted);font-size:13px}
-    .left{display:flex;flex-direction:column;gap:16px}
-    .balance{font-size:22px;font-weight:700}
-    .mini{display:flex;gap:10px;align-items:center}
-    .btn{background:linear-gradient(180deg,#142233,#0e2736);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:var(--accent);font-weight:600}
-    .btn.secondary{background:transparent;border:1px dashed rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
-    .wallet-list{display:flex;flex-direction:column;gap:10px}
-    .wallet-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px}
-    .small{font-size:12px;color:var(--muted)}
-    .addr{font-family:monospace;font-size:12px;color:#bfeadf;word-break:break-all}
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:20px}
-    .panel{min-height:160px}
-    .chart-wrap{height:300px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008))}
-    .tariffs{display:flex;flex-direction:column;gap:12px}
-    .tariff{display:flex;flex-direction:column;padding:14px;border-radius:10px;background:linear-gradient(180deg,#07182a,#061422);border:1px solid rgba(255,255,255,0.02)}
-    .transactions{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto;padding-right:6px}
-    input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:inherit;font-size:14px}
-    .actions{display:flex;gap:8px;align-items:center;margin-top:10px}
-    @media (max-width:1100px){.app{grid-template-columns:1fr;}.grid{grid-template-columns:1fr}.left{order:2}}
-    footer{grid-column:1/-1;margin-top:8px;text-align:center;color:var(--muted);font-size:13px}
-    #modalRoot{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:9999}
-    #modalBg{position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.6))}
-    #modal{position:relative;z-index:10;max-width:760px;width:94%;border-radius:12px;padding:18px;background:linear-gradient(180deg,#041022,#071827);border:1px solid rgba(255,255,255,0.03)}
-    .hint{font-size:13px;color:var(--muted);margin-top:8px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BoostEx — Demo (Polished) — Trading Bot & Wallet</title>
+<style>
+  /* ===== Theme & layout ===== */
+  :root{
+    --bg: #071126;
+    --panel: linear-gradient(180deg,#071827,#041124);
+    --muted: #9fb0c7;
+    --accent: #6ee7b7;
+    --accent-2: #60a5fa;
+    --glass: rgba(255,255,255,0.03);
+    --glass-2: rgba(255,255,255,0.02);
+    --danger: #fb7185;
+    --radius: 12px;
+    --shadow: 0 8px 30px rgba(2,6,23,0.6);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: dark;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#041026 0%, #02101a 100%);color:#e6eef6}
+  *{box-sizing:border-box}
+
+  .wrap{max-width:1200px;margin:28px auto;padding:18px;display:grid;grid-template-columns:260px 1fr;gap:18px;align-items:start}
+  header.appbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.03)}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#042}
+  h1{margin:0;font-size:18px}
+  .subtitle{color:var(--muted);font-size:13px}
+
+  /* ===== Sidebar ===== */
+  aside.sidebar{display:flex;flex-direction:column;gap:14px}
+  .panel{background:var(--panel);border-radius:var(--radius);padding:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:var(--shadow)}
+  .balance {font-weight:700;font-size:20px;margin-top:6px}
+  .controls-row{display:flex;gap:8px;align-items:center}
+  .small{font-size:13px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  .btn{background:linear-gradient(180deg,#142233,#0e2736);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:var(--accent);font-weight:700}
+  .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
+  .btn.warn{background:linear-gradient(180deg,#5b1220,#7b2736);color:var(--danger)}
+  .wallet-list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  .wallet-item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px;border-radius:10px;background:var(--glass-2);font-size:13px}
+  .addr{font-family:monospace;color:#bfeadf;font-size:12px;word-break:break-all}
+
+  /* ===== Main content ===== */
+  main.grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  .card{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:var(--shadow)}
+  .chart-wrap{height:360px;border-radius:10px;padding:10px;background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008))}
+  canvas{width:100%;height:100%;display:block;border-radius:8px}
+
+  .tariffs{display:flex;flex-direction:column;gap:12px}
+  .tariff{padding:12px;border-radius:10px;background:linear-gradient(180deg,#07182a,#061422);border:1px solid rgba(255,255,255,0.02)}
+  .tariff .title{font-weight:700}
+  .tx-list{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px}
+
+  /* ===== modal ===== */
+  #modalRoot{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:9999}
+  #modalBg{position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.6))}
+  #modal{position:relative;z-index:10;max-width:820px;width:94%;border-radius:14px;padding:18px;background:linear-gradient(180deg,#041022,#071827);border:1px solid rgba(255,255,255,0.03)}
+
+  /* ===== responsive ===== */
+  @media (max-width:1100px){
+    .wrap{grid-template-columns:1fr}
+    main.grid{grid-template-columns:1fr}
+  }
+
+  /* small helpers */
+  .muted-2{color:rgba(255,255,255,0.6)}
+  .meta{font-size:12px;color:var(--muted)}
+  .inline {display:inline-flex;gap:6px;align-items:center}
+  .speed-select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px;color:var(--muted)}
+</style>
 </head>
 <body>
-  <div class="app">
-    <header class="card">
+  <div class="wrap">
+    <header class="appbar">
       <div class="brand">
         <div class="logo">B</div>
         <div>
-          <h1>BoostEx — Trading Bot & Wallet (Demo)</h1>
-          <div class="muted" id="statusLine">Пожалуйста, зарегистрируйтесь и войдите, чтобы пользоваться сервисом</div>
+          <h1>BoostEx</h1>
+          <div class="subtitle">Trading Bot & Wallet — демонстрация</div>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;align-items:center">
-        <div class="admin-toggle small">
-          <label class="small">Admin mode</label>
-          <input id="adminChk" type="checkbox" disabled />
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="inline">
+          <div class="meta">Обновление графика</div>
+          <select id="speed" class="speed-select" title="Simulation speed">
+            <option value="1000">1s (dev)</option>
+            <option value="10000">10s</option>
+            <option value="60000" selected>60s (real)</option>
+          </select>
         </div>
-        <button class="btn" id="btnTelegram">Войти через Telegram</button>
-        <button class="btn secondary" id="btnRegister">Регистрация (Email)</button>
-        <button class="btn secondary" id="btnLogin">Вход</button>
+        <button id="btnTelegram" class="btn">Войти через Telegram</button>
+        <button id="btnRegister" class="btn ghost">Регистрация</button>
+        <button id="btnLogin" class="btn ghost">Вход</button>
       </div>
     </header>
 
-    <!-- LEFT -->
-    <aside class="left">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div class="small">Баланс в кошельке</div>
-            <div class="balance" id="totalBalance">—</div>
-            <div class="small">USD эквивалент (симуляция)</div>
-          </div>
-          <div style="text-align:right">
-            <div class="mini">
-              <button class="btn" id="btnDeposit">Пополнить</button>
-              <button class="btn secondary" id="btnConvert">Конвертировать</button>
-            </div>
-            <div style="height:8px"></div>
-            <div class="small">Профит бота: <span id="botPnl">—</span></div>
-          </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="small">Баланс</div>
+        <div class="balance" id="totalBalance">—</div>
+        <div class="small">USD эквивалент — симуляция</div>
+        <div style="height:10px"></div>
+        <div class="controls-row">
+          <button id="btnDeposit" class="btn">Пополнить</button>
+          <button id="btnConvert" class="btn ghost">Конвертировать</button>
         </div>
+        <div style="height:10px"></div>
+        <div class="small">Профит бота: <strong id="botPnl">—</strong></div>
       </div>
 
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center">
           <div class="small">Мои адреса</div>
-          <button class="btn secondary" id="btnNewAddress">Новый адрес</button>
+          <button id="btnNewAddress" class="btn ghost">Новый</button>
         </div>
-        <div class="wallet-list" id="walletList">
-          <!-- addresses inserted by JS -->
-        </div>
+        <div class="wallet-list" id="walletList"></div>
+        <div style="height:8px"></div>
+        <div class="meta">Адреса генерируются локально (демо). В проде — /wallets.</div>
       </div>
 
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div class="small">Текущая подписка</div>
-            <div id="activePlan" style="font-weight:700">Нет подписки</div>
-          </div>
-          <div>
-            <button class="btn" id="btnPlans">Тарифы</button>
-          </div>
-        </div>
+      <div class="panel">
+        <div class="small">Подписка</div>
+        <div id="activePlan" style="font-weight:700;margin-top:6px">Нет подписки</div>
+        <div style="height:8px"></div>
+        <button id="btnPlans" class="btn ghost">Тарифы</button>
       </div>
     </aside>
 
-    <!-- RIGHT -->
-    <main>
-      <div class="grid">
-        <section class="card panel">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div>
-              <div class="small">Trading Bot · ИИ-симуляция</div>
-              <div style="font-weight:700">Автоматическая торговля (демо)</div>
-            </div>
-            <div class="controls">
-              <button class="btn" id="btnStartBot">Запустить</button>
-              <button class="btn secondary" id="btnStopBot">Остановить</button>
-              <button class="btn" id="btnResetBot">Сбросить</button>
-            </div>
+    <!-- MAIN -->
+    <main class="grid">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div class="small">Trading Bot · ИИ-симуляция</div>
+            <div style="font-weight:700">Автоматическая торговля</div>
+            <div class="meta" style="margin-top:6px">Демонстрация стратегии — симуляция случайных сделок и изменения баланса.</div>
           </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="btnStartBot" class="btn">Запустить</button>
+            <button id="btnStopBot" class="btn ghost">Остановить</button>
+            <button id="btnResetBot" class="btn ghost">Сбросить</button>
+          </div>
+        </div>
 
-          <div class="chart-wrap">
-            <canvas id="botChart"></canvas>
-          </div>
+        <div class="chart-wrap">
+          <canvas id="botChart"></canvas>
+        </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-            <div class="small">Стратегии: mean-revert · momentum · hybrid (симуляция)</div>
-            <div class="small">Время: <span id="botTime">00:00</span></div>
-          </div>
-        </section>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <div class="small">Стратегии: mean-revert · momentum · hybrid</div>
+          <div class="small">Время: <span id="botTime">—</span></div>
+        </div>
+      </section>
 
-        <aside class="card panel">
-          <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
-            <div class="small">Тарифы и планы</div>
-            <div class="small">Выбери подходящий</div>
-          </div>
-          <div class="tariffs" id="tariffs">
-            <!-- tariffs inserted by JS -->
-          </div>
-        </aside>
+      <aside class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="small">Тарифы и планы</div>
+          <div class="small muted">Выбери</div>
+        </div>
+        <div class="tariffs" id="tariffs"></div>
+        <div style="height:10px"></div>
+        <div class="meta">Интеграция: /plans, /plans/subscribe</div>
+      </aside>
 
-        <section class="card panel" style="grid-column:1/-1;margin-top:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div>
-              <div class="small">История транзакций</div>
-              <div style="font-weight:700">Последние операции</div>
-            </div>
-            <div>
-              <button class="btn secondary" id="btnExport">Экспорт</button>
-            </div>
+      <section class="card" style="grid-column:1/-1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <div class="small">История транзакций</div>
+            <div style="font-weight:700">Последние операции</div>
           </div>
-
-          <div class="transactions" id="txList">
-            <!-- tx inserted by JS -->
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="btnExport" class="btn ghost">Экспорт CSV</button>
+            <div class="meta">Доступно после входа</div>
           </div>
-        </section>
-      </div>
+        </div>
+        <div class="tx-list" id="txList"></div>
+      </section>
     </main>
-
-    <footer class="muted card" style="display:flex;justify-content:space-between;align-items:center">
-      <div>BoostEx Demo · интерфейс для MVP</div>
-      <div>Need production integration? Email: team@boostex.example</div>
-    </footer>
   </div>
 
-  <!-- MODAL ROOT -->
-  <div id="modalRoot" style="position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:9999">
-    <div id="modalBg" style="position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.6))"></div>
-    <div id="modal" style="position:relative;z-index:10;max-width:760px;width:94%;border-radius:12px;padding:18px;background:linear-gradient(180deg,#041022,#071827);border:1px solid rgba(255,255,255,0.03)"></div>
+  <!-- modal -->
+  <div id="modalRoot">
+    <div id="modalBg"></div>
+    <div id="modal"></div>
   </div>
 
-  <script>
-  /************************************************************************
-   * Auth + Telegram binding modifications for demo
-   * - Requires registration + login to perform actions
-   * - Telegram login opens t.me link; demo uses "Проверить привязку" to simulate backend confirmation
-   * - Replace local logic with server endpoints in production (marked TODO)
-   ************************************************************************/
+<script>
+/* =========================
+   Polished demo logic
+   - Auth guarded actions (local demo)
+   - Telegram binding flow (deep link + check button)
+   - Chart: realistic price simulation, grid, axes, volume bars
+   - Chart updates on a configurable interval (default 60s)
+   - UI: protection — actions require login
+   ========================= */
 
-  /* ---------- Simple persistent demo state ---------- */
-  const STORAGE_KEY = 'boostex_demo_auth_v1'
-  let state = {
-    user: null,            // {id, email?, name?, telegram?}
-    wallets: [],
-    txs: [],
-    balance: { USDT: 1250.50, USD: 1250.50 },
-    bot: { running: false, points: [], pnl: 0, base: 1000 },
-    plans: [
-      { id: 'starter', title: 'Starter', price: '99 €', durationDays: 30, yield: '25%/мес', desc: 'Демо-план для теста', min: 100 },
-      { id: 'pro', title: 'Pro', price: '299 €', durationDays: 60, yield: '35%/мес', desc: 'Для активных', min: 500 },
-      { id: 'vip', title: 'VIP', price: '999 €', durationDays: 90, yield: '45%/мес', desc: 'Максимальная доходность', min: 2000 }
-    ],
-    isAdmin: false
-  };
-  // Load persisted
-  try { const raw = localStorage.getItem(STORAGE_KEY); if(raw) Object.assign(state, JSON.parse(raw)); } catch(e){ console.warn(e) }
-  function persist(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)) }
+const STORAGE = 'boostex_polished_v1'
 
-  /* ---------- Simple user store (demo) ----------
-     In production: replace with server-side users and secure password handling.
-     Here we keep a minimal users map in localStorage for demo flows.
-  */
-  const USER_STORE_KEY = 'boostex_users_v1'
-  function loadUsers(){ try{ return JSON.parse(localStorage.getItem(USER_STORE_KEY) || '{}') }catch(e){return{}} }
-  function saveUsers(obj){ localStorage.setItem(USER_STORE_KEY, JSON.stringify(obj)) }
+// ---------- state ----------
+let state = {
+  user: null, // { id, email, name, telegram }
+  wallets: [],
+  txs: [],
+  balance: { USDT: 1250.50 },
+  bot: { running: false, points: [], pnl: 0, base: 1000, lastPrice: 1000 },
+  plans: [
+    { id:'starter', title:'Starter', price:'99 €', durationDays:30, yield:'25%/мес', min:100 },
+    { id:'pro', title:'Pro', price:'299 €', durationDays:60, yield:'35%/мес', min:500 },
+    { id:'vip', title:'VIP', price:'999 €', durationDays:90, yield:'45%/мес', min:2000 }
+  ],
+  isAdmin: false
+}
 
-  /* ---------- Helpers ---------- */
-  function uid(len=8){return Math.random().toString(36).slice(2,2+len)}
-  function fmt(n){return (Math.round(n*100)/100).toLocaleString('ru-RU')}
-  function nowTime(){const d=new Date(); return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
-  function setStatus(s){ document.getElementById('statusLine').textContent = s }
+// load saved
+try {
+  const raw = localStorage.getItem(STORAGE)
+  if(raw) Object.assign(state, JSON.parse(raw))
+} catch(e){ console.warn(e) }
 
-  /* ---------- UI refs ---------- */
-  const totalBalanceEl = document.getElementById('totalBalance')
-  const walletListEl = document.getElementById('walletList')
-  const txListEl = document.getElementById('txList')
-  const tariffsEl = document.getElementById('tariffs')
-  const botPnlEl = document.getElementById('botPnl')
-  const botTimeEl = document.getElementById('botTime')
-  const activePlanEl = document.getElementById('activePlan')
-  const adminChk = document.getElementById('adminChk')
+function saveState(){ localStorage.setItem(STORAGE, JSON.stringify(state)) }
 
-  /* ---------- Auth helpers ---------- */
-  function requireAuth(next, opts = {}){
-    // opts: { allowTelegramPending: boolean } - unused for now
-    if(state.user) return next()
-    // show login modal and store callback
-    showModal(`<h2>Требуется вход</h2>
-      <div class="hint">Чтобы использовать эту функцию, пожалуйста, войдите в кабинет или зарегистрируйтесь.</div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn" onclick="openLoginModal()">Войти</button>
-        <button class="btn secondary" onclick="openRegisterModal()">Зарегистрироваться</button>
-        <button class="btn secondary" onclick="modalClose()">Отмена</button>
-      </div>`)
-  }
+// ---------- simple users store (demo) ----------
+const USER_STORE = 'boostex_polished_users'
+function loadUsers(){ try{ return JSON.parse(localStorage.getItem(USER_STORE) || '{}') }catch(e){return{}} }
+function saveUsers(u){ localStorage.setItem(USER_STORE, JSON.stringify(u)) }
 
-  function loginUser(userObj){
-    state.user = userObj
-    persist()
-    syncUI()
-    setStatus(`Вы вошли как ${state.user.name || state.user.email || state.user.telegram || 'пользователь'}`)
-    addTx({ type:'auth', amount:'—', coin:'—', note:`User logged in (${state.user.name || state.user.email || state.user.telegram || 'id'})`, status:'ok' })
-  }
+// ---------- helpers ----------
+function uid(len=8){ return Math.random().toString(36).slice(2,2+len) }
+function fmt(n){ return (Math.round(n*100)/100).toLocaleString('ru-RU') }
+function nowTime(){ return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) }
+function setStatus(s){ document.getElementById('botTime').textContent = s } // reuse botTime for status area
 
-  /* ---------- Registration & Login (demo, local-store) ---------- */
-  function openRegisterModal(){
-    showModal(`<h2>Регистрация</h2>
-      <div class="form-row"><label>Email</label><input id="regEmail" type="email" /></div>
-      <div class="form-row"><label>Пароль</label><input id="regPass" type="password" /></div>
-      <div class="actions"><button class="btn" onclick="doRegister()">Зарегистрироваться</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>
-      <div class="hint">В демо пароли хранятся локально. В проде — используйте безопасные серверные эндпоинты и SRP/WebAuthn.</div>`)
-  }
-  function doRegister(){
-    const email = document.getElementById('regEmail').value?.trim()
-    const pass = document.getElementById('regPass').value || ''
-    if(!email || pass.length < 6){ alert('Введите email и пароль (>=6 символов)'); return }
-    const users = loadUsers()
-    if(users[email]){ alert('Пользователь с таким email уже существует. Войдите.'); return }
-    // demo: store base64 password — DO NOT DO THIS IN PRODUCTION
-    users[email] = { passwordB64: btoa(pass), name: email.split('@')[0], id: 'u_' + uid(6) }
-    saveUsers(users)
-    modalClose()
-    showModal(`<h2>Готово</h2><div class="hint">Аккаунт создан. Теперь войдите в систему.</div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="modalClose();openLoginModal()">Войти</button><button class="btn secondary" onclick="modalClose()">Закрыть</button></div>`)
-  }
+// ---------- UI refs ----------
+const totalBalanceEl = document.getElementById('totalBalance')
+const walletListEl = document.getElementById('walletList')
+const txListEl = document.getElementById('txList')
+const tariffsEl = document.getElementById('tariffs')
+const botPnlEl = document.getElementById('botPnl')
+const speedSelect = document.getElementById('speed')
 
-  function openLoginModal(){
-    showModal(`<h2>Вход</h2>
-      <div class="form-row"><label>Email</label><input id="loginEmail" type="email" /></div>
-      <div class="form-row"><label>Пароль</label><input id="loginPass" type="password" /></div>
-      <div class="actions"><button class="btn" onclick="doLogin()">Войти</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>
-      <div class="hint">Если хотите войти через Telegram — используйте кнопку «Войти через Telegram» в шапке.</div>`)
-  }
+// ---------- requireAuth ----------
+function requireAuth(fn){
+  if(state.user) return fn()
+  showModal(`<h2>Требуется вход</h2>
+    <div class="meta">Чтобы использовать эту функцию, войдите или зарегистрируйтесь.</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn" onclick="openLoginModal()">Вход</button>
+      <button class="btn ghost" onclick="openRegisterModal()">Регистрация</button>
+      <button class="btn ghost" onclick="modalClose()">Отмена</button>
+    </div>`)
+}
 
-  function doLogin(){
-    const email = document.getElementById('loginEmail').value?.trim()
-    const pass = document.getElementById('loginPass').value || ''
-    const users = loadUsers()
-    if(!users[email]){ alert('Пользователь не найден'); return }
-    if(users[email].passwordB64 !== btoa(pass)){ alert('Неверный пароль'); return }
-    // success
-    const userObj = { id: users[email].id, email, name: users[email].name }
-    loginUser(userObj)
-    modalClose()
-  }
+// ---------- auth flows (demo) ----------
+function openRegisterModal(){
+  showModal(`<h2>Регистрация</h2>
+    <div style="margin-top:8px"><label class="small">Email</label><input id="regEmail" type="email" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" /></div>
+    <div style="margin-top:8px"><label class="small">Пароль</label><input id="regPass" type="password" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" /></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="doRegister()">Создать</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>
+    <div class="meta" style="margin-top:8px">Демо: пароли хранятся локально (не для продакшна).</div>`)
+}
+function doRegister(){
+  const email = document.getElementById('regEmail').value?.trim()
+  const pass = document.getElementById('regPass').value || ''
+  if(!email || pass.length < 6){ alert('Введите email и пароль >=6'); return }
+  const users = loadUsers()
+  if(users[email]){ alert('Пользователь существует'); return }
+  users[email] = { id: 'u_'+uid(6), name: email.split('@')[0], passB64: btoa(pass) }
+  saveUsers(users)
+  modalClose()
+  showModal(`<h2>Готово</h2><div class="meta">Аккаунт создан. Войдите.</div><div style="margin-top:12px"><button class="btn" onclick="modalClose();openLoginModal()">Войти</button></div>`)
+}
 
-  /* ---------- Telegram login flow (demo) ----------
-     Flow:
-     1) Click "Войти через Telegram" -> open t.me/<BOT>?start=<token>
-     2) User confirms in Telegram bot (presses start). In production the bot should call backend to mark token as confirmed tied to user's telegram id.
-     3) Back in web: press "Проверить привязку" -> call backend /auth/telegram/check?token=... which returns telegram username/id.
-     4) Bind telegram to account (create or login).
-     In demo: we simulate step 3 by creating a telegram username after "Проверить привязку".
-  */
-  const BOT_USERNAME = 'YourBotUsername' // TODO: replace with real bot username
-  function handleTelegramLogin(){
-    // generate token, open telegram link
-    const token = uid(12)
-    const link = `https://t.me/${BOT_USERNAME}?start=${token}`
-    window.open(link, '_blank') // opens Telegram web or desktop app
-    // store pending token into localStorage so demo can later 'confirm' it (in production the bot would set this on your backend)
-    localStorage.setItem(`tg_pending_${token}`, JSON.stringify({ createdAt: Date.now() }))
-    // show modal with instructions + check button
-    showModal(`<h2>Вход через Telegram</h2>
-      <div class="hint">Открылось окно/приложение Telegram. Найдите бота <strong>@${BOT_USERNAME}</strong> и нажмите /start. После подтверждения вернитесь сюда и нажмите «Проверить привязку». </div>
-      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="checkTelegramBinding('${token}')">Проверить привязку</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>`)
-  }
+function openLoginModal(){
+  showModal(`<h2>Вход</h2>
+    <div style="margin-top:8px"><label class="small">Email</label><input id="loginEmail" type="email" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" /></div>
+    <div style="margin-top:8px"><label class="small">Пароль</label><input id="loginPass" type="password" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" /></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="doLogin()">Войти</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
+}
+function doLogin(){
+  const email = document.getElementById('loginEmail').value?.trim()
+  const pass = document.getElementById('loginPass').value || ''
+  const users = loadUsers()
+  if(!users[email] || users[email].passB64 !== btoa(pass)){ alert('Неверный логин/пароль'); return }
+  const u = users[email]
+  state.user = { id: u.id, email, name: u.name }
+  saveState(); modalClose(); syncUI(); addTx({ type:'auth', amount:'—', coin:'—', note:`Login ${email}`, status:'ok' })
+}
 
-  async function checkTelegramBinding(token){
-    // TODO: in production call your backend endpoint:
-    // GET /auth/telegram/check?token=... -> { ok:true, telegram:{id,username} }
-    // Backend will return success only after bot received /start with token and forwarded to backend.
-    // Demo: simulate success if pending exists (otherwise fail)
-    const pending = localStorage.getItem(`tg_pending_${token}`)
-    if(!pending){
-      alert('Токен не найден. Сначала нажмите ссылку в Telegram и выполните /start в боте.')
+// ---------- Telegram flow (demo) ----------
+const BOT_USERNAME = 'YourBotUsername' // TODO: replace with real bot name
+function startTelegramFlow(){
+  // create a token to check
+  const token = uid(14)
+  // store pending token for demo (in production backend)
+  localStorage.setItem('tg_pending_'+token, JSON.stringify({ at: Date.now() }))
+  const url = `https://t.me/${BOT_USERNAME}?start=${token}`
+  window.open(url, '_blank')
+  showModal(`<h2>Вход через Telegram</h2>
+    <div class="meta">Открылось Telegram. Найдите бота <strong>@${BOT_USERNAME}</strong> и нажмите /start. После этого вернитесь и нажмите «Проверить привязку».</div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="checkTelegram('${token}')">Проверить привязку</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
+}
+function checkTelegram(token){
+  // In production: call backend /auth/telegram/check?token=... which returns {ok, telegram:{id,username}}
+  const pending = localStorage.getItem('tg_pending_'+token)
+  if(!pending){ alert('Токен не найден. Сначала нажмите ссылку и /start в боте.'); return }
+  // simulate backend confirming user pressed /start
+  setTimeout(()=>{
+    const tgUser = 'tg_' + uid(6)
+    const tgId = 'tgid_' + uid(7)
+    // bind to existing user or create a demo user
+    if(state.user){
+      state.user.telegram = tgUser; state.user.telegramId = tgId
+      saveState(); syncUI(); addTx({ type:'auth', amount:'—', coin:'—', note:`Telegram linked @${tgUser}`, status:'ok' })
+      modalClose(); alert(`Telegram @${tgUser} привязан`)
       return
     }
-
-    // simulate backend response
-    await new Promise(r=>setTimeout(r, 600))
-    const tgUsername = 'tg_user_' + uid(5)
-    const telegram = { id: 'tgid_' + uid(6), username: tgUsername }
-
-    // If user is logged in -> bind telegram to existing account
-    if(state.user){
-      state.user.telegram = telegram.username
-      state.user.telegramId = telegram.id
-      setStatus(`Telegram @${telegram.username} привязан к ${state.user.email || state.user.name}`)
-      addTx({ type:'auth', amount:'—', coin:'—', note:`Telegram linked: @${telegram.username}`, status:'ok' })
-      persist(); syncUI(); modalClose(); return
-    }
-
-    // If no user: create a demo account and log in
+    // create demo account
+    const email = `${tgUser}@telegram.local`
     const users = loadUsers()
-    const email = `${telegram.username}@telegram.local`
-    if(!users[email]){
-      users[email] = { passwordB64: btoa(uid(12)), name: telegram.username, id: 'u_'+uid(6), telegram: telegram.username }
-      saveUsers(users)
-    }
-    const userObj = { id: users[email].id, email, name: telegram.username, telegram: telegram.username, telegramId: telegram.id }
-    loginUser(userObj)
-    modalClose()
-  }
+    if(!users[email]) users[email] = { id: 'u_'+uid(6), name: tgUser, passB64: btoa(uid(12)), telegram: tgUser }
+    state.user = { id: users[email].id, email, name: tgUser, telegram: tgUser, telegramId: tgId }
+    saveState(); saveUsers(users); syncUI(); addTx({ type:'auth', amount:'—', coin:'—', note:`Login via Telegram @${tgUser}`, status:'ok' })
+    modalClose(); alert(`Вход выполнен как ${tgUser}`)
+  }, 700)
+}
 
-  /* ---------- Wallet & Tx simulation (auth-guarded) ---------- */
-  function createAddress(coin='USDT', network='TRC-20'){
-    return requireAuth(()=> {
-      const address = (network==='TRC-20' ? 'T' : (network==='ERC-20'?'0x':'X')) + uid(28)
-      const w = { id: uid(6), coin, network, address }
-      state.wallets.push(w); addTx({type:'address', amount:'—', coin, note:`Address created (${network})`, status:'ok'}); persist(); syncUI()
-      return w
-    })
-  }
-  function addTx(tx){ tx.id = uid(6); tx.time = nowTime(); state.txs.push(tx); persist(); renderTx() }
-
-  /* ---------- Deposit modal ---------- */
-  function openDeposit(e){
-    return requireAuth(()=> {
-      const addr = e.currentTarget.dataset.addr
-      showModal(`<h2>Пополнение</h2>
-        <div class="small">Адрес для пополнения (скопируйте в кошелёк отправителя)</div>
-        <pre style="background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-top:8px;font-family:monospace">${addr}</pre>
-        <div class="small" style="margin-top:8px">В проде используйте реальные deposit-адреса/мержинг и отслеживайте вебхуки от ноды.</div>
-        <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`)
-    })
-  }
-
-  function copyAddr(e){
-    const addr = e.currentTarget.dataset.addr
-    navigator.clipboard?.writeText(addr).then(()=>alert('Адрес скопирован в буфер обмена (демо)'))
-  }
-
-  /* ---------- Convert (internal) ---------- */
-  document.getElementById('btnConvert').addEventListener('click',()=>{
-    requireAuth(()=> {
-      showModal(`<h2>Конвертация валют</h2>
-        <div class="form-row"><label>От</label><select id="fromCoin"><option>USDT</option><option>USDC</option><option>ETH</option></select></div>
-        <div class="form-row"><label>Кому</label><select id="toCoin"><option>USDT</option><option>USDC</option><option>ETH</option></select></div>
-        <div class="form-row"><label>Сумма</label><input id="convAmount" type="number" value="100" /></div>
-        <div class="actions"><button class="btn" onclick="doConvert()">Конвертировать</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>`)
-    })
+// ---------- wallet & tx (auth guarded) ----------
+function createAddress(coin='USDT', network='TRC-20'){
+  return requireAuth(()=> {
+    const addr = (network==='TRC-20' ? 'T' : '0x') + uid(28)
+    const w = { id: uid(6), coin, network, address: addr }
+    state.wallets.push(w); addTx({ type:'address', amount:'—', coin, note:`Create ${network}`, status:'ok' }); saveState(); syncUI()
+    return w
   })
-  function doConvert(){
-    const from = document.getElementById('fromCoin').value
-    const to = document.getElementById('toCoin').value
-    let amount = Number(document.getElementById('convAmount').value) || 0
-    if(from===to){ alert('Нельзя конвертировать в ту же валюту'); return }
-    const fee = amount * 0.005
-    amount = amount - fee
-    if(from==='USDT'){ state.balance.USDT -= (Number(document.getElementById('convAmount').value) || 0) }
-    if(to==='USDT'){ state.balance.USDT += amount }
-    addTx({type:'convert', coin:to, amount:fmt(amount), note:`Converted from ${from} (fee ${fmt(fee)})`, status:'ok'})
-    persist(); modalClose(); renderBalance()
-  }
+}
+function addTx(tx){ tx.id = uid(8); tx.time = nowTime(); state.txs.push(tx); saveState(); renderTx() }
 
-  /* ---------- Tariff subscription ---------- */
-  function subscribePlan(e){
-    return requireAuth(()=> {
-      const id = e.currentTarget.dataset.id
-      const plan = state.plans.find(p=>p.id===id)
-      if(!plan) return
-      showModal(`<h2>Подписка: ${plan.title}</h2>
-        <div class="small">Мин. вход: ${plan.min} € · ${plan.yield}</div>
-        <div class="form-row"><label>Сумма (€)</label><input id="subAmount" type="number" value="${plan.min}" /></div>
-        <div class="actions">
-          <button class="btn" onclick="confirmSubscribe('${id}')">Подтвердить</button>
-          <button class="btn secondary" onclick="modalClose()">Отмена</button>
-        </div>`)
-    })
-  }
-  function confirmSubscribe(id){
-    const amount = Number(document.getElementById('subAmount').value) || 0
+// deposit modal
+function openDeposit(addr){
+  return requireAuth(()=> {
+    showModal(`<h2>Пополнение</h2><div class="meta">Адрес для пополнения:</div><pre style="background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-top:8px;font-family:monospace">${addr}</pre>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`)
+  })
+}
+
+// convert
+function openConvert(){
+  return requireAuth(()=> {
+    showModal(`<h2>Конвертация</h2>
+      <div style="margin-top:8px"><label class="small">От</label><select id="fromCoin" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"><option>USDT</option><option>USDC</option></select></div>
+      <div style="margin-top:8px"><label class="small">Кому</label><select id="toCoin" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"><option>USDT</option><option>USDC</option></select></div>
+      <div style="margin-top:8px"><label class="small">Сумма</label><input id="convAmount" type="number" value="100" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="doConvert()">Конвертировать</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
+  })
+}
+function doConvert(){
+  const from = document.getElementById('fromCoin').value
+  const to = document.getElementById('toCoin').value
+  let amount = Number(document.getElementById('convAmount').value) || 0
+  if(from===to){ alert('Нельзя'); return }
+  const fee = amount*0.005; amount = amount - fee
+  state.balance.USDT = Math.max(0, state.balance.USDT - (from==='USDT' ? (Number(document.getElementById('convAmount').value)||0) : 0) + (to==='USDT'?amount:0))
+  addTx({ type:'convert', amount: fmt(amount), coin: to, note:`Convert ${from}→${to} (fee ${fmt(fee)})`, status:'ok' })
+  saveState(); modalClose(); renderBalance()
+}
+
+// tariffs
+function renderTariffs(){
+  tariffsEl.innerHTML = ''
+  state.plans.forEach(p=>{
+    const el = document.createElement('div'); el.className='tariff'
+    el.innerHTML = `<div class="title">${p.title}</div><div class="meta">${p.yield} · ${p.durationDays} дней</div><div style="margin-top:8px">${p.desc || ''}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><div class="meta">Мин: ${p.min} €</div><button class="btn" data-id="${p.id}">Подписаться</button></div>`
+    tariffsEl.appendChild(el)
+  })
+  tariffsEl.querySelectorAll('button').forEach(b => b.onclick = (e)=> subscribePlan(e) )
+}
+function subscribePlan(e){
+  return requireAuth(()=> {
+    const id = e.currentTarget.dataset.id
     const plan = state.plans.find(p=>p.id===id)
-    if(amount < plan.min){ alert('Сумма ниже минимума'); return }
-    activePlanEl.textContent = `${plan.title} · ${plan.yield}`
-    addTx({type:'subscribe', coin:'EUR', amount:amount, note:`Subscribed to ${plan.title}`, status:'pending'})
-    persist(); modalClose()
-  }
-
-  /* ---------- Registration/Login button wiring ---------- */
-  document.getElementById('btnRegister').addEventListener('click', openRegisterModal)
-  document.getElementById('btnLogin').addEventListener('click', openLoginModal)
-  document.getElementById('btnTelegram').addEventListener('click', handleTelegramLogin)
-
-  /* ---------- Admin withdraw (guarded) ---------- */
-  document.getElementById('adminChk').addEventListener('change', (e)=>{
-    // only allow enabling admin mode if logged in and user has telegram or email (demo)
-    if(!state.user){ alert('Только после входа'); e.target.checked = false; return }
-    if(!state.user.telegram && !state.user.email){ alert('Account must be verified/linked'); e.target.checked = false; return }
-    state.isAdmin = e.target.checked
-    persist(); syncUI()
+    if(!plan) return
+    showModal(`<h2>Подписка: ${plan.title}</h2><div class="meta">Мин. вход: ${plan.min} €</div><div style="margin-top:8px"><label class="small">Сумма (€)</label><input id="subAmount" type="number" value="${plan.min}" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="confirmSubscribe('${id}')">Подписаться</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
   })
+}
+function confirmSubscribe(id){
+  const amount = Number(document.getElementById('subAmount').value) || 0
+  const plan = state.plans.find(p=>p.id===id)
+  if(amount < plan.min){ alert('Ниже минимума'); return }
+  document.getElementById('activePlan').textContent = `${plan.title} · ${plan.yield}`
+  addTx({ type:'subscribe', amount, coin:'EUR', note:`Subscribe ${plan.title}`, status:'pending' })
+  saveState(); modalClose()
+}
 
-  function openAdminWithdraw(){
-    return requireAuth(()=> {
-      if(!state.isAdmin){ alert('Admin mode не включён'); return }
-      showModal(`<h2>Admin Withdraw</h2>
-        <div class="form-row"><label>Сеть</label><select id="awNet"><option>TRC-20</option><option>ERC-20</option></select></div>
-        <div class="form-row"><label>Монета</label><select id="awCoin"><option>USDT</option></select></div>
-        <div class="form-row"><label>Адрес вывода</label><input id="awAddr" type="text" value="T_dest_..." /></div>
-        <div class="form-row"><label>Сумма</label><input id="awAmt" type="number" value="100" /></div>
-        <div class="actions"><button class="btn" onclick="doAdminWithdraw()">Выполнить</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>`)
-    })
-  }
-  function doAdminWithdraw(){
-    const addr = document.getElementById('awAddr').value
-    const amt = Number(document.getElementById('awAmt').value)||0
-    addTx({type:'withdraw', amount:amt, coin:'USDT', note:`Admin withdraw to ${addr}`, status:'ok'})
-    state.balance.USDT -= amt
-    persist(); renderBalance(); modalClose()
-  }
+// export CSV
+function exportCSV(){
+  if(!state.user){ showModal(`<h2>Требуется вход</h2><div class="meta">Войдите, чтобы экспортировать историю.</div><div style="margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`); return }
+  const rows = [['time','type','amount','coin','note','status']]
+  state.txs.forEach(t => rows.push([t.time||'', t.type||'', t.amount||'', t.coin||'', (t.note||'').replace(/\n/g,' '), t.status||'']))
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type:'text/csv' })
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'tx_history.csv'; a.click(); URL.revokeObjectURL(url)
+}
 
-  /* ---------- Modal helpers ---------- */
-  function showModal(html){
-    document.getElementById('modalRoot').style.display = 'flex'
-    document.getElementById('modal').innerHTML = html
-  }
-  function modalClose(){ document.getElementById('modalRoot').style.display='none'; document.getElementById('modal').innerHTML='' }
-
-  /* ---------- Chart / Bot simulation ---------- */
-  const canvas = document.getElementById('botChart')
-  const ctx = canvas.getContext('2d')
-  let DPR = window.devicePixelRatio || 1
-  function resizeCanvas(){ canvas.width = canvas.clientWidth * DPR; canvas.height = canvas.clientHeight * DPR; drawChart() }
-  window.addEventListener('resize', resizeCanvas)
-
-  function drawChart(){
-    ctx.clearRect(0,0,canvas.width,canvas.height)
-    ctx.save()
-    ctx.scale(DPR,DPR)
-    ctx.fillStyle = 'rgba(255,255,255,0.02)'
-    ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight)
-    const w = canvas.clientWidth, h = canvas.clientHeight
-    const pts = state.bot.points.length ? state.bot.points : Array.from({length:50},(_,i)=>1000 + Math.sin(i/5)*30 + Math.random()*10)
-    const min = Math.min(...pts), max = Math.max(...pts)
-    const scaleY = (h-30)/(max-min||1)
-    ctx.beginPath()
-    for(let i=0;i<pts.length;i++){
-      const x = 10 + (w-20) * (i/(pts.length-1))
-      const y = h - 15 - (pts[i]-min) * scaleY
-      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y)
-    }
-    ctx.lineWidth = 2.5
-    ctx.strokeStyle = 'rgba(110,231,183,0.95)'
-    ctx.stroke()
-    ctx.lineTo(w-10,h-10); ctx.lineTo(10,h-10); ctx.closePath()
-    ctx.fillStyle = 'rgba(110,231,183,0.06)'; ctx.fill()
-    ctx.fillStyle = '#cdefdc'; ctx.font = '12px Inter, Arial'
-    ctx.fillText('Баланс: ' + fmt(state.bot.base + state.bot.pnl) + ' USDT', 12, 16)
-    ctx.restore()
-  }
-
-  function botTick(){
-    if(!state.bot.running) return
-    const last = state.bot.points.length ? state.bot.points[state.bot.points.length-1] : state.bot.base
-    let next = last * (1 + (Math.random()-0.48)/200)
-    if(Math.random()<0.08) next *= (1 + (Math.random()-0.5)/50)
-    state.bot.points.push(next); if(state.bot.points.length>120) state.bot.points.shift()
-    state.bot.pnl = next - state.bot.base
-    botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`; botTimeEl.textContent = nowTime()
-    renderBalance(); drawChart(); persist()
-  }
-
-  /* ---------- Controls (guarded) ---------- */
-  let botInterval = null
-  document.getElementById('btnStartBot').addEventListener('click', ()=> requireAuth(()=> {
-    if(state.bot.running) return
-    state.bot.running = true; botInterval = setInterval(botTick, 900); addTx({type:'bot', amount:'—', coin:'USDT', note:'Bot started', status:'ok'}); persist()
-  }))
-  document.getElementById('btnStopBot').addEventListener('click', ()=> requireAuth(()=> {
-    state.bot.running = false; clearInterval(botInterval); addTx({type:'bot', amount:'—', coin:'USDT', note:'Bot stopped', status:'ok'}); persist()
-  }))
-  document.getElementById('btnResetBot').addEventListener('click', ()=> requireAuth(()=> {
-    state.bot.points=[]; state.bot.pnl=0; state.bot.base=1000; drawChart(); addTx({type:'bot', amount:'—', coin:'USDT', note:'Bot reset', status:'ok'}); persist()
-  }))
-
-  document.getElementById('btnNewAddress').addEventListener('click', ()=> createAddress('USDT','TRC-20'))
-  document.getElementById('btnDeposit').addEventListener('click', ()=> {
-    if(state.wallets.length===0) return createAddress().then?.(()=> openDeposit({currentTarget:{dataset:{addr: state.wallets[0].address}}}))
-    // open deposit for first wallet
-    const addr = state.wallets[0].address
-    requireAuth(()=> openDeposit({currentTarget:{dataset:{addr}}}))
+// admin withdraw (guarded)
+function openAdminWithdraw(){
+  return requireAuth(()=> {
+    if(!state.isAdmin){ alert('Требуется admin mode'); return }
+    showModal(`<h2>Admin Withdraw</h2><div style="margin-top:8px"><label class="small">Адрес</label><input id="awAddr" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" value="T_dest_..." /></div>
+      <div style="margin-top:8px"><label class="small">Сумма</label><input id="awAmt" type="number" value="100" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" /></div>
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="doAdminWithdraw()">Выполнить</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
   })
+}
+function doAdminWithdraw(){
+  const addr = document.getElementById('awAddr').value
+  const amt = Number(document.getElementById('awAmt').value)||0
+  addTx({ type:'withdraw', amount: amt, coin:'USDT', note:`Admin withdraw to ${addr}`, status:'ok' })
+  state.balance.USDT = Math.max(0, state.balance.USDT - amt); saveState(); renderBalance(); modalClose()
+}
 
-  document.getElementById('btnPlans').addEventListener('click', ()=> showModal(`<h2>Тарифы</h2><div id="planModalInner"></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`), setTimeout(()=>document.getElementById('planModalInner').appendChild(tariffsEl.cloneNode(true)),50))
-  document.getElementById('btnExport').addEventListener('click', ()=> requireAuth(()=> exportCSV()))
+// ---------- modal helpers ----------
+function showModal(html){ document.getElementById('modalRoot').style.display='flex'; document.getElementById('modal').innerHTML = html }
+function modalClose(){ document.getElementById('modalRoot').style.display='none'; document.getElementById('modal').innerHTML = '' }
 
-  /* ---------- Sync UI renderers ---------- */
-  function renderBalance(){ totalBalanceEl.textContent = `${fmt(state.balance.USDT)} USDT` }
-  function renderWallets(){
-    walletListEl.innerHTML = ''
-    state.wallets.forEach(w=>{
-      const div=document.createElement('div'); div.className='wallet-item'
-      div.innerHTML = `<div style="flex:1"><div class="small">${w.coin} · ${w.network}</div><div class="addr">${w.address}</div></div>
-                       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-                         <button class="btn secondary" data-addr="${w.address}">Копировать</button>
-                         <button class="btn" data-addr="${w.address}">Пополнить</button>
-                       </div>`
-      walletListEl.appendChild(div)
-    })
-    if(state.wallets.length===0) walletListEl.innerHTML = `<div class="small muted">Пока нет адресов — нажмите «Новый адрес» для генерации (симуляция)</div>`
-    // attach handlers
-    walletListEl.querySelectorAll('button').forEach(btn=>{
-      btn.onclick = (e)=>{
-        const addr = e.currentTarget.dataset.addr
-        if(e.currentTarget.textContent.includes('Копировать')) navigator.clipboard?.writeText(addr).then(()=>alert('Адрес скопирован'))
-        else openDeposit({currentTarget:{dataset:{addr}}})
-      }
-    })
-  }
-  function renderTx(){
-    txListEl.innerHTML=''
-    state.txs.slice().reverse().forEach(t=>{
-      const div=document.createElement('div'); div.className='tx'
-      div.innerHTML=`<div><div style="font-weight:700">${t.type} · ${t.amount} ${t.coin}</div><div class="small">${t.note}</div></div>
-                     <div style="text-align:right"><div class="small">${t.time}</div><div class="tag">${t.status}</div></div>`
-      txListEl.appendChild(div)
-    })
-    if(state.txs.length===0) txListEl.innerHTML = `<div class="small muted">Нет транзакций</div>`
-  }
-  function renderTariffs(){
-    tariffsEl.innerHTML=''
-    state.plans.forEach(p=>{
-      const div=document.createElement('div'); div.className='tariff'
-      div.innerHTML = `<h3>${p.title}</h3><div class="price">${p.price}</div><div class="small">${p.yield} · ${p.durationDays} дней</div><div style="margin-top:8px">${p.desc}</div>
-                       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-                         <div class="small">Мин. вход: ${p.min} €</div>
-                         <div><button class="btn" data-id="${p.id}">Подписаться</button></div>
-                       </div>`
-      tariffsEl.appendChild(div)
-    })
-    // bind buttons
-    tariffsEl.querySelectorAll('button').forEach(b=> b.onclick = (e)=> subscribePlan(e) )
-  }
-
-  /* ---------- createAddress returns Promise-like for compatibility ---------- */
-  function createAddress(coin='USDT', network='TRC-20'){
-    // return value immediate - but wrapped in requireAuth above
-    const address = (network==='TRC-20' ? 'T' : (network==='ERC-20'?'0x':'X')) + uid(28)
-    const w = { id: uid(6), coin, network, address }
-    state.wallets.push(w); addTx({type:'address', amount:'—', coin, note:`Address created (${network})`, status:'ok'}); persist(); syncUI()
-    return Promise.resolve(w)
-  }
-
-  /* ---------- Utility: Export CSV ---------- */
-  function exportCSV(){
-    const rows = [['time','type','amount','coin','note','status']]
-    state.txs.forEach(t=> rows.push([t.time||'', t.type||'', t.amount||'', t.coin||'', (t.note||'').replace(/\n/g,' '), t.status||'']))
-    const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')
-    const blob = new Blob([csv], { type:'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  /* ---------- addTx wrapper (already used) ---------- */
-  function addTx(tx){ tx.id = uid(6); tx.time = nowTime(); state.txs.push(tx); persist(); renderTx() }
-
-  /* ---------- UI sync ---------- */
-  function syncUI(){
-    renderBalance(); renderWallets(); renderTx(); renderTariffs()
-    botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
-    if(state.user) document.querySelector('.muted').textContent = `Добро пожаловать, ${state.user.name || state.user.email || state.user.telegram || 'пользователь'}`
-    else document.querySelector('.muted').textContent = `Пожалуйста, зарегистрируйтесь и войдите, чтобы пользоваться сервисом`
-
-    // admin checkbox
-    adminChk.checked = !!state.isAdmin
-    adminChk.disabled = !state.user
-
-    // enable/disable main action buttons based on auth
-    const controls = ['btnDeposit','btnConvert','btnNewAddress','btnStartBot','btnStopBot','btnResetBot','btnExport']
-    controls.forEach(id=>{
-      const el = document.getElementById(id)
-      if(!el) return
-      if(state.user) { el.classList.remove('disabled'); el.disabled = false } else { el.classList.add('disabled'); el.disabled = false /* keep clickable but guarded by requireAuth */ }
-    })
-
-    // show admin button in header if admin
-    if(state.isAdmin){
-      if(!document.getElementById('adminBtnInserted')){
-        const adminBtn = document.createElement('button'); adminBtn.className='btn'; adminBtn.textContent='Admin Withdraw'; adminBtn.onclick=openAdminWithdraw; adminBtn.id='adminBtnInserted'
-        document.querySelector('header.card').appendChild(adminBtn)
-      }
-    } else {
-      const ex = document.getElementById('adminBtnInserted'); if(ex) ex.remove()
+// ---------- render functions ----------
+function renderBalance(){ totalBalanceEl.textContent = `${fmt(state.balance.USDT)} USDT` }
+function renderWallets(){
+  walletListEl.innerHTML = ''
+  state.wallets.forEach(w=>{
+    const div = document.createElement('div'); div.className='wallet-item'
+    div.innerHTML = `<div style="flex:1"><div class="small">${w.coin} · ${w.network}</div><div class="addr">${w.address}</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end"><button class="btn ghost" data-addr="${w.address}">Копировать</button><button class="btn" data-addr="${w.address}">Пополнить</button></div>`
+    walletListEl.appendChild(div)
+  })
+  if(state.wallets.length === 0) walletListEl.innerHTML = `<div class="small muted">Нет адресов — создайте</div>`
+  walletListEl.querySelectorAll('button').forEach(btn => {
+    btn.onclick = (e) => {
+      const addr = e.currentTarget.dataset.addr
+      if(e.currentTarget.textContent.includes('Копировать')) navigator.clipboard?.writeText(addr).then(()=>alert('Скопировано'))
+      else openDeposit(addr)
     }
-  }
+  })
+}
+function renderTx(){
+  txListEl.innerHTML = ''
+  state.txs.slice().reverse().forEach(t=>{
+    const el = document.createElement('div'); el.className = 'wallet-item'
+    el.style.justifyContent = 'space-between'
+    el.innerHTML = `<div style="flex:1"><div style="font-weight:700">${t.type} · ${t.amount} ${t.coin||''}</div><div class="meta">${t.note||''}</div></div><div style="text-align:right"><div class="meta">${t.time}</div><div style="margin-top:6px"><span style="padding:6px;border-radius:999px;background:rgba(255,255,255,0.02)">${t.status}</span></div></div>`
+    txListEl.appendChild(el)
+  })
+  if(state.txs.length === 0) txListEl.innerHTML = `<div class="small muted">Нет транзакций</div>`
+}
 
-  /* ---------- Startup ---------- */
-  renderBalance(); renderWallets(); renderTx(); renderTariffs(); resizeCanvas()
-  // seed demo data if empty
-  if(state.wallets.length===0){
-    state.wallets.push({ id: uid(6), coin:'USDT', network:'TRC-20', address: 'T' + uid(28) })
-    state.wallets.push({ id: uid(6), coin:'USDT', network:'ERC-20', address: '0x' + uid(28) })
-    addTx({type:'deposit', amount:200, coin:'USDT', note:'Initial demo deposit', status:'ok'})
-    persist()
-  }
+// ---------- startup UI bindings ----------
+document.getElementById('btnRegister').onclick = openRegisterModal
+document.getElementById('btnLogin').onclick = openLoginModal
+document.getElementById('btnTelegram').onclick = startTelegramFlow
+document.getElementById('btnNewAddress').onclick = ()=> createAddress('USDT','TRC-20')
+document.getElementById('btnDeposit').onclick = ()=> {
+  if(state.wallets.length === 0) { createAddress().then(w=> openDeposit(w.address)) }
+  else requireAuth(()=> openDeposit(state.wallets[0].address))
+}
+document.getElementById('btnConvert').onclick = openConvert
+document.getElementById('btnPlans').onclick = ()=> { showModal('<h2>Тарифы</h2><div id="planInner"></div><div style="margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>'); setTimeout(()=>document.getElementById('planInner').appendChild(tariffsEl.cloneNode(true)),100) }
+document.getElementById('btnExport').onclick = exportCSV
 
-  // Expose for modal buttons
-  window.openRegisterModal = openRegisterModal
-  window.openLoginModal = openLoginModal
-  window.modalClose = modalClose
-  window.copyAddr = copyAddr
-  window.openDeposit = openDeposit
-  window.subscribePlan = subscribePlan
-  window.confirmSubscribe = confirmSubscribe
-  window.doAdminWithdraw = doAdminWithdraw
-  window.createAddress = createAddress
-  window.checkTelegramBinding = checkTelegramBinding
+// admin checkbox (demo)
+const adminCheckbox = (()=> {
+  const el = document.createElement('input'); el.type='checkbox'; el.style.display='none'; return el
+})()
 
-  syncUI()
+// ---------- Chart: realistic simulation ----------
+const canvas = document.getElementById('botChart')
+const ctx = canvas.getContext('2d')
+let DPR = window.devicePixelRatio || 1
+function resizeCanvas(){
+  canvas.width = canvas.clientWidth * DPR
+  canvas.height = canvas.clientHeight * DPR
   drawChart()
-  </script>
+}
+window.addEventListener('resize', resizeCanvas)
+
+// initialize price series if empty
+if(state.bot.points.length === 0){
+  const start = 1000 + (Math.random()-0.5)*40
+  state.bot.lastPrice = start
+  const pts = Array.from({length:60}, (_,i) => start + Math.sin(i/3)*3 + (Math.random()-0.5)*8)
+  state.bot.points = pts; state.bot.base = pts[0]; state.bot.pnl = 0
+}
+
+// Price generator: Ornstein-Uhlenbeck + jumps + volume
+function generateNextPrice(prev){
+  // parameters
+  const mu = state.bot.base // long-term mean
+  const theta = 0.02  // mean reversion speed
+  const sigma = 0.8   // volatility
+  // OU: dx = theta*(mu-x) dt + sigma * dW
+  const dt = 1
+  const dw = (Math.random()-0.5)*Math.sqrt(dt)
+  const meanRevert = theta*(mu - prev)*dt
+  let next = prev + meanRevert + sigma * dw
+  // occasional jump
+  if(Math.random() < 0.03){ next *= (1 + (Math.random()-0.5)*0.04) }
+  // micro trend
+  if(Math.random() < 0.15) next *= (1 + (Math.random()-0.5)*0.005)
+  return Math.max(0.1, next)
+}
+
+function drawChart(){
+  ctx.clearRect(0,0,canvas.width,canvas.height)
+  ctx.save(); ctx.scale(DPR,DPR)
+  const W = canvas.clientWidth, H = canvas.clientHeight
+  // background
+  ctx.fillStyle = 'rgba(4,8,14,0.6)'; ctx.fillRect(0,0,W,H)
+  // padding
+  const padL = 48, padR = 12, padT = 14, padB = 28
+  const plotW = W - padL - padR, plotH = H - padT - padB
+  // points
+  const pts = state.bot.points.length ? state.bot.points : [state.bot.lastPrice]
+  const minP = Math.min(...pts) * 0.995
+  const maxP = Math.max(...pts) * 1.005
+  const xrange = pts.length - 1
+  const yScale = (v) => padT + (maxP - v) / (maxP - minP || 1) * plotH
+  const xScale = (i) => padL + (i / (xrange || 1)) * plotW
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1
+  ctx.beginPath()
+  for(let g=0; g<=4; g++){
+    const y = padT + (g/4)*plotH
+    ctx.moveTo(padL, y); ctx.lineTo(W-padR, y)
+  }
+  ctx.stroke()
+  // axis labels (prices)
+  ctx.fillStyle = 'rgba(205,230,220,0.9)'; ctx.font = '12px Inter, Arial'
+  for(let g=0; g<=4; g++){
+    const y = padT + (g/4)*plotH
+    const price = (maxP - (g/4)*(maxP-minP))
+    ctx.fillText(fmt(price), 8, y+4)
+  }
+  // draw area + line
+  ctx.beginPath()
+  for(let i=0;i<pts.length;i++){
+    const x = xScale(i), y = yScale(pts[i])
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y)
+  }
+  ctx.strokeStyle = 'rgba(110,231,183,0.95)'; ctx.lineWidth = 2.5; ctx.stroke()
+  // fill area
+  ctx.lineTo(xScale(pts.length-1), padT+plotH); ctx.lineTo(xScale(0), padT+plotH); ctx.closePath()
+  ctx.fillStyle = 'rgba(110,231,183,0.06)'; ctx.fill()
+  // current price marker
+  const last = pts[pts.length-1]
+  const lastX = xScale(pts.length-1), lastY = yScale(last)
+  ctx.fillStyle = '#cdefdc'; ctx.beginPath(); ctx.arc(lastX, lastY, 4, 0, Math.PI*2); ctx.fill()
+  // draw volumes as thin bars (simulated)
+  for(let i=0;i<pts.length;i++){
+    const x = xScale(i)
+    const vol = Math.abs(Math.round((Math.sin(i/3)+1)*30 + (Math.random()*20)))
+    const h = Math.min(24, vol/3)
+    ctx.fillStyle = 'rgba(110,231,183,0.08)'; ctx.fillRect(x-2, padT+plotH+h*0.6, 3, h*0.4)
+  }
+  // header info: current price and pnl
+  ctx.fillStyle = '#cdefdc'; ctx.font = '13px Inter, Arial'
+  ctx.fillText('Price: ' + fmt(last) + ' USDT', padL, padT - 2)
+  const pnl = last - state.bot.base
+  ctx.fillStyle = pnl >=0 ? 'rgba(110,231,183,0.95)' : 'rgba(251,113,133,0.95)'
+  ctx.fillText('P&L: ' + (pnl>=0?'+':'') + fmt(pnl) + ' USDT', padL+160, padT-2)
+  ctx.restore()
+}
+
+// ---------- bot tick (driven by interval) ----------
+function tick(){
+  // generate next price
+  const prev = state.bot.points.length ? state.bot.points[state.bot.points.length-1] : state.bot.lastPrice
+  const next = generateNextPrice(prev)
+  state.bot.points.push(next); if(state.bot.points.length>120) state.bot.points.shift()
+  state.bot.lastPrice = next
+  state.bot.pnl = next - state.bot.base
+  botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
+  addSimulatedTrade(next)
+  drawChart(); saveState(); renderBalance()
+  document.getElementById('botTime').textContent = nowTime()
+}
+
+// add simulated trades occasionally for realism
+function addSimulatedTrade(price){
+  if(Math.random() < 0.35){
+    const side = Math.random()>0.5 ? 'BUY' : 'SELL'
+    const vol = Math.round((Math.random()*3 + 1) * 10)
+    addTx({ type:'trade', amount: vol, coin:'USDT', note:`${side} ${vol} @ ${fmt(price)}`, status:'ok' })
+  }
+}
+
+// interval controller
+let intervalId = null
+function startBot(){
+  if(state.bot.running) return
+  state.bot.running = true
+  const delay = Number(speedSelect.value) || 60000
+  tick() // immediate tick
+  intervalId = setInterval(tick, delay)
+  addTx({ type:'bot', amount:'—', coin:'—', note:'Bot started', status:'ok' })
+  saveState()
+}
+function stopBot(){
+  if(intervalId) clearInterval(intervalId); intervalId = null; state.bot.running = false
+  addTx({ type:'bot', amount:'—', coin:'—', note:'Bot stopped', status:'ok' }); saveState()
+}
+function resetBot(){
+  state.bot.points = []; state.bot.base = 1000 + (Math.random()-0.5)*20; state.bot.pnl = 0; state.bot.lastPrice = state.bot.base
+  addTx({ type:'bot', amount:'—', coin:'—', note:'Bot reset', status:'ok' }); saveState(); drawChart()
+}
+
+// change speed handler
+speedSelect.onchange = ()=>{
+  if(state.bot.running){ stopBot(); startBot() } // restart with new interval
+}
+
+// ---------- wiring buttons ----------
+document.getElementById('btnStartBot').onclick = ()=> requireAuth(startBot)
+document.getElementById('btnStopBot').onclick = ()=> requireAuth(stopBot)
+document.getElementById('btnResetBot').onclick = ()=> requireAuth(resetBot)
+document.getElementById('btnNewAddress').onclick = ()=> createAddress('USDT','TRC-20')
+document.getElementById('btnPlans').onclick = ()=> renderTariffs()
+document.getElementById('btnExport').onclick = ()=> requireAuth(exportCSV)
+
+// ---------- initial rendering ----------
+function syncUI(){
+  renderBalance(); renderWallets(); renderTx(); renderTariffs()
+  botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
+  if(state.user) document.querySelector('.subtitle').textContent = `Вошёл: ${state.user.name || state.user.email || state.user.telegram}`
+  else document.querySelector('.subtitle').textContent = `Trading Bot & Wallet — демонстрация`
+  // admin toggle: only visible when user is present
+  const header = document.querySelector('.appbar')
+  const existing = document.getElementById('adminToggle')
+  if(state.user && !existing){
+    const toggle = document.createElement('label'); toggle.id='adminToggle'; toggle.className='inline'; toggle.style.marginLeft='12px'
+    toggle.innerHTML = `<span class="meta">Admin</span><input type="checkbox" id="adminChk" style="margin-left:6px">`
+    header.appendChild(toggle)
+    document.getElementById('adminChk').onchange = (e)=>{ state.isAdmin = e.target.checked; saveState(); syncUI() }
+  } else if(!state.user && existing){ existing.remove() }
+}
+syncUI(); resizeCanvas(); drawChart()
+
+// seed demo wallets/txs if empty
+if(state.wallets.length === 0){
+  state.wallets.push({ id:uid(6), coin:'USDT', network:'TRC-20', address: 'T'+uid(28) })
+  state.wallets.push({ id:uid(6), coin:'USDT', network:'ERC-20', address: '0x'+uid(28) })
+  addTx({ type:'deposit', amount:200, coin:'USDT', note:'Initial demo deposit', status:'ok' }); saveState()
+}
+
+// expose modal helpers for inline HTML buttons
+window.openRegisterModal = openRegisterModal
+window.openLoginModal = openLoginModal
+window.modalClose = modalClose
+window.copyAddr = (e) => navigator.clipboard?.writeText(e.currentTarget?.dataset?.addr || e) // simple
+window.openDeposit = openDeposit
+window.checkTelegram = checkTelegram
+window.createAddress = createAddress
+window.renderTariffs = renderTariffs
+window.exportCSV = exportCSV
+
+// If bot was running when page reloaded, restart with saved speed
+if(state.bot.running){ startBot() }
+
+</script>
 </body>
 </html>
