@@ -1,537 +1,534 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BoostEx Trade — Торговый кабинет</title>
-<style>
-  :root{
-    --bg:#0b1220; --card:#0f172a; --soft:#0c1528; --text:#e5e7eb; --muted:#9ca3af;
-    --brand:#06b6d4; --good:#22c55e; --bad:#ef4444; --border:#1f2937; --ring:#1e40af;
-  }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{
-    margin:0; color:var(--text); font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    background:
-      radial-gradient(60vw 40vh at 10% -10%, rgba(14,165,233,.12), transparent 40%),
-      radial-gradient(60vw 40vh at 110% 10%, rgba(99,102,241,.12), transparent 35%),
-      linear-gradient(180deg,#0b1220 0%, #0b1220 55%, #0f172a 100%);
-  }
-  body::before{
-    content:""; position:fixed; inset:0; pointer-events:none;
-    background-image:
-      linear-gradient(to right, rgba(255,255,255,.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(80% 60% at 50% 10%, rgba(0,0,0,.5), transparent 100%);
-  }
-  .wrap{max-width:1100px; margin:0 auto; padding:20px}
-  header{position:sticky; top:0; z-index:10; background:linear-gradient(180deg,rgba(11,18,32,.8),rgba(11,18,32,.5)); backdrop-filter: blur(8px); border-bottom:1px solid var(--border)}
-  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
-  .right{margin-left:auto}
-  .card{background:linear-gradient(180deg,var(--card),var(--soft)); border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.2)}
-  .h1{font-weight:700; font-size:18px}
-  .h2{font-weight:600; font-size:16px}
-  .muted{color:var(--muted)}
-  .btn{background:var(--brand); color:#041018; border:none; border-radius:10px; padding:10px 14px; font-weight:700; cursor:pointer}
-  .btn.ghost{background:transparent; color:var(--text); border:1px solid var(--border)}
-  .btn.small{padding:8px 10px; font-weight:600; border-radius:8px}
-  .input, .select{background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none}
-  .input:focus, .select:focus{border-color:var(--ring); box-shadow: 0 0 0 3px rgba(30,64,175,.35)}
-  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
-  .kpi{background:var(--soft); border:1px solid var(--border); border-radius:12px; padding:12px}
-  .kpi .val{font-size:22px; font-weight:800}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-  .table{width:100%; border-collapse:collapse}
-  .table th,.table td{padding:10px; border-bottom:1px solid var(--border); text-align:left}
-  .pnl-pos{color:var(--good)} .pnl-neg{color:var(--bad)}
-  .tag{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#0b1220; color:#cbd5e1}
-  .canvas-wrap{background:#0b1220; border:1px solid var(--border); border-radius:12px; padding:10px}
-  .modal{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:30}
-  .modal.open{display:flex}
-  .sheet{background:linear-gradient(180deg,#101a2e,#0d1628); border:1px solid var(--border); border-radius:16px; padding:18px; width:min(520px,92vw)}
-  .tabs{display:flex; gap:8px; margin-bottom:18px;}
-  .tab{padding:8px 22px; border-radius:10px 10px 0 0; background:var(--soft); color:var(--text); cursor:pointer; font-weight:600; border:1px solid var(--border); border-bottom:none;}
-  .tab.active{background:var(--brand); color:#041018;}
-  .tariff-table{width:100%; border-collapse:collapse; margin-bottom:16px;}
-  .tariff-table th, .tariff-table td{padding:8px 10px; border-bottom:1px solid var(--border); font-size:13px;}
-  .deal-list{font-size:13px; border-top:1px solid var(--border); margin-top:8px;}
-  .deal-list th, .deal-list td{padding:6px 8px;}
-  .deal-pnl-pos{color:var(--good);} .deal-pnl-neg{color:var(--bad);}
-  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Demo — Trading Bot & Wallet (MVP)</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa8bd;
+      --accent:#6ee7b7;
+      --accent-2:#60a5fa;
+      --danger:#fb7185;
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071124 0%, #041026 100%);color:#e6eef6}
+    .app {max-width:1200px;margin:28px auto;padding:20px;display:grid;grid-template-columns:320px 1fr;gap:20px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;box-shadow: 0 4px 20px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    header.card{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#022;box-shadow:0 6px 20px rgba(96,165,250,0.08)}
+    h1{margin:0;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* left column */
+    .left{display:flex;flex-direction:column;gap:16px}
+    .balance{font-size:22px;font-weight:700}
+    .mini{display:flex;gap:10px;align-items:center}
+    .btn{background:linear-gradient(180deg,#142233,#0e2736);padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:var(--accent);font-weight:600}
+    .btn.secondary{background:transparent;border:1px dashed rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
+    .wallet-list{display:flex;flex-direction:column;gap:10px}
+    .wallet-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:var(--glass-2);font-size:13px}
+    .small{font-size:12px;color:var(--muted)}
+    .addr{font-family:monospace;font-size:12px;color:#bfeadf;word-break:break-all}
+
+    /* right column */
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:20px}
+    .panel{min-height:160px}
+    .chart-wrap{height:300px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008))}
+    canvas{width:100%;height:100%;display:block;border-radius:8px}
+
+    .tariffs{display:flex;flex-direction:column;gap:12px}
+    .tariff{display:flex;flex-direction:column;padding:14px;border-radius:10px;background:linear-gradient(180deg,#07182a,#061422);border:1px solid rgba(255,255,255,0.02)}
+    .tariff h3{margin:0;font-size:16px}
+    .tariff .price{font-size:20px;font-weight:800;color:var(--accent)}
+    .controls{display:flex;gap:8px;align-items:center}
+
+    .transactions{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto;padding-right:6px}
+    .tx{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:var(--glass);font-size:13px}
+    .tag{padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:12px;color:var(--muted)}
+
+    /* forms & modal */
+    .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+    input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:inherit;font-size:14px}
+    label{font-size:13px;color:var(--muted)}
+    .actions{display:flex;gap:8px;align-items:center;margin-top:10px}
+
+    /* responsive */
+    @media (max-width:1100px){.app{grid-template-columns:1fr;}.grid{grid-template-columns:1fr}.left{order:2}}
+    footer{grid-column:1/-1;margin-top:8px;text-align:center;color:var(--muted);font-size:13px}
+    .admin-toggle{display:flex;align-items:center;gap:8px}
+  </style>
 </head>
 <body>
-<header style="display:none" id="mainHeader">
-  <div class="wrap row">
-    <div class="h1">BoostEx — торговый кабинет</div>
-    <div class="row right">
-      <span class="tag" id="statusTag"></span>
-      <button class="btn small" id="openDeposit">Депозит</button>
-      <button class="btn small ghost" id="openWithdraw">Вывод</button>
-    </div>
-  </div>
-</header>
-<div id="authPage" style="display:block">
-  <main class="wrap" style="max-width:400px; margin-top:50px;">
-    <section class="card">
-      <div class="h2" style="margin-bottom:12px;">Регистрация / Вход</div>
-      <div class="row" style="margin-bottom:12px;">
-        <input id="authEmail" class="input" style="min-width:220px" placeholder="email" />
+  <div class="app">
+    <header class="card">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div>
+          <h1>BoostEx — Trading Bot & Wallet (Demo)</h1>
+          <div class="muted">Demo UI · симуляция · не хранит приватные ключи (локально)</div>
+        </div>
       </div>
-      <div class="row" style="margin-bottom:12px;">
-        <input id="authPass" class="input" style="min-width:220px" placeholder="пароль" type="password" />
+
+      <div style="display:flex;gap:10px;align-items:center">
+        <div class="admin-toggle small">
+          <label class="small">Admin mode</label>
+          <input id="adminChk" type="checkbox" />
+        </div>
+        <button class="btn" id="btnTelegram">Войти через Telegram</button>
+        <button class="btn secondary" id="btnRegister">Регистрация (Email)</button>
       </div>
-      <div class="row">
-        <button class="btn" id="authLoginBtn">Войти</button>
-        <span id="authMsg" class="muted"></span>
-      </div>
-    </section>
-  </main>
-</div>
-<div id="cabinetPage" style="display:none">
-  <header id="mainHeaderShow">
-    <div class="wrap row">
-      <div class="h1">BoostEx — торговый кабинет</div>
-      <div class="row right">
-        <span class="tag" id="statusTag2"></span>
-        <button class="btn small" id="openDeposit">Депозит</button>
-        <button class="btn small ghost" id="openWithdraw">Вывод</button>
-      </div>
-    </div>
-  </header>
-  <main class="wrap" id="app">
-    <div class="tabs">
-      <div class="tab active" id="tab-cabinet">Кабинет</div>
-      <div class="tab" id="tab-my-tariffs">Мои тарифы</div>
-    </div>
-    <div id="page-cabinet2">
-      <section class="card" id="tariffSection">
-        <div class="h2">Открыть новый тариф</div>
-        <div class="row" style="margin-top:10px">
-          <select id="tariffSelect" class="select">
-            <option value="conservative">Начальный: $100–$700, 13% за 10 дней</option>
-            <option value="balanced">Средний: $3000–$9000, 21% за 25 дней</option>
-            <option value="aggressive">Максимальный: $10,000–$100,000, 35% за 47 дней</option>
-          </select>
-          <select id="tariffAsset" class="select">
-            <option>BTC</option>
-            <option>ETH</option>
-            <option>BNB</option>
-            <option>SOL</option>
-            <option>TON</option>
-            <option>USDT</option>
-          </select>
-          <input id="tariffDeposit" class="input" type="number" placeholder="Сумма" style="width:140px">
-          <button class="btn" id="startTariffBtn">Запустить тариф</button>
-        </div>
-        <div id="tariffMsg" class="muted" style="margin-top:10px"></div>
-      </section>
-      <section class="card" id="tariffsListSection" style="margin-bottom:12px; display:none;">
-        <div class="h2">Ваши тарифы</div>
-        <div id="tariffsList"></div>
-      </section>
-      <section class="kpis">
-        <div class="kpi"><div class="muted">Баланс (USD)</div><div class="val" id="kpiEquity">$—</div></div>
-        <div class="kpi"><div class="muted">Доход (30д)</div><div class="val" id="kpiPnl">—</div></div>
-        <div class="kpi"><div class="muted">Сделки</div><div class="val" id="kpiTrades">—</div></div>
-        <div class="kpi"><div class="muted">Статус</div><div class="val">Онлайн</div></div>
-      </section>
-      <section class="grid2">
-        <div class="card">
-          <div class="h2">Балансы</div>
-          <div id="balances" class="muted" style="margin-top:6px">Войдите, чтобы увидеть баланс.</div>
-        </div>
-        <div class="card">
-          <div class="h2">Курсы (USD) — топ-10</div>
-          <div id="prices" class="muted" style="margin-top:6px">—</div>
-        </div>
-      </section>
-      <section class="card">
-        <div class="row">
-          <div class="h2">Кривая капитала</div>
-        </div>
-        <div class="canvas-wrap" style="margin-top:10px; position:relative;">
-          <canvas id="equityChart" width="1000" height="280" style="cursor:pointer"></canvas>
-        </div>
-      </section>
-      <section class="card">
-        <div class="row">
-          <div class="h2">Сделки (последние)</div>
-          <div class="right row">
-            <select id="symbolFilter" class="select">
-              <option value="">Все инструменты</option>
-              <option>BTC</option><option>ETH</option><option>BNB</option><option>SOL</option><option>TON</option>
-            </select>
-            <button class="btn small ghost" id="exportCsv">Экспорт CSV</button>
+    </header>
+
+    <!-- LEFT -->
+    <aside class="left">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="small">Баланс в кошельке</div>
+            <div class="balance" id="totalBalance">—</div>
+            <div class="small">USD эквивалент (симуляция)</div>
+          </div>
+          <div style="text-align:right">
+            <div class="mini">
+              <button class="btn" id="btnDeposit">Пополнить</button>
+              <button class="btn secondary" id="btnConvert">Конвертировать</button>
+            </div>
+            <div style="height:8px"></div>
+            <div class="small">Профит бота: <span id="botPnl">—</span></div>
           </div>
         </div>
-        <table class="table" style="margin-top:6px">
-          <thead><tr><th>Время</th><th>Инструмент</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr></thead>
-          <tbody id="trades"></tbody>
-        </table>
-      </section>
-    </div>
-    <div id="page-my-tariffs" style="display:none;">
-      <section class="card">
-        <div class="h2">Открытые и завершённые тарифы</div>
-        <table class="tariff-table">
-          <thead>
-            <tr>
-              <th>Тип</th><th>Сумма</th><th>Доходность</th><th>Доход</th><th>Старт</th><th>Финиш</th><th>Статус</th>
-            </tr>
-          </thead>
-          <tbody id="myTariffsTable"></tbody>
-        </table>
-        <div id="myTariffsDeals"></div>
-      </section>
-    </div>
-  </main>
-</div>
+      </div>
 
-<!-- Модалки депозит/вывод (display:none по умолчанию) -->
-<div class="modal" id="modalDeposit">
-  <div class="sheet">
-    <div class="row"><div class="h2">Депозит</div><button class="btn small ghost right" data-close="deposit">Закрыть</button></div>
-    <div class="row" style="margin-top:10px">
-      <select id="depAsset" class="select">
-        <option>USDT (TRC20)</option><option>USDC (TRC20)</option><option>BTC</option><option>ETH</option><option>TON</option>
-      </select>
-      <button class="btn small" id="genAddr">Сгенерировать адрес</button>
-    </div>
-    <div id="depInfo" class="muted" style="margin-top:10px">Выберите актив и сгенерируйте адрес пополнения.</div>
-    <div id="qrBox" class="card" style="margin-top:10px; display:none">
-      <div class="muted">QR-код</div>
-      <canvas id="qr" width="220" height="220" style="margin-top:8px; background:#0b1220; border:1px solid var(--border); border-radius:10px"></canvas>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="small">Мои адреса</div>
+          <button class="btn secondary" id="btnNewAddress">Новый адрес</button>
+        </div>
+        <div class="wallet-list" id="walletList">
+          <!-- addresses inserted by JS -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="small">Текущая подписка</div>
+            <div id="activePlan" style="font-weight:700">Нет подписки</div>
+          </div>
+          <div>
+            <button class="btn" id="btnPlans">Тарифы</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT -->
+    <main>
+      <div class="grid">
+        <section class="card panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <div class="small">Trading Bot · ИИ-симуляция</div>
+              <div style="font-weight:700">Автоматическая торговля (демо)</div>
+            </div>
+            <div class="controls">
+              <button class="btn" id="btnStartBot">Запустить</button>
+              <button class="btn secondary" id="btnStopBot">Остановить</button>
+              <button class="btn" id="btnResetBot">Сбросить</button>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas id="botChart"></canvas>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            <div class="small">Стратегии: mean-revert · momentum · hybrid (симуляция)</div>
+            <div class="small">Время: <span id="botTime">00:00</span></div>
+          </div>
+        </section>
+
+        <aside class="card panel">
+          <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+            <div class="small">Тарифы и планы</div>
+            <div class="small">Выбери подходящий</div>
+          </div>
+          <div class="tariffs" id="tariffs">
+            <!-- tariffs inserted by JS -->
+          </div>
+        </aside>
+
+        <section class="card panel" style="grid-column:1/-1;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <div class="small">История транзакций</div>
+              <div style="font-weight:700">Последние операции</div>
+            </div>
+            <div>
+              <button class="btn secondary" id="btnExport">Экспорт</button>
+            </div>
+          </div>
+
+          <div class="transactions" id="txList">
+            <!-- tx inserted by JS -->
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="muted card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>BoostEx Demo · интерфейс для MVP · не хранит приватные ключи (в демо)</div>
+      <div>Need production integration? Email: team@boostex.example</div>
+    </footer>
+  </div>
+
+  <!-- MODALS (simple) -->
+  <div id="modalRoot" style="position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:9999">
+    <div id="modalBg" style="position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.6))"></div>
+    <div id="modal" style="position:relative;z-index:10;max-width:760px;width:94%;border-radius:12px;padding:18px;background:linear-gradient(180deg,#041022,#071827);border:1px solid rgba(255,255,255,0.03)">
+      <!-- dynamic content -->
     </div>
   </div>
-</div>
-<div class="modal" id="modalWithdraw">
-  <div class="sheet">
-    <div class="row"><div class="h2">Вывод средств</div><button class="btn small ghost right" data-close="withdraw">Закрыть</button></div>
-    <div class="row" style="margin-top:10px">
-      <select id="wdAsset" class="select">
-        <option>USDT (TRC20)</option><option>USDC (TRC20)</option><option>BTC</option><option>ETH</option><option>TON</option>
-      </select>
-      <input id="wdAddr" class="input" placeholder="Адрес получателя" style="min-width:260px">
-      <input id="wdAmt" class="input" placeholder="Сумма" type="number" step="0.0001" style="width:120px">
-      <button class="btn small" id="wdSend">Отправить заявку</button>
-    </div>
-    <div class="muted" style="margin-top:6px">Минимальный вывод: эквивалент 50 USDT. Комиссии как на Bybit.</div>
-    <div id="wdMsg" style="margin-top:8px"></div>
-  </div>
-</div>
 
-<script>
-const state = {
-  logged: false,
-  token: null,
-  balances: { BTC:0.0142, ETH:1.18, BNB:4.2, SOL:12.5, TON:55, TRX:1200, USDT:120000, USDC:0, XRP:280 },
-  prices:   { BTC:65000, ETH:3400, BNB:580, LTC:75,  SOL:155, TON:6,  TRX:0.12, USDT:1,  USDC:1,  XRP:0.55 },
-  equity: [], trades: [],
-  simTimer: null, profile: 'balanced',
-  tariffs: []
-};
-const $ = (id)=>document.getElementById(id);
-const fmtUSD = v => '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:2});
+  <script>
+    /************************************************************************
+     * Demo front-end application logic
+     * - All data is simulated in-browser
+     * - Comments mark where to integrate real backend endpoints
+     *
+     * Replace simulated calls with real fetch(...) to your API:
+     * - /auth/register, /auth/login
+     * - /wallets (create/list), /tx/prepare, /tx/broadcast
+     * - /plans/subscribe
+     * - Admin endpoints for withdraws
+     *
+     * SECURITY NOTE: For production, use secure auth (SRP/WebAuthn/etc),
+     * store keys in HSM/KMS, separate hot/cold wallets, implement KYT/KYC.
+     ************************************************************************/
 
-// Тарифы
-const tariffs = {
-  conservative: { min: 100, max: 700, days: 10, yield: 0.13 },
-  balanced:    { min: 3000, max: 9000, days: 25, yield: 0.21 },
-  aggressive:  { min: 10000, max: 100000, days: 47, yield: 0.35 }
-};
-// ----- АВТОРИЗАЦИЯ -----
-$('authLoginBtn').onclick = () => {
-  const email = $('authEmail').value.trim();
-  const pass = $('authPass').value.trim();
-  if(email==='admin@example.com' && pass==='admin123') {
-    state.logged = true; state.token = Math.random().toString(36).slice(2);
-    $('authMsg').textContent = '';
-    $('authPage').style.display = 'none';
-    $('cabinetPage').style.display = '';
-    $('mainHeader').style.display = 'none';
-    $('mainHeaderShow').style.display = '';
-    renderBalances(); renderPrices(); if(state.equity.length===0) seedEquity(); drawChart(); renderKPIs(); renderTariffsList(); showTab('cabinet');
-  } else {
-    $('authMsg').textContent = 'Неверный email или пароль!';
-  }
-};
-// ----- /АВТОРИЗАЦИЯ -----
-function showTab(tab) {
-  $('tab-cabinet').classList.toggle('active', tab === 'cabinet');
-  $('tab-my-tariffs').classList.toggle('active', tab === 'my-tariffs');
-  $('page-cabinet2').style.display = tab === 'cabinet' ? '' : 'none';
-  $('page-my-tariffs').style.display = tab === 'my-tariffs' ? '' : 'none';
-}
-$('tab-cabinet').onclick = ()=>showTab('cabinet');
-$('tab-my-tariffs').onclick = ()=>{showTab('my-tariffs'); renderMyTariffsTable();};
-
-// Запуск тарифа
-$('startTariffBtn').onclick = () => {
-  const type = $('tariffSelect').value;
-  const asset = $('tariffAsset').value;
-  const deposit = +$('tariffDeposit').value;
-  const trf = tariffs[type];
-  if (!state.logged) { $('tariffMsg').textContent = 'Войдите в кабинет.'; return; }
-  if (deposit < trf.min || deposit > trf.max) {
-    $('tariffMsg').textContent = `Сумма должна быть от ${trf.min} до ${trf.max} USD для этого тарифа.`; return;
-  }
-  if (state.balances[asset] === undefined || state.balances[asset] < deposit) {
-    $('tariffMsg').textContent = 'Недостаточно средств на балансе выбранной монеты.'; return;
-  }
-  state.balances[asset] -= deposit;
-  const newTariff = {
-    id: Math.random().toString(36).slice(2),
-    type,
-    asset,
-    deposit,
-    start: Date.now(),
-    end: Date.now() + trf.days * 24*3600*1000,
-    targetYield: trf.yield,
-    finished: false,
-    profit: 0,
-    tradesTimer: null,
-    totalTrades: Math.round(trf.days * 24 * 60 * 2),
-    doneTrades: 0,
-    trades: []
-  };
-  state.tariffs.push(newTariff);
-  renderTariffsList();
-  scheduleTariffTrades(newTariff);
-  $('tariffMsg').textContent = 'Тариф запущен!';
-};
-
-function renderTariffsList() {
-  const list = state.tariffs.map(t => {
-    const trf = tariffs[t.type];
-    const daysLeft = t.finished ? 0 : Math.max(0, Math.ceil((t.end - Date.now()) / (24*3600*1000)));
-    return `<div class="tag" style="margin-bottom:2px;">
-      <b>${t.type}</b> | Монета: ${t.asset} | Сумма: $${t.deposit} | Доход: <b>$${t.profit.toFixed(2)}</b> | Доходность: ${Math.round(trf.yield*100)}% | 
-      ${t.finished ? `<span class="pnl-pos">Завершён. Итог: $${(t.deposit + t.profit).toFixed(2)}</span>` : `Осталось: ${daysLeft}д`}
-      </div>`;
-  }).join('');
-  $('tariffsList').innerHTML = list || '<span class="muted">Нет активных тарифов</span>';
-  $('tariffsListSection').style.display = state.tariffs.length ? '' : 'none';
-}
-
-// Сделки и кривая капитала (прибыльных больше!)
-function scheduleTariffTrades(tariff) {
-  const trf = tariffs[tariff.type];
-  const totalProfit = tariff.deposit * trf.yield;
-  const avgPnl = totalProfit / tariff.totalTrades;
-  tariff.doneTrades = 0;
-  tariff.profit = 0;
-  if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
-
-  tariff.tradesTimer = setInterval(() => {
-    if (tariff.finished) return;
-
-    // Вероятность прибыли 80%
-    let isProfit = Math.random() < 0.8;
-    let std = avgPnl * 0.7;
-    let pnl = isProfit
-      ? avgPnl + Math.abs((Math.random() - 0.5) * std)
-      : -Math.abs((Math.random() - 0.5) * std * 0.7);
-
-    if (tariff.doneTrades === tariff.totalTrades - 1) {
-      pnl = totalProfit - tariff.profit;
-    }
-
-    tariff.profit += pnl;
-    const tradeObj = {
-      ts: Date.now(),
-      symbol: tariff.asset,
-      side: Math.random() > .5 ? 'BUY' : 'SELL',
-      qty: +(Math.random() * 0.01).toFixed(4),
-      price: state.prices[tariff.asset],
-      pnl,
-      tariffId: tariff.id,
-      tariffType: tariff.type
+    /* ---------- Demo state ---------- */
+    const state = {
+      user: null,
+      wallets: [],
+      txs: [],
+      balance: { USDT: 1250.50, USD: 1250.50 }, // demo balances
+      bot: { running: false, points: [], pnl: 0, time: 0, base: 1000 },
+      plans: [
+        { id: 'starter', title: 'Starter', price: '99 €', durationDays: 30, yield: '25%/мес', desc: 'Демо-план для теста', min: 100 },
+        { id: 'pro', title: 'Pro', price: '299 €', durationDays: 60, yield: '35%/мес', desc: 'Для активных', min: 500 },
+        { id: 'vip', title: 'VIP', price: '999 €', durationDays: 90, yield: '45%/мес', desc: 'Максимальная доходность', min: 2000 }
+      ],
+      isAdmin: false
     };
-    tariff.trades.push(tradeObj);
-    state.trades.unshift(tradeObj);
-    const last = state.equity.length
-      ? state.equity[state.equity.length - 1].e
-      : 10000;
-    state.equity.push({ ts: tradeObj.ts, e: +(last + pnl).toFixed(2) });
-    drawChart(); renderTrades(); renderKPIs();
-    tariff.doneTrades++;
-    if (tariff.doneTrades >= tariff.totalTrades || Date.now() > tariff.end) {
-      finishTariff(tariff);
+
+    /* ---------- Helpers ---------- */
+    function uid(len=8){return Math.random().toString(36).slice(2,2+len)}
+    function fmt(n){return (Math.round(n*100)/100).toLocaleString('ru-RU')}
+    function nowTime(){const d=new Date(); return d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+
+    /* ---------- Render initial UI ---------- */
+    const totalBalanceEl = document.getElementById('totalBalance')
+    const walletListEl = document.getElementById('walletList')
+    const txListEl = document.getElementById('txList')
+    const tariffsEl = document.getElementById('tariffs')
+    const botPnlEl = document.getElementById('botPnl')
+    const botTimeEl = document.getElementById('botTime')
+    const activePlanEl = document.getElementById('activePlan')
+
+    function renderBalance(){ totalBalanceEl.textContent = `${fmt(state.balance.USDT)} USDT` }
+    function renderWallets(){
+      walletListEl.innerHTML=''
+      state.wallets.forEach(w=>{
+        const div=document.createElement('div'); div.className='wallet-item'
+        div.innerHTML = `<div style="flex:1"><div class="small">${w.coin} · ${w.network}</div><div class="addr">${w.address}</div></div>
+                         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                           <button class="btn secondary" data-addr="${w.address}" onclick="copyAddr(event)">Копировать</button>
+                           <button class="btn" data-addr="${w.address}" onclick="openDeposit(event)">Пополнить</button>
+                         </div>`
+        walletListEl.appendChild(div)
+      })
+      if(state.wallets.length===0){
+        walletListEl.innerHTML = `<div class="small muted">Пока нет адресов — нажмите «Новый адрес» для генерации (симуляция)</div>`
+      }
     }
-    renderTariffsList();
-    renderMyTariffsTable();
-  }, 30000); // 2 сделки в минуту (30 сек)
-}
+    function renderTx(){
+      txListEl.innerHTML=''
+      state.txs.slice().reverse().forEach(t=>{
+        const div=document.createElement('div'); div.className='tx'
+        div.innerHTML=`<div><div style="font-weight:700">${t.type} · ${t.amount} ${t.coin}</div><div class="small">${t.note}</div></div>
+                       <div style="text-align:right"><div class="small">${t.time}</div><div class="tag">${t.status}</div></div>`
+        txListEl.appendChild(div)
+      })
+      if(state.txs.length===0) txListEl.innerHTML = `<div class="small muted">Нет транзакций</div>`
+    }
+    function renderTariffs(){
+      tariffsEl.innerHTML=''
+      state.plans.forEach(p=>{
+        const div=document.createElement('div'); div.className='tariff'
+        div.innerHTML = `<h3>${p.title}</h3><div class="price">${p.price}</div><div class="small">${p.yield} · ${p.durationDays} дней</div><div style="margin-top:8px">${p.desc}</div>
+                         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+                           <div class="small">Мин. вход: ${p.min} €</div>
+                           <div><button class="btn" data-id="${p.id}" onclick="subscribePlan(event)">Подписаться</button></div>
+                         </div>`
+        tariffsEl.appendChild(div)
+      })
+    }
 
-function finishTariff(tariff) {
-  if (tariff.tradesTimer) clearInterval(tariff.tradesTimer);
-  tariff.finished = true;
-  state.balances[tariff.asset] += tariff.deposit + tariff.profit;
-  renderBalances();
-  renderTariffsList();
-  renderMyTariffsTable();
-}
-function renderBalances(){ $('balances').textContent = state.logged ? Object.entries(state.balances).map(([k,v])=>`${k}: ${v}`).join(' · ') : 'Войдите, чтобы увидеть баланс.'; }
-function renderPrices(){ $('prices').textContent = Object.entries(state.prices).map(([k,v])=>`${k}: ${fmtUSD(v)}`).join(' · '); }
-function renderKPIs(){
-  const last = state.equity[state.equity.length-1]?.e || 10000;
-  document.getElementById('kpiEquity').textContent = fmtUSD(last);
-  const first30 = state.equity[Math.max(0, state.equity.length-30)]?.e || last;
-  const pnl = last - first30;
-  document.getElementById('kpiPnl').innerHTML = (pnl>=0?'<span class="pnl-pos">+':'<span class="pnl-neg">') + pnl.toFixed(2) + '</span>';
-  document.getElementById('kpiTrades').textContent = state.trades.length;
-}
-function seedEquity(){ let e = 10000; const pts=[]; for(let i=0;i<60;i++){ e += (Math.random()-.45)*25; pts.push({ts: Date.now()-(60-i)*3600000, e:+e.toFixed(2)});} state.equity = pts; }
-function drawChart() {
-  const cvs = document.getElementById('equityChart');
-  const ctx = cvs.getContext('2d');
-  const pad = 36, w = cvs.width - pad * 2, h = cvs.height - pad * 2;
-  ctx.clearRect(0, 0, cvs.width, cvs.height);
-  const ys = state.equity.map(p => p.e), minY = Math.min(...ys), maxY = Math.max(...ys);
-  const sx = i => pad + (i * (w / (state.equity.length - 1)));
-  const sy = v => pad + h - ((v - minY) / (maxY - minY)) * h;
-  ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 1;
-  for(let i=0;i<=4;i++){ const y=pad+i*(h/4); ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+w,y); ctx.stroke(); }
-  ctx.beginPath(); ctx.strokeStyle='#06b6d4'; ctx.lineWidth=2;
-  state.equity.forEach((p, i) => { const x = sx(i), y = sy(p.e); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-  ctx.stroke();
-  const g=ctx.createLinearGradient(0,pad,0,pad+h); g.addColorStop(0,'rgba(6,182,212,.35)'); g.addColorStop(1,'rgba(6,182,212,0)');
-  ctx.lineTo(pad+w,pad+h); ctx.lineTo(pad,pad+h); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
-  ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif';
-  ctx.fillText(fmtUSD(minY),6,pad+h); ctx.fillText(fmtUSD(maxY),6,pad+12);
-  const maxMarkers = 100;
-  const tradesMarked = state.trades.slice(0, maxMarkers).reverse();
-  tradesMarked.forEach((trade, i) => {
-    const eqIdx = Math.max(0, state.equity.length - tradesMarked.length + i);
-    const x = sx(eqIdx);
-    const y = sy(state.equity[eqIdx]?.e || 10000);
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, 2 * Math.PI);
-    ctx.fillStyle = trade.pnl >= 0 ? '#22c55e' : '#ef4444';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.stroke();
-    trade._chart_x = x;
-    trade._chart_y = y;
-  });
-}
-const popup = document.createElement('div');
-popup.style.position = 'absolute'; popup.style.display = 'none';
-popup.style.background = '#0f172a'; popup.style.color = '#e5e7eb';
-popup.style.padding = '8px 14px'; popup.style.borderRadius = '10px';
-popup.style.boxShadow = '0 2px 12px #0008'; popup.style.pointerEvents = 'none';
-popup.style.zIndex = 50;
-document.body.appendChild(popup);
-$('equityChart').addEventListener('mousemove', (e) => {
-  const rect = $('equityChart').getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  let found = null;
-  state.trades.slice(0,100).reverse().forEach(trade => {
-    if (trade._chart_x && trade._chart_y &&
-      Math.abs(mx - trade._chart_x) < 8 && Math.abs(my - trade._chart_y) < 8) found = trade;
-  });
-  if (found) {
-    const trf = state.tariffs.find(t=>t.id===found.tariffId);
-    popup.innerHTML = `
-      <b>${found.symbol}</b> ${found.side}<br>
-      Объем: ${found.qty}<br>
-      Цена: ${found.price}<br>
-      P&L: <span style="color:${found.pnl>=0?'#22c55e':'#ef4444'}">${found.pnl>=0?'+':''}${found.pnl.toFixed(2)}</span><br>
-      Тариф: <b>${found.tariffType || ''}</b>
-    `;
-    popup.style.left = (e.pageX + 10) + 'px';
-    popup.style.top = (e.pageY - 30) + 'px';
-    popup.style.display = '';
-  } else {
-    popup.style.display = 'none';
-  }
-});
-$('equityChart').addEventListener('mouseleave', ()=>{ popup.style.display='none'; });
-function renderTrades(){
-  const filt = document.getElementById('symbolFilter').value;
-  const rows = (filt? state.trades.filter(t=>t.symbol===filt) : state.trades).slice(0,80).map(t=>{
-    const cls = t.pnl>=0?'pnl-pos':'pnl-neg';
-    return `<tr><td>${new Date(t.ts).toLocaleString()}</td><td>${t.symbol}</td><td>${t.side}</td><td>${t.qty}</td><td>${t.price}</td><td class="${cls}">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td></tr>`;
-  }).join('');
-  document.getElementById('trades').innerHTML = rows || `<tr><td colspan="6" class="muted">Сделок пока нет</td></tr>`;
-}
-document.getElementById('exportCsv').onclick=()=>{
-  const header=['time','symbol','side','qty','price','pnl','tariff'];
-  const rows=state.trades.map(t=>[new Date(t.ts).toISOString(),t.symbol,t.side,t.qty,t.price,t.pnl,t.tariffType||'']);
-  const csv=[header].concat(rows).map(r=>r.join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'}), url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='trades.csv'; a.click(); URL.revokeObjectURL(url);
-};
-const modalDeposit=document.getElementById('modalDeposit'), modalWithdraw=document.getElementById('modalWithdraw');
-const open=m=>m.classList.add('open'), close=m=>m.classList.remove('open');
-document.querySelectorAll('[data-close="deposit"]').forEach(b=>b.onclick=()=>close(modalDeposit));
-document.querySelectorAll('[data-close="withdraw"]').forEach(b=>b.onclick=()=>close(modalWithdraw));
-document.getElementById('openDeposit').onclick = ()=> open(modalDeposit);
-document.getElementById('openWithdraw').onclick= ()=> open(modalWithdraw);
+    /* ---------- Wallet & Tx simulation ---------- */
+    function createAddress(coin='USDT', network='TRC-20'){
+      // In production: POST /wallets -> returns real address + deposit memo if needed
+      const address = (network==='TRC-20' ? 'T' : (network==='ERC-20'?'0x':'X')) + uid(28)
+      const w = { id: uid(6), coin, network, address }
+      state.wallets.push(w); renderWallets()
+      addTx({type:'address', amount:'—', coin, note:`Address created (${network})`, status:'ok'})
+      return w
+    }
+    function addTx(tx){ tx.id = uid(6); tx.time = nowTime(); state.txs.push(tx); renderTx() }
 
-document.getElementById('genAddr').onclick=()=>{
-  const asset=document.getElementById('depAsset').value;
-  const addr = asset.includes('TRC20') ? 'T'+Math.random().toString(36).slice(2,10).toUpperCase()+'...' :
-              asset==='BTC' ? 'bc1q'+Math.random().toString(36).slice(2,9)+'...' :
-              asset==='ETH' ? '0x'+Math.random().toString(16).slice(2,10)+'...' :
-              'EQ'+Math.random().toString(36).slice(2,10).toUpperCase()+'...';
-  document.getElementById('depInfo').innerHTML = `Адрес для ${asset}: <b>${addr}</b>`;
-  const c=document.getElementById('qr'), ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-  for(let y=0;y<22;y++) for(let x=0;x<22;x++){ const on=Math.random()>.5; ctx.fillStyle=on?'#e5e7eb':'#0b1220'; ctx.fillRect(10+x*9,10+y*9,8,8); }
-  document.getElementById('qrBox').style.display='block';
-};
+    /* ---------- Deposit modal ---------- */
+    function openDeposit(e){
+      const addr = e.currentTarget.dataset.addr
+      showModal(`<h2>Пополнение</h2>
+        <div class="small">Адрес для пополнения (скопируйте в кошелёк отправителя)</div>
+        <pre style="background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-top:8px;font-family:monospace">${addr}</pre>
+        <div class="small" style="margin-top:8px">Примечание: это демонстрационный адрес. В проде используйте реальные deposit-адреса/мержинг.</div>
+        <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`)
+    }
 
-document.getElementById('wdSend').onclick=()=>{
-  const asset=document.getElementById('wdAsset').value, addr=document.getElementById('wdAddr').value.trim(), amt=+((document.getElementById('wdAmt').value)||0);
-  if(!addr || !amt){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Заполните адрес и сумму.</span>'; return; }
-  if((asset.includes('USDT')||asset.includes('USDC')) && amt<50){ document.getElementById('wdMsg').innerHTML='<span class="pnl-neg">Минимальный вывод — 50 USDT (экв.).</span>'; return; }
-  document.getElementById('wdMsg').innerHTML='<span class="pnl-pos">Заявка создана: статус Pending.</span>';
-  setTimeout(()=>close(modalWithdraw), 1200);
-};
+    function copyAddr(e){
+      const addr = e.currentTarget.dataset.addr
+      navigator.clipboard?.writeText(addr).then(()=>alert('Адрес скопирован в буфер обмена (демо)'))
+    }
 
-function renderMyTariffsTable() {
-  let tariffsRows = state.tariffs.map(t=>{
-    const trf=tariffs[t.type];
-    return `<tr>
-      <td>${t.type}</td>
-      <td>${t.deposit}</td>
-      <td>${Math.round(trf.yield*100)}%</td>
-      <td>${t.profit.toFixed(2)}</td>
-      <td>${new Date(t.start).toLocaleDateString()}</td>
-      <td>${new Date(t.end).toLocaleDateString()}</td>
-      <td>${t.finished?'<span class="pnl-pos">Завершён</span>':'<span class="muted">В работе</span>'}</td>
-    </tr>`;
-  }).join('');
-  $('myTariffsTable').innerHTML = tariffsRows || `<tr><td colspan="7" class="muted">Нет тарифов</td></tr>`;
+    /* ---------- Convert (internal) ---------- */
+    document.getElementById('btnConvert').addEventListener('click',()=>{
+      showModal(`<h2>Конвертация валют</h2>
+        <div class="form-row"><label>От</label><select id="fromCoin"><option>USDT</option><option>USDC</option><option>ETH</option></select></div>
+        <div class="form-row"><label>Кому</label><select id="toCoin"><option>USDT</option><option>USDC</option><option>ETH</option></select></div>
+        <div class="form-row"><label>Сумма</label><input id="convAmount" type="number" value="100" /></div>
+        <div class="actions"><button class="btn" onclick="doConvert()">Конвертировать</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>`)
+    })
+    function doConvert(){
+      const from = document.getElementById('fromCoin').value
+      const to = document.getElementById('toCoin').value
+      let amount = Number(document.getElementById('convAmount').value) || 0
+      if(from===to){ alert('Нельзя конвертировать в ту же валюту'); return }
+      // simple demo: fee 0.5%
+      const fee = amount * 0.005
+      amount = amount - fee
+      // update demo balance only for USDT
+      if(from==='USDT'){ state.balance.USDT -= (Number(document.getElementById('convAmount').value) || 0) }
+      if(to==='USDT'){ state.balance.USDT += amount }
+      renderBalance(); addTx({type:'convert', coin:to, amount:fmt(amount), note:`Converted from ${from} (fee ${fmt(fee)})`, status:'ok'})
+      modalClose()
+    }
 
-  let dealsHtml = '';
-  state.tariffs.forEach(tariff=>{
-    dealsHtml += `<div style="margin-top:16px"><b>Тариф ${tariff.type}, монета ${tariff.asset}, сумма $${tariff.deposit} (${tariff.finished?'Завершён':'В работе'})</b></div>
-      <table class="deal-list" style="width:100%"><thead>
-        <tr><th>Время</th><th>Инстр.</th><th>Сторона</th><th>Кол-во</th><th>Цена</th><th>P&L ($)</th></tr>
-      </thead><tbody>
-        ${tariff.trades.slice(-20).reverse().map(trade=>{
-          return `<tr>
-            <td>${new Date(trade.ts).toLocaleString()}</td>
-            <td>${trade.symbol}</td>
-            <td>${trade.side}</td>
-            <td>${trade.qty}</td>
-            <td>${trade.price}</td>
-            <td class="${trade.pnl>=0?'deal-pnl-pos':'deal-pnl-neg'}">${trade.pnl>=0?'+':''}${trade.pnl.toFixed(2)}</td>
-          </tr>`;
-        }).join('')}
-      </tbody></table>`;
-  });
-  $('myTariffsDeals').innerHTML = dealsHtml || '<div class="muted" style="margin-top:12px">Пока нет сделок по тарифам</div>';
-}
-seedEquity();
-showTab('cabinet');
-setInterval(()=>{
-  drawChart(); renderTariffsList(); renderMyTariffsTable();
-}, 60000);
-</script>
+    /* ---------- Tariff subscription ---------- */
+    function subscribePlan(e){
+      const id = e.currentTarget.dataset.id
+      const plan = state.plans.find(p=>p.id===id)
+      if(!plan) return
+      showModal(`<h2>Подписка: ${plan.title}</h2>
+        <div class="small">Мин. вход: ${plan.min} € · ${plan.yield}</div>
+        <div class="form-row"><label>Сумма (€)</label><input id="subAmount" type="number" value="${plan.min}" /></div>
+        <div class="actions">
+          <button class="btn" onclick="confirmSubscribe('${id}')">Подтвердить</button>
+          <button class="btn secondary" onclick="modalClose()">Отмена</button>
+        </div>`)
+    }
+    function confirmSubscribe(id){
+      const amount = Number(document.getElementById('subAmount').value) || 0
+      const plan = state.plans.find(p=>p.id===id)
+      if(amount < plan.min){ alert('Сумма ниже минимума'); return }
+      // In production: POST /plans/subscribe -> returns subscription, locks funds, schedule payouts
+      activePlanEl.textContent = `${plan.title} · ${plan.yield}`
+      addTx({type:'subscribe', coin:'EUR', amount:amount, note:`Subscribed to ${plan.title}`, status:'pending'})
+      modalClose()
+    }
+
+    /* ---------- Registration / Telegram (demo) ---------- */
+    document.getElementById('btnRegister').addEventListener('click', ()=>{
+      showModal(`<h2>Регистрация</h2>
+        <div class="form-row"><label>Email</label><input id="regEmail" type="email" /></div>
+        <div class="form-row"><label>Пароль</label><input id="regPass" type="password" /></div>
+        <div class="actions"><button class="btn" onclick="doRegister()">Зарегистрироваться</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>`)
+    })
+    function doRegister(){
+      const email = document.getElementById('regEmail').value
+      if(!email) { alert('Введите email'); return }
+      // In production: POST /auth/register -> returns token
+      state.user = { id: uid(6), email, name: email.split('@')[0] }
+      addTx({type:'account', amount:'—', coin:'—', note:`User registered (${email})`, status:'ok'})
+      modalClose(); syncUI()
+    }
+    document.getElementById('btnTelegram').addEventListener('click', ()=>{
+      // In production: integrate Telegram Passport / Telegram login widget
+      state.user = { id: uid(6), name: 'tg_user_' + uid(4), via: 'telegram' }
+      addTx({type:'account', amount:'—', coin:'—', note:`Logged in via Telegram`, status:'ok'})
+      syncUI()
+    })
+
+    /* ---------- Admin withdraw (demo) ---------- */
+    document.getElementById('adminChk').addEventListener('change', (e)=>{
+      state.isAdmin = e.target.checked
+      syncUI()
+    })
+
+    function openAdminWithdraw(){
+      // In production: protected admin endpoint, MFA, approval flow, audit logs
+      showModal(`<h2>Admin Withdraw</h2>
+        <div class="form-row"><label>Сеть</label><select id="awNet"><option>TRC-20</option><option>ERC-20</option></select></div>
+        <div class="form-row"><label>Монета</label><select id="awCoin"><option>USDT</option></select></div>
+        <div class="form-row"><label>Адрес вывода</label><input id="awAddr" type="text" value="T_dest_..." /></div>
+        <div class="form-row"><label>Сумма</label><input id="awAmt" type="number" value="100" /></div>
+        <div class="actions"><button class="btn" onclick="doAdminWithdraw()">Выполнить</button><button class="btn secondary" onclick="modalClose()">Отмена</button></div>`)
+    }
+    function doAdminWithdraw(){
+      const addr = document.getElementById('awAddr').value
+      const amt = Number(document.getElementById('awAmt').value)||0
+      addTx({type:'withdraw', amount:amt, coin:'USDT', note:`Admin withdraw to ${addr}`, status:'ok'})
+      state.balance.USDT -= amt
+      renderBalance(); modalClose()
+    }
+
+    /* ---------- Modal helpers ---------- */
+    function showModal(html){
+      document.getElementById('modalRoot').style.display = 'flex'
+      document.getElementById('modal').innerHTML = html
+    }
+    function modalClose(){ document.getElementById('modalRoot').style.display='none'; document.getElementById('modal').innerHTML='' }
+
+    /* ---------- Chart / Bot simulation ---------- */
+    const canvas = document.getElementById('botChart')
+    const ctx = canvas.getContext('2d')
+    let DPR = window.devicePixelRatio || 1
+    function resizeCanvas(){
+      canvas.width = canvas.clientWidth * DPR
+      canvas.height = canvas.clientHeight * DPR
+      drawChart()
+    }
+    window.addEventListener('resize', resizeCanvas)
+
+    function drawChart(){
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      // background grid
+      ctx.save()
+      ctx.scale(DPR,DPR)
+      ctx.fillStyle = 'rgba(255,255,255,0.02)'
+      ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight)
+      // axes
+      const w = canvas.clientWidth, h = canvas.clientHeight
+      // draw line
+      const pts = state.bot.points.length ? state.bot.points : Array.from({length:50},(_,i)=>1000 + Math.sin(i/5)*30 + Math.random()*10)
+      const min = Math.min(...pts), max = Math.max(...pts)
+      const scaleY = (h-30)/(max-min||1)
+      ctx.beginPath()
+      for(let i=0;i<pts.length;i++){
+        const x = 10 + (w-20) * (i/(pts.length-1))
+        const y = h - 15 - (pts[i]-min) * scaleY
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y)
+      }
+      ctx.lineWidth = 2.5
+      ctx.strokeStyle = 'rgba(110,231,183,0.95)'
+      ctx.stroke()
+      // fill
+      ctx.lineTo(w-10,h-10)
+      ctx.lineTo(10,h-10)
+      ctx.closePath()
+      ctx.fillStyle = 'rgba(110,231,183,0.06)'
+      ctx.fill()
+      // current value
+      ctx.fillStyle = '#cdefdc'
+      ctx.font = '12px Inter, Arial'
+      ctx.fillText('Баланс: ' + fmt(state.bot.base + state.bot.pnl) + ' USDT', 12, 16)
+      ctx.restore()
+    }
+
+    function botTick(){
+      if(!state.bot.running) return
+      // simple random walk + mean reversion
+      const last = state.bot.points.length ? state.bot.points[state.bot.points.length-1] : state.bot.base
+      let next = last * (1 + (Math.random()-0.48)/200)
+      // occasional drift
+      if(Math.random()<0.08) next *= (1 + (Math.random()-0.5)/50)
+      state.bot.points.push(next)
+      if(state.bot.points.length>120) state.bot.points.shift()
+      // simulate pnl: current vs base
+      state.bot.pnl = next - state.bot.base
+      botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
+      botTimeEl.textContent = nowTime()
+      renderBalance()
+      drawChart()
+    }
+
+    /* ---------- Controls ---------- */
+    document.getElementById('btnStartBot').addEventListener('click',()=>{
+      if(state.bot.running) return
+      state.bot.running=true
+      addTx({type:'bot', amount:'—', coin:'USDT', note:'Bot started', status:'ok'})
+      botInterval = setInterval(botTick, 900)
+    })
+    document.getElementById('btnStopBot').addEventListener('click',()=>{
+      state.bot.running=false
+      clearInterval(botInterval)
+      addTx({type:'bot', amount:'—', coin:'USDT', note:'Bot stopped', status:'ok'})
+    })
+    document.getElementById('btnResetBot').addEventListener('click',()=>{
+      state.bot.points=[]; state.bot.pnl=0; state.bot.base=1000; drawChart()
+      addTx({type:'bot', amount:'—', coin:'USDT', note:'Bot reset', status:'ok'})
+    })
+
+    document.getElementById('btnNewAddress').addEventListener('click', ()=>createAddress('USDT','TRC-20'))
+    document.getElementById('btnDeposit').addEventListener('click', ()=> {
+      // open deposit for first wallet or create one
+      if(state.wallets.length===0) createAddress()
+      openDeposit({currentTarget:{dataset:{addr: state.wallets[0].address}}})
+    })
+    document.getElementById('btnPlans').addEventListener('click', ()=> showModal(`<h2>Тарифы</h2><div id="planModalInner"></div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`), setTimeout(()=>document.getElementById('planModalInner').appendChild(tariffsEl.cloneNode(true)),50))
+    document.getElementById('btnExport').addEventListener('click', ()=> { alert('Экспорт (демо) — скачивание CSV в проде'); })
+
+    /* ---------- Sync UI ---------- */
+    function syncUI(){
+      renderBalance(); renderWallets(); renderTx(); renderTariffs()
+      botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
+      if(state.user) document.querySelector('.muted').textContent = `Добро пожаловать, ${state.user.name || state.user.email || 'пользователь'}`
+
+      // Show admin withdraw if admin
+      if(state.isAdmin){
+        const adminBtn = document.createElement('button'); adminBtn.className='btn'; adminBtn.textContent='Admin Withdraw'; adminBtn.onclick=openAdminWithdraw
+        if(!document.getElementById('adminBtnInserted')){ document.querySelector('header.card').appendChild(adminBtn); adminBtn.id='adminBtnInserted' }
+      } else {
+        const ex = document.getElementById('adminBtnInserted'); if(ex) ex.remove()
+      }
+    }
+
+    /* ---------- Startup ---------- */
+    renderBalance(); renderWallets(); renderTx(); renderTariffs(); resizeCanvas()
+    // seed demo data
+    createAddress('USDT','TRC-20')
+    createAddress('USDT','ERC-20')
+    addTx({type:'deposit', amount:200, coin:'USDT', note:'Initial demo deposit', status:'ok'})
+    let botInterval = null
+
+    /* ---------- Expose some functions for buttons in HTML created via JS ---------- */
+    window.copyAddr = copyAddr
+    window.openDeposit = openDeposit
+    window.subscribePlan = subscribePlan
+    window.modalClose = modalClose
+    window.doAdminWithdraw = doAdminWithdraw
+    window.doConvert = doConvert
+    window.confirmSubscribe = confirmSubscribe
+    window.createAddress = createAddress
+    window.syncUI = syncUI
+
+    // draw once
+    drawChart()
+  </script>
 </body>
 </html>
