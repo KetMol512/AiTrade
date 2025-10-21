@@ -45,14 +45,11 @@
   .addr{font-family:monospace;color:#bfeadf;font-size:12px;word-break:break-all}
 
   /* ===== Main content ===== */
-  main.grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+  main.grid{display:grid;grid-template-columns:1fr;gap:18px} /* Убран второй столбец */
   .card{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:var(--shadow)}
   .chart-wrap{height:360px;border-radius:10px;padding:10px;background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008))}
   canvas{width:100%;height:100%;display:block;border-radius:8px}
 
-  .tariffs{display:flex;flex-direction:column;gap:12px}
-  .tariff{padding:12px;border-radius:10px;background:linear-gradient(180deg,#07182a,#061422);border:1px solid rgba(255,255,255,0.02)}
-  .tariff .title{font-weight:700}
   .tx-list{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px}
 
   /* ===== modal ===== */
@@ -123,13 +120,6 @@
         <div style="height:8px"></div>
         <div class="meta">Адреса генерируются локально (демо). В проде — /wallets.</div>
       </div>
-
-      <div class="panel">
-        <div class="small">Подписка</div>
-        <div id="activePlan" style="font-weight:700;margin-top:6px">Нет подписки</div>
-        <div style="height:8px"></div>
-        <button id="btnPlans" class="btn ghost">Тарифы</button>
-      </div>
     </aside>
 
     <!-- MAIN -->
@@ -145,7 +135,7 @@
             <button id="btnStartBot" class="btn">Запустить</button>
             <button id="btnStopBot" class="btn ghost">Остановить</button>
             <button id="btnResetBot" class="btn ghost">Сбросить</button>
-            <button id="btnConfigBot" class="btn ghost">Настроить</button> <!-- Новая кнопка -->
+            <button id="btnConfigBot" class="btn ghost">Настроить</button>
           </div>
         </div>
 
@@ -158,16 +148,6 @@
           <div class="small">Время: <span id="botTime">—</span></div>
         </div>
       </section>
-
-      <aside class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div class="small">Тарифы и планы</div>
-          <div class="small muted">Выбери</div>
-        </div>
-        <div class="tariffs" id="tariffs"></div>
-        <div style="height:10px"></div>
-        <div class="meta">Интеграция: /plans, /plans/subscribe</div>
-      </aside>
 
       <section class="card" style="grid-column:1/-1">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -209,13 +189,7 @@ let state = {
   wallets: [],
   txs: [],
   balance: { USDT: 1250.50 },
-  bot: { running: false, points: [], pnl: 0, base: 1000, lastPrice: 1000, strategy: 'mean-revert', risk: 1 }, // Добавлены strategy и risk
-  plans: [
-    { id:'starter', title:'Starter', price:'99 €', durationDays:30, yield:'25%/мес', min:100 },
-    { id:'pro', title:'Pro', price:'299 €', durationDays:60, yield:'35%/мес', min:500 },
-    { id:'vip', title:'VIP', price:'999 €', durationDays:90, yield:'45%/мес', min:2000 }
-  ],
-  isAdmin: false
+  bot: { running: false, points: [], pnl: 0, base: 1000, lastPrice: 1000, strategy: 'mean-revert', risk: 1, duration: 86400000, startTime: null } // Добавлены duration и startTime
 }
 
 // load saved
@@ -241,7 +215,6 @@ function setStatus(s){ document.getElementById('botTime').textContent = s } // r
 const totalBalanceEl = document.getElementById('totalBalance')
 const walletListEl = document.getElementById('walletList')
 const txListEl = document.getElementById('txList')
-const tariffsEl = document.getElementById('tariffs')
 const botPnlEl = document.getElementById('botPnl')
 const speedSelect = document.getElementById('speed')
 
@@ -365,44 +338,6 @@ function doConvert(){
   saveState(); modalClose(); renderBalance()
 }
 
-// tariffs
-function renderTariffs(){
-  tariffsEl.innerHTML = ''
-  state.plans.forEach(p=>{
-    const el = document.createElement('div'); el.className='tariff'
-    el.innerHTML = `<div class="title">${p.title}</div><div class="meta">${p.yield} · ${p.durationDays} дней</div><div style="margin-top:8px">${p.desc || ''}</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><div class="meta">Мин: ${p.min} €</div><button class="btn" data-id="${p.id}">Подписаться</button></div>`
-    tariffsEl.appendChild(el)
-  })
-  tariffsEl.querySelectorAll('button').forEach(b => b.onclick = (e)=> subscribePlan(e) )
-}
-function subscribePlan(e){
-  return requireAuth(()=> {
-    const id = e.currentTarget.dataset.id
-    const plan = state.plans.find(p=>p.id===id)
-    if(!plan) return
-    showModal(`<h2>Подписка: ${plan.title}</h2><div class="meta">Мин. вход: ${plan.min} €</div><div style="margin-top:8px"><label class="small">Сумма (€)</label><input id="subAmount" type="number" value="${plan.min}" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"/></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="confirmSubscribe('${id}')">Подписаться</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
-  })
-}
-function confirmSubscribe(id){
-  const amount = Number(document.getElementById('subAmount').value) || 0
-  const plan = state.plans.find(p=>p.id===id)
-  if(amount < plan.min){ alert('Ниже минимума'); return }
-  document.getElementById('activePlan').textContent = `${plan.title} · ${p.yield}`
-  addTx({ type:'subscribe', amount, coin:'EUR', note:`Subscribe ${plan.title}`, status:'pending' })
-  saveState(); modalClose()
-}
-
-// export CSV
-function exportCSV(){
-  if(!state.user){ showModal(`<h2>Требуется вход</h2><div class="meta">Войдите, чтобы экспортировать историю.</div><div style="margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>`); return }
-  const rows = [['time','type','amount','coin','note','status']]
-  state.txs.forEach(t => rows.push([t.time||'', t.type||'', t.amount||'', t.coin||'', (t.note||'').replace(/\n/g,' '), t.status||'']))
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')
-  const blob = new Blob([csv], { type:'text/csv' })
-  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'tx_history.csv'; a.click(); URL.revokeObjectURL(url)
-}
-
 // admin withdraw (guarded)
 function openAdminWithdraw(){
   return requireAuth(()=> {
@@ -419,7 +354,7 @@ function doAdminWithdraw(){
   state.balance.USDT = Math.max(0, state.balance.USDT - amt); saveState(); renderBalance(); modalClose()
 }
 
-// ---------- bot config modal ---------- // Новая функция для модального окна настроек
+// ---------- bot config modal ----------
 function openBotConfigModal() {
   return requireAuth(() => {
     showModal(`
@@ -436,11 +371,20 @@ function openBotConfigModal() {
         <label class="small">Риск (%)</label>
         <input id="botRisk" type="number" value="${state.bot.risk || 1}" min="0.1" max="10" step="0.1" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" />
       </div>
+      <div style="margin-top:8px">
+        <label class="small">Длительность работы</label>
+        <select id="botDuration" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+          <option value="3600000" ${state.bot.duration === 3600000 ? 'selected' : ''}>1 час</option>
+          <option value="86400000" ${state.bot.duration === 86400000 ? 'selected' : ''}>1 день</option>
+          <option value="604800000" ${state.bot.duration === 604800000 ? 'selected' : ''}>7 дней</option>
+          <option value="2592000000" ${state.bot.duration === 2592000000 ? 'selected' : ''}>30 дней</option>
+        </select>
+      </div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn" onclick="saveBotConfig()">Сохранить</button>
         <button class="btn ghost" onclick="modalClose()">Отмена</button>
       </div>
-      <div class="meta" style="margin-top:8px">Выберите стратегию и уровень риска для симуляции.</div>
+      <div class="meta" style="margin-top:8px">Выберите стратегию, уровень риска и длительность работы бота.</div>
     `);
   });
 }
@@ -449,12 +393,14 @@ function openBotConfigModal() {
 function saveBotConfig() {
   const strategy = document.getElementById('botStrategy').value;
   const risk = Number(document.getElementById('botRisk').value) || 1;
+  const duration = Number(document.getElementById('botDuration').value) || 86400000;
   state.bot.strategy = strategy;
   state.bot.risk = Math.min(Math.max(risk, 0.1), 10); // Ограничение 0.1–10%
-  addTx({ type: 'bot', amount: '—', coin: '—', note: `Bot config: ${strategy}, risk ${state.bot.risk}%`, status: 'ok' });
+  state.bot.duration = duration;
+  addTx({ type: 'bot', amount: '—', coin: '—', note: `Bot config: ${strategy}, risk ${state.bot.risk}%, duration ${duration/3600000}ч`, status: 'ok' });
   saveState();
   modalClose();
-  setStatus(`Стратегия: ${strategy}, риск: ${state.bot.risk}%`);
+  setStatus(`Стратегия: ${strategy}, риск: ${state.bot.risk}%, длительность: ${duration/3600000}ч`);
 }
 
 // ---------- modal helpers ----------
@@ -501,9 +447,8 @@ document.getElementById('btnDeposit').onclick = ()=> {
   else requireAuth(()=> openDeposit(state.wallets[0].address))
 }
 document.getElementById('btnConvert').onclick = openConvert
-document.getElementById('btnPlans').onclick = ()=> { showModal('<h2>Тарифы</h2><div id="planInner"></div><div style="margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>'); setTimeout(()=>document.getElementById('planInner').appendChild(tariffsEl.cloneNode(true)),100) }
-document.getElementById('btnExport').onclick = exportCSV
-document.getElementById('btnConfigBot').onclick = openBotConfigModal // Привязка новой кнопки
+document.getElementById('btnExport').onclick = ()=> requireAuth(exportCSV)
+document.getElementById('btnConfigBot').onclick = openBotConfigModal
 
 // admin checkbox (demo)
 const adminCheckbox = (()=> {
@@ -596,6 +541,16 @@ function drawChart(){
 
 // ---------- bot tick (driven by interval) ----------
 function tick(){
+  // Проверка длительности
+  if(state.bot.startTime && state.bot.duration) {
+    const elapsed = Date.now() - state.bot.startTime
+    if(elapsed >= state.bot.duration) {
+      stopBot()
+      addTx({ type:'bot', amount:'—', coin:'—', note:'Bot stopped: duration expired', status:'ok' })
+      setStatus(`Бот остановлен: время истекло`)
+      return
+    }
+  }
   const prev = state.bot.points.length ? state.bot.points[state.bot.points.length-1] : state.bot.lastPrice
   const next = generateNextPrice(prev)
   state.bot.points.push(next); if(state.bot.points.length>120) state.bot.points.shift()
@@ -621,6 +576,7 @@ let intervalId = null
 function startBot(){
   if(state.bot.running) return
   state.bot.running = true
+  state.bot.startTime = Date.now() // Сохраняем время старта
   const delay = Number(speedSelect.value) || 60000
   tick() // immediate tick
   intervalId = setInterval(tick, delay)
@@ -629,10 +585,12 @@ function startBot(){
 }
 function stopBot(){
   if(intervalId) clearInterval(intervalId); intervalId = null; state.bot.running = false
+  state.bot.startTime = null // Сбрасываем время старта
   addTx({ type:'bot', amount:'—', coin:'—', note:'Bot stopped', status:'ok' }); saveState()
 }
 function resetBot(){
   state.bot.points = []; state.bot.base = 1000 + (Math.random()-0.5)*20; state.bot.pnl = 0; state.bot.lastPrice = state.bot.base
+  state.bot.startTime = null // Сбрасываем время старта
   addTx({ type:'bot', amount:'—', coin:'—', note:'Bot reset', status:'ok' }); saveState(); drawChart()
 }
 
@@ -646,13 +604,12 @@ document.getElementById('btnStartBot').onclick = ()=> requireAuth(startBot)
 document.getElementById('btnStopBot').onclick = ()=> requireAuth(stopBot)
 document.getElementById('btnResetBot').onclick = ()=> requireAuth(resetBot)
 document.getElementById('btnNewAddress').onclick = ()=> createAddress('USDT','TRC-20')
-document.getElementById('btnPlans').onclick = ()=> renderTariffs()
 document.getElementById('btnExport').onclick = ()=> requireAuth(exportCSV)
-document.getElementById('btnConfigBot').onclick = openBotConfigModal // Привязка новой кнопки
+document.getElementById('btnConfigBot').onclick = openBotConfigModal
 
 // ---------- initial rendering ----------
 function syncUI(){
-  renderBalance(); renderWallets(); renderTx(); renderTariffs()
+  renderBalance(); renderWallets(); renderTx()
   botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
   if(state.user) document.querySelector('.subtitle').textContent = `Вошёл: ${state.user.name || state.user.email || state.user.telegram}`
   else document.querySelector('.subtitle').textContent = `Trading Bot & Wallet — демонстрация`
@@ -682,10 +639,9 @@ window.copyAddr = (e) => navigator.clipboard?.writeText(e.currentTarget?.dataset
 window.openDeposit = openDeposit
 window.checkTelegram = checkTelegram
 window.createAddress = createAddress
-window.renderTariffs = renderTariffs
 window.exportCSV = exportCSV
-window.openBotConfigModal = openBotConfigModal // Экспорт новой функции
-window.saveBotConfig = saveBotConfig // Экспорт новой функции
+window.openBotConfigModal = openBotConfigModal
+window.saveBotConfig = saveBotConfig
 
 // If bot was running when page reloaded, restart with saved speed
 if(state.bot.running){ startBot() }
