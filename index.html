@@ -145,6 +145,7 @@
             <button id="btnStartBot" class="btn">Запустить</button>
             <button id="btnStopBot" class="btn ghost">Остановить</button>
             <button id="btnResetBot" class="btn ghost">Сбросить</button>
+            <button id="btnConfigBot" class="btn ghost">Настроить</button> <!-- Новая кнопка -->
           </div>
         </div>
 
@@ -208,7 +209,7 @@ let state = {
   wallets: [],
   txs: [],
   balance: { USDT: 1250.50 },
-  bot: { running: false, points: [], pnl: 0, base: 1000, lastPrice: 1000 },
+  bot: { running: false, points: [], pnl: 0, base: 1000, lastPrice: 1000, strategy: 'mean-revert', risk: 1 }, // Добавлены strategy и risk
   plans: [
     { id:'starter', title:'Starter', price:'99 €', durationDays:30, yield:'25%/мес', min:100 },
     { id:'pro', title:'Pro', price:'299 €', durationDays:60, yield:'35%/мес', min:500 },
@@ -295,9 +296,7 @@ function doLogin(){
 // ---------- Telegram flow (demo) ----------
 const BOT_USERNAME = 'YourBotUsername' // TODO: replace with real bot name
 function startTelegramFlow(){
-  // create a token to check
   const token = uid(14)
-  // store pending token for demo (in production backend)
   localStorage.setItem('tg_pending_'+token, JSON.stringify({ at: Date.now() }))
   const url = `https://t.me/${BOT_USERNAME}?start=${token}`
   window.open(url, '_blank')
@@ -306,21 +305,17 @@ function startTelegramFlow(){
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="checkTelegram('${token}')">Проверить привязку</button><button class="btn ghost" onclick="modalClose()">Отмена</button></div>`)
 }
 function checkTelegram(token){
-  // In production: call backend /auth/telegram/check?token=... which returns {ok, telegram:{id,username}}
   const pending = localStorage.getItem('tg_pending_'+token)
   if(!pending){ alert('Токен не найден. Сначала нажмите ссылку и /start в боте.'); return }
-  // simulate backend confirming user pressed /start
   setTimeout(()=>{
     const tgUser = 'tg_' + uid(6)
     const tgId = 'tgid_' + uid(7)
-    // bind to existing user or create a demo user
     if(state.user){
       state.user.telegram = tgUser; state.user.telegramId = tgId
       saveState(); syncUI(); addTx({ type:'auth', amount:'—', coin:'—', note:`Telegram linked @${tgUser}`, status:'ok' })
       modalClose(); alert(`Telegram @${tgUser} привязан`)
       return
     }
-    // create demo account
     const email = `${tgUser}@telegram.local`
     const users = loadUsers()
     if(!users[email]) users[email] = { id: 'u_'+uid(6), name: tgUser, passB64: btoa(uid(12)), telegram: tgUser }
@@ -393,7 +388,7 @@ function confirmSubscribe(id){
   const amount = Number(document.getElementById('subAmount').value) || 0
   const plan = state.plans.find(p=>p.id===id)
   if(amount < plan.min){ alert('Ниже минимума'); return }
-  document.getElementById('activePlan').textContent = `${plan.title} · ${plan.yield}`
+  document.getElementById('activePlan').textContent = `${plan.title} · ${p.yield}`
   addTx({ type:'subscribe', amount, coin:'EUR', note:`Subscribe ${plan.title}`, status:'pending' })
   saveState(); modalClose()
 }
@@ -422,6 +417,44 @@ function doAdminWithdraw(){
   const amt = Number(document.getElementById('awAmt').value)||0
   addTx({ type:'withdraw', amount: amt, coin:'USDT', note:`Admin withdraw to ${addr}`, status:'ok' })
   state.balance.USDT = Math.max(0, state.balance.USDT - amt); saveState(); renderBalance(); modalClose()
+}
+
+// ---------- bot config modal ---------- // Новая функция для модального окна настроек
+function openBotConfigModal() {
+  return requireAuth(() => {
+    showModal(`
+      <h2>Настройки бота</h2>
+      <div style="margin-top:8px">
+        <label class="small">Стратегия</label>
+        <select id="botStrategy" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)">
+          <option value="mean-revert" ${state.bot.strategy === 'mean-revert' ? 'selected' : ''}>Mean Revert</option>
+          <option value="momentum" ${state.bot.strategy === 'momentum' ? 'selected' : ''}>Momentum</option>
+          <option value="hybrid" ${state.bot.strategy === 'hybrid' ? 'selected' : ''}>Hybrid</option>
+        </select>
+      </div>
+      <div style="margin-top:8px">
+        <label class="small">Риск (%)</label>
+        <input id="botRisk" type="number" value="${state.bot.risk || 1}" min="0.1" max="10" step="0.1" style="width:100%;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)" />
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn" onclick="saveBotConfig()">Сохранить</button>
+        <button class="btn ghost" onclick="modalClose()">Отмена</button>
+      </div>
+      <div class="meta" style="margin-top:8px">Выберите стратегию и уровень риска для симуляции.</div>
+    `);
+  });
+}
+
+// Сохранение настроек бота
+function saveBotConfig() {
+  const strategy = document.getElementById('botStrategy').value;
+  const risk = Number(document.getElementById('botRisk').value) || 1;
+  state.bot.strategy = strategy;
+  state.bot.risk = Math.min(Math.max(risk, 0.1), 10); // Ограничение 0.1–10%
+  addTx({ type: 'bot', amount: '—', coin: '—', note: `Bot config: ${strategy}, risk ${state.bot.risk}%`, status: 'ok' });
+  saveState();
+  modalClose();
+  setStatus(`Стратегия: ${strategy}, риск: ${state.bot.risk}%`);
 }
 
 // ---------- modal helpers ----------
@@ -470,6 +503,7 @@ document.getElementById('btnDeposit').onclick = ()=> {
 document.getElementById('btnConvert').onclick = openConvert
 document.getElementById('btnPlans').onclick = ()=> { showModal('<h2>Тарифы</h2><div id="planInner"></div><div style="margin-top:12px"><button class="btn" onclick="modalClose()">Закрыть</button></div>'); setTimeout(()=>document.getElementById('planInner').appendChild(tariffsEl.cloneNode(true)),100) }
 document.getElementById('btnExport').onclick = exportCSV
+document.getElementById('btnConfigBot').onclick = openBotConfigModal // Привязка новой кнопки
 
 // admin checkbox (demo)
 const adminCheckbox = (()=> {
@@ -497,18 +531,14 @@ if(state.bot.points.length === 0){
 
 // Price generator: Ornstein-Uhlenbeck + jumps + volume
 function generateNextPrice(prev){
-  // parameters
   const mu = state.bot.base // long-term mean
   const theta = 0.02  // mean reversion speed
-  const sigma = 0.8   // volatility
-  // OU: dx = theta*(mu-x) dt + sigma * dW
+  const sigma = 0.8 * (state.bot.risk || 1) // Учитываем риск
   const dt = 1
   const dw = (Math.random()-0.5)*Math.sqrt(dt)
   const meanRevert = theta*(mu - prev)*dt
   let next = prev + meanRevert + sigma * dw
-  // occasional jump
   if(Math.random() < 0.03){ next *= (1 + (Math.random()-0.5)*0.04) }
-  // micro trend
   if(Math.random() < 0.15) next *= (1 + (Math.random()-0.5)*0.005)
   return Math.max(0.1, next)
 }
@@ -517,19 +547,15 @@ function drawChart(){
   ctx.clearRect(0,0,canvas.width,canvas.height)
   ctx.save(); ctx.scale(DPR,DPR)
   const W = canvas.clientWidth, H = canvas.clientHeight
-  // background
   ctx.fillStyle = 'rgba(4,8,14,0.6)'; ctx.fillRect(0,0,W,H)
-  // padding
   const padL = 48, padR = 12, padT = 14, padB = 28
   const plotW = W - padL - padR, plotH = H - padT - padB
-  // points
   const pts = state.bot.points.length ? state.bot.points : [state.bot.lastPrice]
   const minP = Math.min(...pts) * 0.995
   const maxP = Math.max(...pts) * 1.005
   const xrange = pts.length - 1
   const yScale = (v) => padT + (maxP - v) / (maxP - minP || 1) * plotH
   const xScale = (i) => padL + (i / (xrange || 1)) * plotW
-  // grid
   ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1
   ctx.beginPath()
   for(let g=0; g<=4; g++){
@@ -537,35 +563,29 @@ function drawChart(){
     ctx.moveTo(padL, y); ctx.lineTo(W-padR, y)
   }
   ctx.stroke()
-  // axis labels (prices)
   ctx.fillStyle = 'rgba(205,230,220,0.9)'; ctx.font = '12px Inter, Arial'
   for(let g=0; g<=4; g++){
     const y = padT + (g/4)*plotH
     const price = (maxP - (g/4)*(maxP-minP))
     ctx.fillText(fmt(price), 8, y+4)
   }
-  // draw area + line
   ctx.beginPath()
   for(let i=0;i<pts.length;i++){
     const x = xScale(i), y = yScale(pts[i])
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y)
   }
   ctx.strokeStyle = 'rgba(110,231,183,0.95)'; ctx.lineWidth = 2.5; ctx.stroke()
-  // fill area
   ctx.lineTo(xScale(pts.length-1), padT+plotH); ctx.lineTo(xScale(0), padT+plotH); ctx.closePath()
   ctx.fillStyle = 'rgba(110,231,183,0.06)'; ctx.fill()
-  // current price marker
   const last = pts[pts.length-1]
   const lastX = xScale(pts.length-1), lastY = yScale(last)
   ctx.fillStyle = '#cdefdc'; ctx.beginPath(); ctx.arc(lastX, lastY, 4, 0, Math.PI*2); ctx.fill()
-  // draw volumes as thin bars (simulated)
   for(let i=0;i<pts.length;i++){
     const x = xScale(i)
     const vol = Math.abs(Math.round((Math.sin(i/3)+1)*30 + (Math.random()*20)))
     const h = Math.min(24, vol/3)
     ctx.fillStyle = 'rgba(110,231,183,0.08)'; ctx.fillRect(x-2, padT+plotH+h*0.6, 3, h*0.4)
   }
-  // header info: current price and pnl
   ctx.fillStyle = '#cdefdc'; ctx.font = '13px Inter, Arial'
   ctx.fillText('Price: ' + fmt(last) + ' USDT', padL, padT - 2)
   const pnl = last - state.bot.base
@@ -576,7 +596,6 @@ function drawChart(){
 
 // ---------- bot tick (driven by interval) ----------
 function tick(){
-  // generate next price
   const prev = state.bot.points.length ? state.bot.points[state.bot.points.length-1] : state.bot.lastPrice
   const next = generateNextPrice(prev)
   state.bot.points.push(next); if(state.bot.points.length>120) state.bot.points.shift()
@@ -629,6 +648,7 @@ document.getElementById('btnResetBot').onclick = ()=> requireAuth(resetBot)
 document.getElementById('btnNewAddress').onclick = ()=> createAddress('USDT','TRC-20')
 document.getElementById('btnPlans').onclick = ()=> renderTariffs()
 document.getElementById('btnExport').onclick = ()=> requireAuth(exportCSV)
+document.getElementById('btnConfigBot').onclick = openBotConfigModal // Привязка новой кнопки
 
 // ---------- initial rendering ----------
 function syncUI(){
@@ -636,7 +656,6 @@ function syncUI(){
   botPnlEl.textContent = `${fmt(state.bot.pnl)} USDT`
   if(state.user) document.querySelector('.subtitle').textContent = `Вошёл: ${state.user.name || state.user.email || state.user.telegram}`
   else document.querySelector('.subtitle').textContent = `Trading Bot & Wallet — демонстрация`
-  // admin toggle: only visible when user is present
   const header = document.querySelector('.appbar')
   const existing = document.getElementById('adminToggle')
   if(state.user && !existing){
@@ -659,12 +678,14 @@ if(state.wallets.length === 0){
 window.openRegisterModal = openRegisterModal
 window.openLoginModal = openLoginModal
 window.modalClose = modalClose
-window.copyAddr = (e) => navigator.clipboard?.writeText(e.currentTarget?.dataset?.addr || e) // simple
+window.copyAddr = (e) => navigator.clipboard?.writeText(e.currentTarget?.dataset?.addr || e)
 window.openDeposit = openDeposit
 window.checkTelegram = checkTelegram
 window.createAddress = createAddress
 window.renderTariffs = renderTariffs
 window.exportCSV = exportCSV
+window.openBotConfigModal = openBotConfigModal // Экспорт новой функции
+window.saveBotConfig = saveBotConfig // Экспорт новой функции
 
 // If bot was running when page reloaded, restart with saved speed
 if(state.bot.running){ startBot() }
