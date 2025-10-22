@@ -118,7 +118,7 @@
   <div class="auth-box">
     <div class="logo">AI Bot</div>
     <h2 id="authTitle">Вход</h2>
-    <input type193="email" id="email" placeholder="Email" />
+    <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Пароль" />
     <input type="password" id="confirmPassword" placeholder="Подтвердите пароль" style="display:none;" />
     <button id="authBtn">Войти</button>
@@ -326,7 +326,7 @@
     document.getElementById('usernamePlans').textContent = session.email;
   }
 
-  // === ВЫХОД — ТОЛЬКО СЕССИЯ И ТАРИФ ===
+  // === ВЫХОД ===
   document.querySelectorAll('.logout').forEach(btn => {
     btn.onclick = () => {
       localStorage.removeItem('tradingBotSession');
@@ -347,7 +347,7 @@
 
   // === ПОКУПКА ТАРИФА — РАБОТАЕТ 100% ===
   document.querySelectorAll('.buy-btn').forEach(btn => {
-    btn.onclick = () => {
+    btn.addEventListener('click', () => {
       currentPlan = btn.dataset.plan;
       currentPair = btn.dataset.pair;
       autoMode = true;
@@ -355,7 +355,7 @@
       localStorage.setItem('currentPair', currentPair);
       alert(`Тариф ${currentPlan.toUpperCase()} активирован! Пара: ${currentPair}/USDT`);
       showDashboard();
-    };
+    });
   });
 
   function showDashboard() {
