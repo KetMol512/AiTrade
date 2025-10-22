@@ -224,7 +224,6 @@
     if (!isValidEmail(email)) return alert('Введите корректный email!');
 
     if (isLogin) {
-      // ВХОД
       const user = users.find(u => u.email === email && u.password === password);
       if (user) {
         session = { email };
@@ -234,7 +233,6 @@
         alert('Неверный email или пароль');
       }
     } else {
-      // РЕГИСТРАЦИЯ
       const confirm = document.getElementById('confirmPassword').value;
       if (password !== confirm) return alert('Пароли не совпадают!');
       if (users.some(u => u.email === email)) return alert('Пользователь с таким email уже существует!');
@@ -244,7 +242,7 @@
       session = { email };
       localStorage.setItem('tradingBotSession', JSON.stringify(session));
       alert('Аккаунт создан! Теперь войдите.');
-      toggleMode(); // Переключить на вход
+      toggleMode();
     }
   };
 
@@ -278,6 +276,7 @@
     initChart();
     updateUI();
     setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString(), 1000);
+    loadHistoricalData(); // Загрузка при старте
   }
 
   function initChart() {
@@ -310,18 +309,16 @@
 
   function connectBinanceWS() {
     if (ws) ws.close();
-    ws = new WebSocket(`wss://stream.binance.com:9443/ws/${currentPair}@kline_${currentTimeframe}`);
+    const stream = `${currentPair}@kline_${currentTimeframe}`;
+    ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
 
-    ws.onopen = () => console.log('Binance WS подключен');
-    ws.onclose = () => {
-      console.log('Binance WS отключен — fallback на симуляцию');
-      setTimeout(connectBinanceWS, 5000); // Переподключение
+    ws.onopen = () => {
+      console.log('Binance WS подключен:', stream);
     };
-    ws.onerror = (e) => console.error('Binance WS ошибка:', e);
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.k && data.k.x) { // Закрытая свеча
+      if (data.k && data.k.x) {
         const k = data.k;
         const candle = {
           time: k.t / 1000,
@@ -331,17 +328,22 @@
           close: parseFloat(k.c),
           volume: parseFloat(k.v)
         };
-
         candles.push(candle);
         if (candles.length > 200) candles.shift();
         updateChart();
         if (isRunning && Math.random() < 0.3) checkSignals(candle);
       }
     };
+
+    ws.onclose = () => {
+      console.log('WS закрыт, переподключение...');
+      setTimeout(connectBinanceWS, 3000);
+    };
   }
 
   function loadHistoricalData() {
-    fetch(`https://api.binance.com/api/v3/klines?symbol=${currentPair.toUpperCase()}&interval=${currentTimeframe}&limit=100`)
+    const symbol = currentPair.toUpperCase().replace('USDT', '') + 'USDT';
+    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${currentTimeframe}&limit=100`)
       .then(res => res.json())
       .then(data => {
         candles = data.map(d => ({
@@ -354,43 +356,46 @@
         }));
         updateChart();
       })
-      .catch(() => {
-        // Fallback на симуляцию
+      .catch(err => {
+        console.error('Ошибка загрузки данных:', err);
+        alert('Нет интернета — используется симуляция');
         candles = generateMockCandles(100);
         updateChart();
       });
   }
 
   function generateMockCandles(count) {
-    let price = currentPair === 'btcusdt' ? 65000 : currentPair === 'ethusdt' ? 3400 : 140;
+    const base = currentPair === 'btcusdt' ? 65000 : currentPair === 'ethusdt' ? 3400 : 140;
+    let price = base;
     return Array.from({ length: count }, (_, i) => {
       const change = (Math.random() - 0.5) * 0.005;
       const open = price;
-      const close = price * (1 + change);
-      const high = Math.max(open, close) * 1.001;
-      const low = Math.min(open, close) * 0.999;
-      price = close;
-      return { time: Date.now() / 1000 - (count - i) * 900, open, high, low, close, volume: Math.random() * 10000 };
+      price *= (1 + change);
+      const close = price;
+      const high = Math.max(open, close) * (1 + Math.random() * 0.002);
+      const low = Math.min(open, close) * (1 - Math.random() * 0.002);
+      return { time: Date.now() / 1000 - (count - i) * 900, open, high, low, close, volume: 1000 + Math.random() * 5000 };
     });
   }
 
   function updateChart() {
-    if (candles.length < 2) return;
+    if (candles.length === 0) return;
 
     candleSeries.setData(candles);
 
     // EMA 20
-    const closes = candles.map(c => c.close);
-    const ema = [];
-    let sma = closes.slice(0, 20).reduce((a, b) => a + b, 0) / 20;
-    ema.push(sma);
-    for (let i = 20; i < closes.length; i++) {
-      sma = (closes[i] * (2 / (20 + 1))) + (sma * (1 - (2 / (20 + 1))));
-      ema.push(sma);
+    if (candles.length >= 20) {
+      const closes = candles.map(c => c.close);
+      let ema = closes[19];
+      const k = 2 / (20 + 1);
+      const emaData = [{ time: candles[19].time, value: ema }];
+      for (let i = 20; i < closes.length; i++) {
+        ema = closes[i] * k + ema * (1 - k);
+        emaData.push({ time: candles[i].time, value: ema });
+      }
+      emaSeries.setData(emaData);
     }
-    emaSeries.setData(candles.slice(19).map((c, i) => ({ time: c.time, value: ema[i] })));
 
-    // Объёмы
     volumeSeries.setData(candles.map(c => ({
       time: c.time,
       value: c.volume,
@@ -398,15 +403,13 @@
     })));
 
     candleSeries.setMarkers(markers);
-
     chart.timeScale().scrollToRealTime();
   }
 
   function checkSignals(candle) {
-    // Простая логика на основе EMA
-    if (candles.length < 20) return;
-    const emaLast = candles[candles.length - 2].close; // Примерная EMA
-    const signal = candle.close > emaLast ? 'BUY' : 'SELL';
+    if (candles.length < 21) return;
+    const ema = emaSeries.getData().slice(-1)[0]?.value || candle.close;
+    const signal = candle.close > ema ? 'BUY' : 'SELL';
     executeTrade(signal, candle);
   }
 
@@ -432,7 +435,7 @@
     };
 
     trades.unshift(trade);
-    balance = signal === 'BUY' ? balance * 0.999 : balance * 1.001;
+    balance *= signal === 'BUY' ? 0.999 : 1.001;
 
     markers.push({
       time: candle.time,
@@ -476,7 +479,7 @@
       </div>
     `).join('');
 
-    document.getElementById('currentPair').textContent = `${currentPair.toUpperCase()}`;
+    document.getElementById('currentPair').textContent = currentPair.toUpperCase().replace('USDT', '/USDT');
     document.getElementById('currentTF').textContent = currentTimeframe;
   }
 
@@ -486,22 +489,20 @@
       document.querySelectorAll('[data-pair]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentPair = btn.dataset.pair.toLowerCase() + 'usdt';
-      currentTimeframe = document.getElementById('timeframe').value;
       candles = [];
-      if (isRunning) {
-        connectBinanceWS();
-        loadHistoricalData();
-      }
+      markers = [];
+      loadHistoricalData();
+      if (isRunning) connectBinanceWS();
       updateUI();
     };
   });
 
   document.getElementById('timeframe').onchange = () => {
     currentTimeframe = document.getElementById('timeframe').value;
-    if (isRunning) {
-      connectBinanceWS();
-      loadHistoricalData();
-    }
+    candles = [];
+    markers = [];
+    loadHistoricalData();
+    if (isRunning) connectBinanceWS();
     updateUI();
   };
 
@@ -513,7 +514,6 @@
     } else {
       isRunning = true;
       connectBinanceWS();
-      loadHistoricalData();
       document.getElementById('startBtn').textContent = 'Остановить';
     }
   };
