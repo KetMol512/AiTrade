@@ -18,7 +18,10 @@
       --hover: #1e2a38;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
+
+    /* === СКРЫТЬ ВСЁ ДО ВХОДА === */
+    #plansPage, #dashboard { display: none; }
 
     /* === АВТОРИЗАЦИЯ === */
     #authPage {
@@ -46,7 +49,16 @@
     .switch a { color: var(--green); cursor: pointer; text-decoration: underline; }
 
     /* === ТАРИФЫ === */
-    .tariffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .container { max-width: 1500px; margin: 0 auto; padding: 16px; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 0; border-bottom: 1px solid var(--border);
+    }
+    .user-info { font-size: 0.9rem; color: #aaa; }
+    .logout { background: var(--red); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 12px; font-size: 0.85rem; transition: 0.2s; }
+    .logout:hover { background: #cc4141; }
+
+    .tariffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 40px 0; }
     .tariff-card {
       background: var(--card); border-radius: 14px; padding: 20px; border: 1px solid var(--border); text-align: center;
       transition: all 0.2s;
@@ -61,16 +73,6 @@
     .buy-btn:hover { background: #00b894; }
 
     /* === ДЭШБОРД === */
-    #plansPage, #dashboard { display: none; }
-    .container { max-width: 1500px; margin: 0 auto; padding: 16px; }
-    .header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 0; border-bottom: 1px solid var(--border);
-    }
-    .user-info { font-size: 0.9rem; color: #aaa; }
-    .logout { background: var(--red); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 12px; font-size: 0.85rem; transition: 0.2s; }
-    .logout:hover { background: #cc4141; }
-
     .main { display: grid; grid-template-columns: 1fr 360px; gap: 16px; margin-top: 16px; }
     #chart { height: 580px; border-radius: 14px; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
 
@@ -111,7 +113,7 @@
 </head>
 <body>
 
-<!-- === АВТОРИЗАЦИЯ === -->
+<!-- === СТРАНИЦА АВТОРИЗАЦИИ === -->
 <div id="authPage">
   <div class="auth-box">
     <div class="logo">AI Bot</div>
@@ -127,7 +129,7 @@
   </div>
 </div>
 
-<!-- === ТАРИФЫ === -->
+<!-- === СТРАНИЦА ТАРИФОВ === -->
 <div id="plansPage">
   <div class="container">
     <div class="header">
@@ -145,7 +147,7 @@
         <div class="tariff-duration">1 месяц</div>
         <ul class="tariff-features">
           <li>Порог входа: $100</li>
-          <li>Базовые пары (BTC, ETH)</li>
+          <li>Только BTC</li>
           <li>EMA стратегия</li>
         </ul>
         <button class="buy-btn" data-plan="starter" data-pair="BTC">Купить</button>
@@ -156,7 +158,7 @@
         <div class="tariff-duration">3 месяца</div>
         <ul class="tariff-features">
           <li>Порог входа: $500</li>
-          <li>Топ-10 пар</li>
+          <li>Топ-5 пар</li>
           <li>EMA + RSI</li>
         </ul>
         <button class="buy-btn" data-plan="basic" data-pair="ETH">Купить</button>
@@ -167,8 +169,8 @@
         <div class="tariff-duration">6 месяцев</div>
         <ul class="tariff-features">
           <li>Порог входа: $1,000</li>
-          <li>Топ-20 пар</li>
-          <li>Гибрид стратегия</li>
+          <li>Топ-10 пар</li>
+          <li>Гибрид</li>
         </ul>
         <button class="buy-btn" data-plan="pro" data-pair="SOL">Купить</button>
       </div>
@@ -178,8 +180,8 @@
         <div class="tariff-duration">12 месяцев</div>
         <ul class="tariff-features">
           <li>Порог входа: $5,000</li>
-          <li>Топ-30 пар</li>
-          <li>AI оптимизация</li>
+          <li>Топ-20 пар</li>
+          <li>AI</li>
         </ul>
         <button class="buy-btn" data-plan="premium" data-pair="BNB">Купить</button>
       </div>
@@ -189,7 +191,7 @@
         <div class="tariff-duration">24 месяца</div>
         <ul class="tariff-features">
           <li>Порог входа: $10,000</li>
-          <li>Все топ-30 пары</li>
+          <li>Топ-30 пар</li>
           <li>Полный AI</li>
         </ul>
         <button class="buy-btn" data-plan="elite" data-pair="XRP">Купить</button>
@@ -215,7 +217,10 @@
       <div class="sidebar">
         <div class="card">
           <h3>Торговая пара</h3>
-          <div class="controls" id="pairButtons"></div>
+          <div class="controls" id="pairButtons">
+            <!-- Вкладка "Автоматически" -->
+            <button class="active" data-mode="auto">Автоматически</button>
+          </div>
         </div>
 
         <div class="card">
@@ -263,19 +268,20 @@
   let users = JSON.parse(localStorage.getItem('tradingBotUsers') || '[]');
   let session = JSON.parse(localStorage.getItem('tradingBotSession') || 'null');
   let currentPlan = localStorage.getItem('currentPlan') || null;
-  let currentPair = localStorage.getItem('currentPair') || 'BTC';
+  let currentPair = localStorage.getItem('currentPair') || null;
+  let autoMode = true;
 
   const authPage = document.getElementById('authPage');
   const plansPage = document.getElementById('plansPage');
   const dashboard = document.getElementById('dashboard');
 
+  // === АВТОРИЗАЦИЯ ===
   const title = document.getElementById('authTitle');
   const authBtn = document.getElementById('authBtn');
   const switchText = document.getElementById('switchText');
   const switchLink = document.getElementById('switchLink');
   const confirmPassword = document.getElementById('confirmPassword');
 
-  // === ПЕРЕКЛЮЧЕНИЕ РЕЖИМА ===
   switchLink.onclick = () => {
     isLogin = !isLogin;
     title.textContent = isLogin ? 'Вход' : 'Регистрация';
@@ -283,16 +289,15 @@
     switchText.innerHTML = isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? ';
     switchLink.textContent = isLogin ? 'Зарегистрироваться' : 'Войти';
     confirmPassword.style.display = isLogin ? 'none' : 'block';
-    updateAuthButton();
+    updateAuthHandler();
   };
 
-  // === ОБНОВЛЕНИЕ КНОПКИ ===
-  function updateAuthButton() {
+  function updateAuthHandler() {
     authBtn.onclick = () => {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      if (!email || !password) return alert('Заполните все поля!');
+      if (!email || !password) return alert('Заполните поля!');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('Неверный email!');
 
       if (isLogin) {
@@ -301,26 +306,21 @@
           session = { email };
           localStorage.setItem('tradingBotSession', JSON.stringify(session));
           showPlansPage();
-        } else {
-          alert('Неверный email или пароль');
-        }
+        } else alert('Неверные данные');
       } else {
         const confirm = document.getElementById('confirmPassword').value;
         if (password !== confirm) return alert('Пароли не совпадают!');
-        if (users.some(u => u.email === email)) return alert('Такой email уже есть!');
-
+        if (users.some(u => u.email === email)) return alert('Email занят!');
         users.push({ email, password });
         localStorage.setItem('tradingBotUsers', JSON.stringify(users));
-        alert('Аккаунт создан! Входите.');
+        alert('Аккаунтан! Входите.');
         isLogin = true;
         switchLink.onclick();
       }
     };
   }
+  updateAuthHandler();
 
-  updateAuthButton(); // Инициализация
-
-  // === СТРАНИЦА ТАРИФОВ ===
   function showPlansPage() {
     authPage.style.display = 'none';
     plansPage.style.display = 'block';
@@ -330,17 +330,16 @@
   // === ВЫХОД ===
   document.querySelectorAll('.logout').forEach(btn => {
     btn.onclick = () => {
-      localStorage.removeItem('tradingBotSession');
-      localStorage.removeItem('currentPlan');
-      localStorage.removeItem('currentPair');
+      localStorage.clear();
       location.reload();
     };
   });
 
   // === ПРОВЕРКА СЕССИИ ===
-  if (session) {
-    if (currentPlan) showDashboard();
-    else showPlansPage();
+  if (session && currentPlan && currentPair) {
+    showDashboard();
+  } else if (session) {
+    showPlansPage();
   }
 
   // === ПОКУПКА ТАРИФА ===
@@ -348,9 +347,10 @@
     btn.onclick = () => {
       currentPlan = btn.dataset.plan;
       currentPair = btn.dataset.pair;
+      autoMode = true;
       localStorage.setItem('currentPlan', currentPlan);
       localStorage.setItem('currentPair', currentPair);
-      alert(`Тариф ${currentPlan.toUpperCase()} куплен! Пара: ${currentPair}/USDT`);
+      alert(`Тариф ${currentPlan.toUpperCase()} активирован! Пара: ${currentPair}/USDT`);
       showDashboard();
     };
   });
@@ -360,12 +360,11 @@
     dashboard.style.display = 'block';
     document.getElementById('usernameDashboard').textContent = session.email;
     document.getElementById('currentPlan').textContent = currentPlan.toUpperCase();
+    document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
     initTradingTerminal();
   }
 
   // === ТОРГОВЫЙ ТЕРМИНАЛ ===
-  const top30 = ['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','TRX','LINK','TON','AVAX','SHIB','BCH','DOT','NEAR','LTC','UNI','MATIC','ICP','KAS','PEPE','LEO','DAI','ETC','APT','RNDR','FDUSD','HBAR','XMR','XLM'];
-
   let chart, candleSeries, emaSeries, volumeSeries;
   let candles = [];
   let balance = 10000;
@@ -377,34 +376,16 @@
 
   function initTradingTerminal() {
     initChart();
-    renderPairButtons();
+    renderAutoMode();
     updateUI();
     setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString(), 1000);
     loadHistoricalData();
     startIncomeTimer();
   }
 
-  function renderPairButtons() {
+  function renderAutoMode() {
     const container = document.getElementById('pairButtons');
-    container.innerHTML = '';
-    top30.forEach(pair => {
-      const btn = document.createElement('button');
-      btn.textContent = `${pair}/USDT`;
-      btn.dataset.pair = pair;
-      btn.onclick = () => switchPair(pair);
-      if (pair === currentPair) btn.classList.add('active');
-      container.appendChild(btn);
-    });
-  }
-
-  function switchPair(pair) {
-    currentPair = pair;
-    localStorage.setItem('currentPair', pair);
-    document.querySelectorAll('#pairButtons button').forEach(b => b.classList.remove('active'));
-    document.querySelector(`#pairButtons button[data-pair="${pair}"]`).classList.add('active');
-    candles = []; markers = []; trades = [];
-    loadHistoricalData();
-    updateUI();
+    container.innerHTML = '<button class="active" data-mode="auto">Автоматически</button>';
   }
 
   function initChart() {
@@ -440,11 +421,7 @@
       .then(data => {
         candles = data.map(d => ({
           time: d[0] / 1000,
-          open: parseFloat(d[1]),
-          high: parseFloat(d[2]),
-          low: parseFloat(d[3]),
-          close: parseFloat(d[4]),
-          volume: parseFloat(d[5])
+          open: +d[1], high: +d[2], low: +d[3], close: +d[4], volume: +d[5]
         }));
         updateChart();
       })
@@ -455,7 +432,7 @@
   }
 
   function generateMockCandles(n) {
-    const base = currentPair === 'BTC' ? 65000 : currentPair === 'ETH' ? 3400 : 100;
+    const base = currentPair === 'BTC' ? 65000 : 100;
     let p = base;
     return Array.from({ length: n }, (_, i) => {
       const o = p;
@@ -463,11 +440,9 @@
       const c = p;
       return {
         time: Date.now() / 1000 - (n - i) * 900,
-        open: o,
-        high: Math.max(o, c) * (1 + Math.random() * 0.002),
+        open: o, high: Math.max(o, c) * (1 + Math.random() * 0.002),
         low: Math.min(o, c) * (1 - Math.random() * 0.002),
-        close: c,
-        volume: 1000 + Math.random() * 5000
+        close: c, volume: 1000 + Math.random() * 5000
       };
     });
   }
@@ -507,25 +482,10 @@
   function openTrade(signal, c) {
     const price = c.close;
     const size = (balance * 0.1) / price;
-    const trade = {
-      id: Date.now(),
-      time: c.time,
-      type: signal,
-      entry: price,
-      size: size,
-      status: 'open',
-      pnl: 0,
-      closed: false
-    };
+    const trade = { id: Date.now(), time: c.time, type: signal, entry: price, size, status: 'open', pnl: 0, closed: false };
     trades.unshift(trade);
     balance *= 0.999;
-    markers.push({
-      time: c.time,
-      position: signal === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: signal === 'BUY' ? '#00d4aa' : '#ff5252',
-      shape: signal === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: signal
-    });
+    markers.push({ time: c.time, position: signal === 'BUY' ? 'belowBar' : 'aboveBar', color: signal === 'BUY' ? '#00d4aa' : '#ff5252', shape: signal === 'BUY' ? 'arrowUp' : 'arrowDown', text: signal });
     updateUI();
     setTimeout(() => closeTradeByTime(trade), 24 * 3600000);
   }
@@ -540,18 +500,10 @@
     if (trade.closed) return;
     trade.closed = true;
     trade.exit = exit;
-    trade.pnl = trade.type === 'BUY'
-      ? (exit - trade.entry) * trade.size * 0.999
-      : (trade.entry - exit) * trade.size * 0.999;
+    trade.pnl = trade.type === 'BUY' ? (exit - trade.entry) * trade.size * 0.999 : (trade.entry - exit) * trade.size * 0.999;
     trade.status = 'closed';
     balance += trade.pnl;
-    markers.push({
-      time: candles[candles.length - 1].time,
-      position: trade.type === 'BUY' ? 'aboveBar' : 'belowBar',
-      color: trade.pnl > 0 ? '#00d4aa' : '#ff5252',
-      shape: 'circle',
-      text: trade.pnl > 0 ? `+$${trade.pnl.toFixed(2)}` : `$${trade.pnl.toFixed(2)}`
-    });
+    markers.push({ time: candles[candles.length - 1].time, position: trade.type === 'BUY' ? 'aboveBar' : 'belowBar', color: trade.pnl > 0 ? '#00d4aa' : '#ff5252', shape: 'circle', text: trade.pnl > 0 ? `+$${trade.pnl.toFixed(2)}` : `$${trade.pnl.toFixed(2)}` });
     updateUI();
   }
 
@@ -570,10 +522,8 @@
         <div>${t.status === 'closed' ? (t.pnl > 0 ? '+' : '') + '$' + t.pnl.toFixed(2) : 'Открыта'}</div>
       </div>
     `).join('');
-    document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
   }
 
-  // === ДОХОДНОСТЬ КАЖДУЮ МИНУТУ ===
   function startIncomeTimer() {
     let sec = 60;
     const el = document.getElementById('timerSeconds');
@@ -592,7 +542,6 @@
     }, 1000);
   }
 
-  // === КНОПКА ЗАПУСК ===
   document.getElementById('startBtn').onclick = () => {
     isBotRunning = !isBotRunning;
     const btn = document.getElementById('startBtn');
@@ -612,10 +561,7 @@
       const d = JSON.parse(e.data);
       if (d.k && d.k.x) {
         const k = d.k;
-        const c = {
-          time: k.t / 1000,
-          open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v
-        };
+        const c = { time: k.t / 1000, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
         candles.push(c);
         if (candles.length > 200) candles.shift();
         updateChart();
