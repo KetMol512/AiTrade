@@ -29,10 +29,10 @@
     }
     .auth-box {
       background: var(--card); padding: 40px; border-radius: 16px;
-      width: 100%; max-width: 400px; border: 1px solid var(--border);
+      width: 100%; max-width: 420px; border: 1px solid var(--border);
       text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
-    .logo { font-size: 2.2rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
+    .logo { font-size: 2.4rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
     h2 { margin-bottom: 24px; color: #fff; }
     input {
       width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px;
@@ -103,8 +103,9 @@
   <div class="auth-box">
     <div class="logo">AI Bot</div>
     <h2 id="authTitle">Вход</h2>
-    <input type="text" id="username" placeholder="Логин" />
+    <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Пароль" />
+    <input type="password" id="confirmPassword" placeholder="Подтвердите пароль" style="display:none;" />
     <button id="authBtn">Войти</button>
     <div class="switch">
       <span id="switchText">Нет аккаунта? </span>
@@ -188,44 +189,59 @@
   // === ПЕРЕМЕННЫЕ ===
   const authPage = document.getElementById('authPage');
   const dashboard = document.getElementById('dashboard');
-  let users = JSON.parse(localStorage.getItem('tradingBotUsers') || '[]');
+  const users = JSON.parse(localStorage.getItem('tradingBotUsers') || '[]');
   let session = JSON.parse(localStorage.getItem('tradingBotSession') || 'null');
   let isLogin = true;
 
-  // === АВТОРИЗАЦИЯ ===
   const title = document.getElementById('authTitle');
   const btn = document.getElementById('authBtn');
   const switchText = document.getElementById('switchText');
   const switchLink = document.getElementById('switchLink');
+  const confirmPassword = document.getElementById('confirmPassword');
 
+  // === ПЕРЕКЛЮЧЕНИЕ ВХОД/РЕГИСТРАЦИЯ ===
   function toggleMode() {
     isLogin = !isLogin;
     title.textContent = isLogin ? 'Вход' : 'Регистрация';
     btn.textContent = isLogin ? 'Войти' : 'Создать аккаунт';
     switchText.innerHTML = isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? ';
     switchLink.textContent = isLogin ? 'Зарегистрироваться' : 'Войти';
+    confirmPassword.style.display = isLogin ? 'none' : 'block';
   }
   switchLink.onclick = toggleMode;
 
+  // === ВАЛИДАЦИЯ EMAIL ===
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // === КНОПКА АВТОРИЗАЦИИ ===
   btn.onclick = () => {
-    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    if (!username || !password) return alert('Заполните все поля!');
+
+    if (!email || !password) return alert('Заполните все поля!');
+    if (!isValidEmail(email)) return alert('Введите корректный email!');
 
     if (isLogin) {
-      const user = users.find(u => u.username === username && u.password === password);
+      // ВХОД
+      const user = users.find(u => u.email === email && u.password === password);
       if (user) {
-        session = { username };
+        session = { email };
         localStorage.setItem('tradingBotSession', JSON.stringify(session));
         startDashboard();
       } else {
-        alert('Неверный логин или пароль');
+        alert('Неверный email или пароль');
       }
     } else {
-      if (users.some(u => u.username === username)) return alert('Пользователь уже существует');
-      users.push({ username, password });
+      // РЕГИСТРАЦИЯ
+      const confirm = document.getElementById('confirmPassword').value;
+      if (password !== confirm) return alert('Пароли не совпадают!');
+      if (users.some(u => u.email === email)) return alert('Пользователь с таким email уже существует!');
+
+      users.push({ email, password });
       localStorage.setItem('tradingBotUsers', JSON.stringify(users));
-      session = { username };
+      session = { email };
       localStorage.setItem('tradingBotSession', JSON.stringify(session));
       startDashboard();
     }
@@ -234,7 +250,7 @@
   function startDashboard() {
     authPage.style.display = 'none';
     dashboard.style.display = 'block';
-    document.getElementById('usernameDisplay').textContent = session.username;
+    document.getElementById('usernameDisplay').textContent = session.email;
     initTradingTerminal();
   }
 
@@ -243,10 +259,8 @@
     location.reload();
   };
 
-  // === ПРОВЕРКА СЕССИИ ПРИ ЗАГРУЗКЕ ===
-  if (session) {
-    startDashboard();
-  }
+  // === ПРОВЕРКА СЕССИИ ===
+  if (session) startDashboard();
 
   // === ТОРГОВЫЙ ТЕРМИНАЛ ===
   let chart, candleSeries, emaSeries, volumeSeries;
@@ -276,7 +290,7 @@
 
     candleSeries = chart.addCandlestickSeries({ upColor: '#00d4aa', downColor: '#ff5252' });
     emaSeries = chart.addLineSeries({ color: '#ffd700', lineWidth: 2 });
-    volumeSeries bacteria= chart.addHistogramSeries({ color: '#26a69a', priceScaleId: 'volume' });
+    volumeSeries = chart.addHistogramSeries({ color: '#26a69a', priceScaleId: 'volume' });
 
     window.addEventListener('resize', () => chart.applyOptions({ width: el.clientWidth }));
   }
