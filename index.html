@@ -62,7 +62,7 @@
     .buy-btn:hover { background: #00b894; }
 
     /* === ТОРГОВЫЙ ТЕРМИНАЛ === */
-    #dashboard { display: none; }
+    #plansPage, #dashboard { display: none; }
     .container { max-width: 1500px; margin: 0 auto; padding: 16px; }
     .header {
       display: flex; justify-content: space-between; align-items: center;
@@ -95,19 +95,25 @@
     .stat { background: rgba(0,212,170,0.1); padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; }
     .stat span { display: block; font-weight: 600; font-size: 1.2rem; margin-top: 4px; color: var(--green); }
 
+    .income-card { background: rgba(255,215,0,0.1); border: 1px solid var(--yellow); }
+    .income-card h3 { color: var(--yellow); }
+    .income-percent { font-size: 1.5rem; font-weight: 700; color: var(--yellow); }
+    .income-dollar { font-size: 1.2rem; color: var(--text); }
+
     .trades { max-height: 220px; overflow-y: auto; font-size: 0.85rem; }
     .trade { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .trade.buy { color: var(--green); }
     .trade.sell { color: var(--red); }
 
     .info-bar { margin-top: 16px; font-size: 0.9rem; color: #888; display: flex; justify-content: space-between; }
+    .timer { color: var(--green); font-weight: 600; }
 
     @media (max-width: 968px) { .main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-<!-- === СТРАНИЦА АВТОРИЗАЦИИ === -->
+<!-- === АВТОРИЗАЦИЯ === -->
 <div id="authPage">
   <div class="auth-box">
     <div class="logo">AI Bot</div>
@@ -123,17 +129,17 @@
   </div>
 </div>
 
-<!-- === СТРАНИЦА ТАРИФОВ === -->
-<div id="plansPage" style="display: none;">
+<!-- === ТАРИФЫ === -->
+<div id="plansPage" style="display:none;">
   <div class="container">
     <div class="header">
       <div class="logo">AI Trading Bot</div>
       <div>
-        <span class="user-info" id="usernameDisplay">Пользователь</span>
-        <span class="logout" id="logout">Выйти</span>
+        <span class="user-info" id="usernamePlans">Пользователь</span>
+        <span class="logout" id="logoutPlans">Выйти</span>
       </div>
     </div>
-    <h2 style="text-align: center; margin: 40px 0 20px; color: #fff;">Выберите тариф</h2>
+    <h2 style="text-align:center;margin:40px 0 20px;color:#fff;">Выберите тариф</h2>
     <div class="tariffs">
       <div class="tariff-card">
         <div class="tariff-name">Starter</div>
@@ -143,9 +149,8 @@
           <li>Порог входа: $100</li>
           <li>Базовые пары (BTC, ETH)</li>
           <li>EMA стратегия</li>
-          <li>Поддержка 24/7</li>
         </ul>
-        <button class="buy-btn" onclick="buyPlan('starter', 'BTC')">Купить</button>
+        <button class="buy-btn" data-plan="starter" data-pair="BTC">Купить</button>
       </div>
       <div class="tariff-card">
         <div class="tariff-name">Basic</div>
@@ -153,11 +158,10 @@
         <div class="tariff-duration">3 месяца</div>
         <ul class="tariff-features">
           <li>Порог входа: $500</li>
-          <li>Топ-10 пар (BNB, SOL, XRP)</li>
+          <li>Топ-10 пар (BNB, SOL)</li>
           <li>EMA + RSI</li>
-          <li>Аналитика</li>
         </ul>
-        <button class="buy-btn" onclick="buyPlan('basic', 'ETH')">Купить</button>
+        <button class="buy-btn" data-plan="basic" data-pair="ETH">Купить</button>
       </div>
       <div class="tariff-card">
         <div class="tariff-name">Pro</div>
@@ -165,11 +169,10 @@
         <div class="tariff-duration">6 месяцев</div>
         <ul class="tariff-features">
           <li>Порог входа: $1,000</li>
-          <li>Топ-20 пар (DOGE, ADA, TRX)</li>
+          <li>Топ-20 пар (DOGE, ADA)</li>
           <li>Гибрид стратегия</li>
-          <li>Приоритет поддержка</li>
         </ul>
-        <button class="buy-btn" onclick="buyPlan('pro', 'SOL')">Купить</button>
+        <button class="buy-btn" data-plan="pro" data-pair="SOL">Купить</button>
       </div>
       <div class="tariff-card">
         <div class="tariff-name">Premium</div>
@@ -177,11 +180,10 @@
         <div class="tariff-duration">12 месяцев</div>
         <ul class="tariff-features">
           <li>Порог входа: $5,000</li>
-          <li>Топ-30 пар (LINK, TON, AVAX)</li>
+          <li>Топ-30 пар (LINK, TON)</li>
           <li>AI оптимизация</li>
-          <li>Персональный менеджер</li>
         </ul>
-        <button class="buy-btn" onclick="buyPlan('premium', 'BNB')">Купить</button>
+        <button class="buy-btn" data-plan="premium" data-pair="BNB">Купить</button>
       </div>
       <div class="tariff-card">
         <div class="tariff-name">Elite</div>
@@ -191,22 +193,21 @@
           <li>Порог входа: $10,000</li>
           <li>Все топ-30 пары</li>
           <li>Полный AI + кастом</li>
-          <li>VIP доступ</li>
         </ul>
-        <button class="buy-btn" onclick="buyPlan('elite', 'XRP')">Купить</button>
+        <button class="buy-btn" data-plan="elite" data-pair="XRP">Купить</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- === ТОРГОВЫЙ ТЕРМИНАЛ === -->
-<div id="dashboard">
+<!-- === ДЭШБОРД === -->
+<div id="dashboard" style="display:none;">
   <div class="container">
     <div class="header">
       <div class="logo">AI Trading Bot</div>
       <div>
-        <span class="user-info" id="usernameDisplay">Пользователь</span>
-        <span class="logout" id="logout">Выйти</span>
+        <span class="user-info" id="usernameDashboard">Пользователь</span>
+        <span class="logout" id="logoutDashboard">Выйти</span>
       </div>
     </div>
 
@@ -216,19 +217,24 @@
       <div class="sidebar">
         <div class="card">
           <h3>Торговая пара</h3>
-          <div class="controls">
-            <button class="active" data-pair="BTC">BTC/USDT</button>
-            <button data-pair="ETH">ETH/USDT</button>
-            <button data-pair="BNB">BNB/USDT</button>
-            <button data-pair="SOL">SOL/USDT</button>
-            <button data-pair="XRP">XRP/USDT</button>
-            <button data-pair="DOGE">DOGE/USDT</button>
-            <button data-pair="ADA">ADA/USDT</button>
-            <button data-pair="TRX">TRX/USDT</button>
-            <button data-pair="LINK">LINK/USDT</button>
-            <button data-pair="TON">TON/USDT</button>
-            <!-- Добавь остальные по аналогии для топ-30 -->
+          <div class="controls" id="pairButtons"></div>
+        </div>
+
+        <div class="card">
+          <h3>Доходность тарифа</h3>
+          <div class="income-card">
+            <div style="text-align:center;">
+              <div class="income-percent" id="incomePercent">15%</div>
+              <div class="income-dollar" id="incomeDollar">$1,500</div>
+              <div>Ожидаемая годовая доходность</div>
+              <div class="timer" id="timer">Обновление через <span id="timerSeconds">60</span>с</div>
+            </div>
           </div>
+        </div>
+
+        <div class="card">
+          <h3>Управление</h3>
+          <button id="startBtn" style="width:100%;background:var(--green);color:#000;font-weight:600;padding:12px;">Запустить</button>
         </div>
 
         <div class="card">
@@ -256,43 +262,43 @@
 </div>
 
 <script>
-  // === ПЕРЕМЕННЫЕ ===
+  // === ГЛОБАЛЬНЫЕ ===
+  let isLogin = true;
+  let users = JSON.parse(localStorage.getItem('tradingBotUsers') || '[]');
+  let session = JSON.parse(localStorage.getItem('tradingBotSession') || 'null');
+  let currentPlan = localStorage.getItem('currentPlan') || null;
+  let currentPair = localStorage.getItem('currentPair') || 'BTC';
+  let isBotRunning = false;
+
+  // Топ-30 CMC (актуальный на октябрь 2025)
+  const top30 = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'DOGE', 'ADA', 'TRX', 'LINK', 'TON', 'AVAX', 'SHIB', 'BCH', 'DOT', 'NEAR', 'LTC', 'UNI', 'MATIC', 'ICP', 'KAS', 'PEPE', 'LEO', 'DAI', 'ETC', 'APT', 'RNDR', 'FDUSD', 'HBAR', 'XMR', 'XLM'];
+
+  // === АВТОРИЗАЦИЯ ===
   const authPage = document.getElementById('authPage');
   const plansPage = document.getElementById('plansPage');
   const dashboard = document.getElementById('dashboard');
-  let users = JSON.parse(localStorage.getItem('tradingBotUsers') || '[]');
-  let session = JSON.parse(localStorage.getItem('tradingBotSession') || 'null');
-  let currentPlan = null;
-  let currentPair = 'BTC';
-  let isBotRunning = false;
 
   const title = document.getElementById('authTitle');
-  const btn = document.getElementById('authBtn');
+  const authBtn = document.getElementById('authBtn');
   const switchText = document.getElementById('switchText');
   const switchLink = document.getElementById('switchLink');
   const confirmPassword = document.getElementById('confirmPassword');
 
-  // === АВТОРИЗАЦИЯ ===
-  function toggleMode() {
+  switchLink.onclick = () => {
     isLogin = !isLogin;
     title.textContent = isLogin ? 'Вход' : 'Регистрация';
-    btn.textContent = isLogin ? 'Войти' : 'Создать аккаунт';
+    authBtn.textContent = isLogin ? 'Войти' : 'Создать аккаунт';
     switchText.innerHTML = isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? ';
     switchLink.textContent = isLogin ? 'Зарегистрироваться' : 'Войти';
     confirmPassword.style.display = isLogin ? 'none' : 'block';
-  }
-  switchLink.onclick = toggleMode;
+  };
 
-  function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  btn.onclick = () => {
+  authBtn.onclick = () => {
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
     if (!email || !password) return alert('Заполните все поля!');
-    if (!isValidEmail(email)) return alert('Введите корректный email!');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('Введите корректный email!');
 
     if (isLogin) {
       const user = users.find(u => u.email === email && u.password === password);
@@ -310,39 +316,55 @@
 
       users.push({ email, password });
       localStorage.setItem('tradingBotUsers', JSON.stringify(users));
-      session = { email };
-      localStorage.setItem('tradingBotSession', JSON.stringify(session));
       alert('Аккаунт создан! Теперь войдите.');
-      toggleMode();
+      switchLink.onclick(); // Переключить на вход
     }
   };
 
   function showPlansPage() {
     authPage.style.display = 'none';
     plansPage.style.display = 'block';
-    document.getElementById('usernameDisplay').textContent = session.email;
+    document.getElementById('usernamePlans').textContent = session.email;
   }
 
-  document.getElementById('logout').onclick = () => {
-    localStorage.removeItem('tradingBotSession');
-    location.reload();
-  };
+  // === ВЫХОД ===
+  document.querySelectorAll('.logout').forEach(el => {
+    el.onclick = () => {
+      localStorage.removeItem('tradingBotSession');
+      localStorage.removeItem('currentPlan');
+      localStorage.removeItem('currentPair');
+      location.reload();
+    };
+  });
 
-  if (session) showPlansPage();
+  // === ПРОВЕРКА СЕССИИ ===
+  if (session) {
+    if (currentPlan) {
+      showDashboard();
+    } else {
+      showPlansPage();
+    }
+  }
 
   // === ПОКУПКА ТАРИФА ===
-  function buyPlan(plan, defaultPair) {
-    currentPlan = plan;
-    currentPair = defaultPair;
-    localStorage.setItem('currentPlan', plan);
-    localStorage.setItem('currentPair', defaultPair);
-    alert(`Тариф "${plan}" куплен! Бот запущен на выбранный срок. Пара: ${defaultPair}/USDT`);
-    showDashboard();
-  }
+  document.querySelectorAll('.buy-btn').forEach(btn => {
+    btn.onclick = () => {
+      const plan = btn.dataset.plan;
+      const pair = btn.dataset.pair;
+      currentPlan = plan;
+      currentPair = pair;
+      localStorage.setItem('currentPlan', plan);
+      localStorage.setItem('currentPair', pair);
+      alert(`Тариф "${plan.toUpperCase()}" куплен! Бот запущен. Пара: ${pair}/USDT`);
+      showDashboard();
+    };
+  });
 
   function showDashboard() {
     plansPage.style.display = 'none';
     dashboard.style.display = 'block';
+    document.getElementById('usernameDashboard').textContent = session.email;
+    document.getElementById('currentPlan').textContent = currentPlan.toUpperCase();
     initTradingTerminal();
   }
 
@@ -354,16 +376,38 @@
   let trades = [];
   let markers = [];
   let ws = null;
-  let isRunning = false;
+  let isBotRunning = false;
 
   function initTradingTerminal() {
     initChart();
+    renderPairButtons();
     updateUI();
     setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString(), 1000);
     loadHistoricalData();
-    document.getElementById('currentPlan').textContent = currentPlan;
-    document.querySelector(`[data-pair="${currentPair}"]`).classList.add('active');
-    document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
+    startMinuteTimer();
+  }
+
+  function renderPairButtons() {
+    const container = document.getElementById('pairButtons');
+    container.innerHTML = '';
+    top30.forEach(pair => {
+      const btn = document.createElement('button');
+      btn.textContent = `${pair}/USDT`;
+      btn.dataset.pair = pair;
+      btn.onclick = () => switchPair(pair);
+      if (pair === currentPair) btn.classList.add('active');
+      container.appendChild(btn);
+    });
+  }
+
+  function switchPair(pair) {
+    currentPair = pair;
+    document.querySelectorAll('#pairButtons button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#pairButtons button[data-pair="${pair}"]`).classList.add('active');
+    candles = []; markers = []; trades = [];
+    localStorage.setItem('currentPair', pair);
+    loadHistoricalData();
+    updateUI();
   }
 
   function initChart() {
@@ -396,10 +440,10 @@
 
   function connectBinanceWS() {
     if (ws) ws.close();
-    const stream = `${currentPair}@kline_15m`;
+    const stream = `${currentPair.toLowerCase()}usdt@kline_15m`;
     ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
 
-    ws.onopen = () => console.log('Binance WS подключен');
+    ws.onopen = () => console.log('WS подключен');
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.k && data.k.x) {
@@ -415,14 +459,14 @@
         candles.push(candle);
         if (candles.length > 200) candles.shift();
         updateChart();
-        if (isRunning) checkForSignal(candle);
+        if (isBotRunning) checkForSignal(candle);
       }
     };
     ws.onclose = () => setTimeout(connectBinanceWS, 3000);
   }
 
   function loadHistoricalData() {
-    const symbol = currentPair.toUpperCase() + 'USDT';
+    const symbol = currentPair + 'USDT';
     fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=15m&limit=100`)
       .then(res => res.json())
       .then(data => {
@@ -443,7 +487,7 @@
   }
 
   function generateMockCandles(count) {
-    const base = currentPair === 'BTC' ? 65000 : 3400; // Пример
+    const base = currentPair === 'BTC' ? 65000 : currentPair === 'ETH' ? 3400 : 100;
     let price = base;
     return Array.from({ length: count }, (_, i) => {
       const change = (Math.random() - 0.5) * 0.005;
@@ -458,7 +502,6 @@
 
   function updateChart() {
     if (candles.length === 0) return;
-
     candleSeries.setData(candles);
 
     if (candles.length >= 20) {
@@ -498,12 +541,9 @@
   }
 
   function openTrade(signal, candle) {
-    const tpPct = 0.03; // Фиксированные для простоты
-    const slPct = 0.015;
-    const duration = 24 * 3600000; // 24 часа
-
     const price = candle.close;
-    const size = (balance * 0.1) / price; // 10% риска
+    const size = (balance * 0.1) / price;
+    const tpPct = 0.03, slPct = 0.015;
 
     const trade = {
       id: Date.now(),
@@ -520,7 +560,6 @@
 
     trades.unshift(trade);
     balance *= 0.999;
-
     markers.push({
       time: candle.time,
       position: signal === 'BUY' ? 'belowBar' : 'aboveBar',
@@ -528,16 +567,14 @@
       shape: signal === 'BUY' ? 'arrowUp' : 'arrowDown',
       text: signal
     });
-
     updateUI();
 
-    setTimeout(() => closeTradeByTime(trade), duration);
+    setTimeout(() => closeTradeByTime(trade), 24 * 3600000);
   }
 
   function closeTradeByTime(trade) {
     if (trade.closed) return;
-    const lastCandle = candles[candles.length - 1];
-    const exitPrice = lastCandle.close;
+    const exitPrice = candles[candles.length - 1].close;
     closeTrade(trade, exitPrice);
   }
 
@@ -583,26 +620,46 @@
     document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
   }
 
-  // === СОБЫТИЯ ===
-  document.querySelectorAll('[data-pair]').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('[data-pair]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentPair = btn.dataset.pair;
-      candles = []; markers = [];
-      loadHistoricalData();
-      updateUI();
-    };
-  });
+  // === ОБНОВЛЕНИЕ РАЗ В МИНУТУ ===
+  function startMinuteTimer() {
+    let seconds = 60;
+    const timerEl = document.getElementById('timerSeconds');
+    const interval = setInterval(() => {
+      seconds--;
+      timerEl.textContent = seconds;
+      if (seconds === 0) {
+        updateIncome();
+        loadHistoricalData(); // Обновить график
+        seconds = 60;
+      }
+    }, 1000);
+  }
 
+  function updateIncome() {
+    // Примерные доходности по тарифам (в % годовых)
+    const incomeRates = {
+      starter: 15,
+      basic: 25,
+      pro: 35,
+      premium: 50,
+      elite: 75
+    };
+    const rate = incomeRates[currentPlan] || 15;
+    const expectedIncome = balance * (rate / 100);
+    document.getElementById('incomePercent').textContent = `${rate}%`;
+    document.getElementById('incomeDollar').textContent = `$${expectedIncome.toFixed(0)}`;
+  }
+
+  // === КНОПКА ЗАПУСК ===
   document.getElementById('startBtn').onclick = () => {
-    isRunning = !isRunning;
-    if (isRunning) {
+    isBotRunning = !isBotRunning;
+    const btn = document.getElementById('startBtn');
+    if (isBotRunning) {
       connectBinanceWS();
-      document.getElementById('startBtn').textContent = 'Остановить';
+      btn.textContent = 'Остановить';
     } else {
       if (ws) ws.close();
-      document.getElementById('startBtn').textContent = 'Запустить';
+      btn.textContent = 'Запустить';
     }
   };
 </script>
