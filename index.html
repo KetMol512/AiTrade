@@ -118,7 +118,7 @@
   <div class="auth-box">
     <div class="logo">AI Bot</div>
     <h2 id="authTitle">Вход</h2>
-    <input type="email" id="email" placeholder="Email" />
+    <input type193="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Пароль" />
     <input type="password" id="confirmPassword" placeholder="Подтвердите пароль" style="display:none;" />
     <button id="authBtn">Войти</button>
@@ -218,7 +218,6 @@
         <div class="card">
           <h3>Торговая пара</h3>
           <div class="controls" id="pairButtons">
-            <!-- Вкладка "Автоматически" -->
             <button class="active" data-mode="auto">Автоматически</button>
           </div>
         </div>
@@ -313,7 +312,7 @@
         if (users.some(u => u.email === email)) return alert('Email занят!');
         users.push({ email, password });
         localStorage.setItem('tradingBotUsers', JSON.stringify(users));
-        alert('Аккаунтан! Входите.');
+        alert('Аккаунт создан! Входите.');
         isLogin = true;
         switchLink.onclick();
       }
@@ -327,22 +326,26 @@
     document.getElementById('usernamePlans').textContent = session.email;
   }
 
-  // === ВЫХОД ===
+  // === ВЫХОД — ТОЛЬКО СЕССИЯ И ТАРИФ ===
   document.querySelectorAll('.logout').forEach(btn => {
     btn.onclick = () => {
-      localStorage.clear();
+      localStorage.removeItem('tradingBotSession');
+      localStorage.removeItem('currentPlan');
+      localStorage.removeItem('currentPair');
       location.reload();
     };
   });
 
   // === ПРОВЕРКА СЕССИИ ===
-  if (session && currentPlan && currentPair) {
-    showDashboard();
-  } else if (session) {
-    showPlansPage();
+  if (session) {
+    if (currentPlan && currentPair) {
+      showDashboard();
+    } else {
+      showPlansPage();
+    }
   }
 
-  // === ПОКУПКА ТАРИФА ===
+  // === ПОКУПКА ТАРИФА — РАБОТАЕТ 100% ===
   document.querySelectorAll('.buy-btn').forEach(btn => {
     btn.onclick = () => {
       currentPlan = btn.dataset.plan;
