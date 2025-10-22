@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Trading Bot Pro</title>
+  <title>AI Trading Bot | Торговля</title>
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -18,25 +18,16 @@
       --border: #1a2a3a;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      line-height: 1.5;
-    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
     .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+
     .header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 16px 0; border-bottom: 1px solid var(--border);
     }
     .logo { font-weight: 700; font-size: 1.5rem; color: var(--green); }
-    .controls button {
-      background: var(--card); color: var(--text); border: none;
-      padding: 10px 16px; margin: 0 4px; border-radius: 8px;
-      cursor: pointer; font-weight: 500; transition: 0.2s;
-    }
-    .controls button.active { background: var(--green); color: #000; }
-    .controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .user-info { font-size: 0.9rem; }
+    .logout { background: var(--red); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
 
     .main { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-top: 16px; }
     #chart { height: 580px; border-radius: 12px; overflow: hidden; background: var(--card); }
@@ -48,116 +39,86 @@
     }
     .card h3 { margin-bottom: 12px; color: var(--green); font-size: 1rem; }
 
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .stat {
-      background: rgba(0,212,170,0.1); padding: 10px; border-radius: 8px;
-      text-align: center; font-size: 0.9rem;
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      background: var(--card); color: var(--text); border: none;
+      padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
     }
-    .stat.red { background: rgba(255,82,82,0.1); }
-    .stat span { display: block; font-weight: 600; font-size: 1.1rem; margin-top: 4px; }
+    button.active { background: var(--green); color: #000; }
 
-    .trades { max-height: 300px; overflow-y: auto; }
-    .trade {
-      display: flex; justify-content: space-between; padding: 8px 0;
-      border-bottom: 1px solid var(--border); font-size: 0.85rem;
+    .settings { display: grid; gap: 8px; }
+    input, select {
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
+      padding: 8px; border-radius: 6px; font-size: 0.85rem; width: 100%;
     }
+
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat { background: rgba(0,212,170,0.1); padding: 10px; border-radius: 8px; text-align: center; font-size: 0.85rem; }
+    .stat span { display: block; font-weight: 600; font-size: 1.1rem; }
+
+    .trades { max-height: 200px; overflow-y: auto; font-size: 0.8rem; }
+    .trade { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
     .trade.buy { color: var(--green); }
     .trade.sell { color: var(--red); }
 
-    .strategy-btn, .pair-btn {
-      background: var(--card); border: 1px solid var(--border);
-      padding: 8px; margin: 4px 0; border-radius: 8px;
-      cursor: pointer; text-align: left; font-size: 0.9rem;
-    }
-    .strategy-btn.active, .pair-btn.active {
-      background: rgba(0,212,170,0.2); border-color: var(--green); color: var(--green);
-    }
+    .info-bar { margin-top: 16px; font-size: 0.85rem; color: #888; display: flex; justify-content: space-between; }
 
-    .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .settings input, .settings select {
-      background: var(--bg); color: var(--text); border: 1px solid var(--border);
-      padding: 6px; border-radius: 6px; font-size: 0.85rem;
-    }
-
-    .info-bar {
-      display: flex; justify-content: space-between; font-size: 0.85rem;
-      padding: 8px 0; color: #888;
-    }
-    .pnl { font-weight: 600; }
-    .pnl.profit { color: var(--green); }
-    .pnl.loss { color: var(--red); }
-
-    .export-btn { background: var(--blue); margin-top: 8px; width: 100%; }
-
-    @media (max-width: 968px) {
-      .main { grid-template-columns: 1fr; }
-      .sidebar { order: -1; }
-    }
+    @media (max-width: 968px) { .main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- HEADER -->
   <div class="header">
-    <div class="logo">AI Trading Bot Pro</div>
-    <div class="controls">
-      <button id="startBtn" class="active">Запустить</button>
-      <button id="stopBtn">Остановить</button>
-      <button id="backtestBtn">Backtest</button>
-      <button id="resetBtn">Сбросить</button>
+    <div class="logo">AI Trading Bot</div>
+    <div>
+      <span class="user-info" id="username">Пользователь</span>
+      <span class="logout" id="logout">Выйти</span>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
-    <!-- ГРАФИК -->
     <div id="chart"></div>
 
-    <!-- БОКОВАЯ ПАНЕЛЬ -->
     <div class="sidebar">
-
-      <!-- ПАРА -->
       <div class="card">
-        <h3>Торговая пара</h3>
-        <div id="pair-btc" class="pair-btn active">BTC/USDT</div>
-        <div id="pair-eth" class="pair-btn">ETH/USDT</div>
-        <div id="pair-sol" class="pair-btn">SOL/USDT</div>
-      </div>
-
-      <!-- СТРАТЕГИЯ -->
-      <div class="card">
-        <h3>Стратегия</h3>
-        <div id="strategy-mean" class="strategy-btn active">Mean Reversion</div>
-        <div id="strategy-momentum" class="strategy-btn">Momentum</div>
-        <div id="strategy-hybrid" class="strategy-btn">Hybrid AI</div>
-      </div>
-
-      <!-- НАСТРОЙКИ -->
-      <div class="card">
-        <h3>Настройки</h3>
-        <div class="settings">
-          <input type="number" id="risk" placeholder="Риск %" value="10" min="1" max="100">
-          <input type="number" id="tp" placeholder="TP %" value="5" min="0.1">
-          <input type="number" id="sl" placeholder="SL %" value="2" min="0.1">
-          <input type="text" id="telegram" placeholder="Telegram Bot Token">
-          <input type="text" id="chatid" placeholder="Chat ID">
+        <h3>Пара и таймфрейм</h3>
+        <div class="controls">
+          <button class="active" data-pair="BTC">BTC/USDT</button>
+          <button data-pair="ETH">ETH/USDT</button>
+          <button data-pair="SOL">SOL/USDT</button>
         </div>
-        <button class="export-btn" id="exportBtn">Экспорт CSV</button>
+        <select id="timeframe">
+          <option value="1">1 минута</option>
+          <option value="5">5 минут</option>
+          <option value="15" selected>15 минут</option>
+          <option value="60">1 час</option>
+          <option value="240">4 часа</option>
+          <option value="1440">1 день</option>
+        </select>
       </div>
 
-      <!-- СТАТИСТИКА -->
+      <div class="card">
+        <h3>Настройки бота</h3>
+        <div class="settings">
+          <input type="number" id="risk" placeholder="Риск %" value="10" min="1" max="50">
+          <input type="number" id="tp" placeholder="TP %" value="3" min="0.1">
+          <input type="number" id="sl" placeholder="SL %" value="1.5" min="0.1">
+          <input type="number" id="duration" placeholder="Длительность (ч)" value="24">
+        </div>
+        <button id="startBtn" class="active" style="margin-top: 12px; width: 100%;">Запустить</button>
+      </div>
+
       <div class="card">
         <h3>Статистика</h3>
         <div class="stats">
           <div class="stat"><div>Баланс</div><span id="balance">$10,000</span></div>
-          <div class="stat"><div>PnL</div><span id="pnl" class="pnl">$0</span></div>
+          <div class="stat"><div>PnL</div><span id="pnl">$0</span></div>
           <div class="stat"><div>Сделок</div><span id="tradesCount">0</span></div>
           <div class="stat"><div>Win Rate</div><span id="winRate">—</span></div>
         </div>
       </div>
 
-      <!-- СДЕЛКИ -->
       <div class="card">
         <h3>Последние сделки</h3>
         <div id="tradesList" class="trades"></div>
@@ -165,366 +126,166 @@
     </div>
   </div>
 
-  <!-- ИНФО-СТРОКА -->
   <div class="info-bar">
-    <div>Таймфрейм: <strong>1ч</strong> | <span id="currentPair">BTC/USDT</span></div>
-    <div>Время: <span id="clock">--:--:--</span> | <span id="currentStrategy">Mean Reversion</span></div>
+    <div>Симуляция: <strong id="currentPair">BTC/USDT</strong> | <span id="currentTF">15m</span></div>
+    <div>Время: <span id="clock">--:--:--</span></div>
   </div>
 </div>
 
 <script>
-  // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-  let chart, candleSeries, emaSeries, rsiSeries, volumeSeries, equitySeries;
-  let isRunning = false;
-  let isBacktesting = false;
+  // === ПРОВЕРКА АВТОРИЗАЦИИ ===
+  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
+  if (!user) window.location.href = 'index.html';
+  document.getElementById('username').textContent = user.username;
+  document.getElementById('logout').onclick = () => {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+  };
+
+  // === ГРАФИК ===
+  let chart, candleSeries, emaSeries, volumeSeries;
+  let candles = [];
   let balance = 10000;
-  let initialBalance = 10000;
   let trades = [];
-  let equityCurve = [];
-  let currentStrategy = 'mean';
-  let currentPair = 'btcusdt';
   let markers = [];
-  let ws = null;
+  let intervalId = null;
+  let currentPair = 'BTC';
+  let currentTF = 15;
 
-  const pairs = { btc: 'btcusdt', eth: 'ethusdt', sol: 'solusdt' };
-  const pairNames = { btc: 'BTC/USDT', eth: 'ETH/USDT', sol: 'SOL/USDT' };
-
-  // === LOCAL STORAGE ===
-  function saveState() {
-    const state = { balance, trades, currentStrategy, currentPair, settings: getSettings() };
-    localStorage.setItem('tradingBotState', JSON.stringify(state));
-  }
-  function loadState() {
-    const saved = localStorage.getItem('tradingBotState');
-    if (saved) {
-      const state = JSON.parse(saved);
-      balance = state.balance || 10000;
-      trades = state.trades || [];
-      currentStrategy = state.currentStrategy || 'mean';
-      currentPair = state.currentPair || 'btcusdt';
-      if (state.settings) {
-        document.getElementById('risk').value = state.settings.risk;
-        document.getElementById('tp').value = state.settings.tp;
-        document.getElementById('sl').value = state.settings.sl;
-        document.getElementById('telegram').value = state.settings.telegram || '';
-        document.getElementById('chatid').value = state.settings.chatid || '';
-      }
-      updateUI();
-    }
-  }
-
-  // === ИНИЦИАЛИЗАЦИЯ ГРАФИКА ===
   function initChart() {
-    const chartElement = document.getElementById('chart');
-    chart = LightweightCharts.createChart(chartElement, {
-      width: chartElement.clientWidth,
-      height: 580,
+    const el = document.getElementById('chart');
+    chart = LightweightCharts.createChart(el, {
+      width: el.clientWidth, height: 580,
       layout: { backgroundColor: '#111722', textColor: '#d1d4dc' },
       grid: { vertLines: { color: '#1a2a3a' }, horzLines: { color: '#1a2a3a' } },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-      timeScale: { borderColor: '#2a2e39', timeVisible: true },
-      rightPriceScale: { borderColor: '#2a2e39' },
+      timeScale: { timeVisible: true, secondsVisible: false },
     });
 
     candleSeries = chart.addCandlestickSeries({ upColor: '#00d4aa', downColor: '#ff5252' });
-    emaSeries = chart.addLineSeries({ color: '#ffd700', lineWidth: 2, title: 'EMA 20' });
-    rsiSeries = chart.addLineSeries({ color: '#4a90e2', lineWidth: 1, priceScaleId: 'rsi', title: 'RSI' });
-    volumeSeries = chart.addHistogramSeries({ color: '#26a69a', priceFormat: { type: 'volume' }, priceScaleId: 'volume' });
-    equitySeries = chart.addLineSeries({ color: '#00ff88', lineWidth: 2, priceScaleId: 'equity', title: 'Equity' });
+    emaSeries = chart.addLineSeries({ color: '#ffd700', lineWidth: 2 });
+    volumeSeries = chart.addHistogramSeries({ color: '#26a69a', priceScaleId: 'volume' });
 
-    chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.8, bottom: 0.7 } });
-    chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.9, bottom: 0 } });
-    chart.priceScale('equity').applyOptions({ scaleMargins: { top: 0.1, bottom: 0.8 }, visible: false });
-
-    window.addEventListener('resize', () => chart.applyOptions({ width: chartElement.clientWidth }));
+    window.addEventListener('resize', () => chart.applyOptions({ width: el.clientWidth }));
   }
 
-  // === ВЕБ-СОКЕТ ===
-  function connectWebSocket() {
-    if (ws) ws.close();
-    ws = new WebSocket(`wss://stream.binance.com:9443/ws/${currentPair}@kline_1h`);
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.k && data.k.x && isRunning) {
-        const k = data.k;
-        const candle = {
-          time: k.t / 1000,
-          open: parseFloat(k.o), high: parseFloat(k.h),
-          low: parseFloat(k.l), close: parseFloat(k.c),
-          volume: parseFloat(k.v)
-        };
-        checkSignals(candle);
-      }
-    };
+  // === СИМУЛЯЦИЯ СВЕЧЕЙ ===
+  function generateCandle(prev) {
+    const volatility = currentPair === 'BTC' ? 0.003 : currentPair === 'ETH' ? 0.005 : 0.008;
+    const trend = Math.sin(Date.now() / 1000000) * 0.001;
+    const change = (Math.random() - 0.5) * volatility + trend;
+    const close = prev.close * (1 + change);
+    const open = prev.close;
+    const high = Math.max(open, close) * (1 + Math.random() * 0.001);
+    const low = Math.min(open, close) * (1 - Math.random() * 0.001);
+    const volume = 1000 + Math.random() * 5000;
+
+    return { time: Date.now() / 1000, open, high, low, close, volume };
   }
 
-  // === ИНДИКАТОРЫ ===
-  function calculateEMA(prices, period = 20) {
-    const k = 2 / (period + 1);
-    let ema = prices[0];
-    const result = [ema];
-    for (let i = 1; i < prices.length; i++) {
-      ema = prices[i] * k + ema * (1 - k);
-      result.push(ema);
-    }
-    return result;
+  function startSimulation() {
+    if (intervalId) clearInterval(intervalId);
+    const last = candles.length ? candles[candles.length - 1] : { close: 65000 };
+    const newCandle = generateCandle(last);
+    candles.push(newCandle);
+    if (candles.length > 200) candles.shift();
+
+    updateChart();
+    checkSignals(newCandle);
+
+    const tfMinutes = document.getElementById('timeframe').value;
+    intervalId = setInterval(() => {
+      const newCandle = generateCandle(candles[candles.length - 1]);
+      candles.push(newCandle);
+      if (candles.length > 200) candles.shift();
+      updateChart();
+      checkSignals(newCandle);
+    }, tfMinutes * 60 * 1000);
   }
 
-  function calculateRSI(prices, period = 14) {
-    let gains = 0, losses = 0;
-    for (let i = 1; i <= period; i++) {
-      const diff = prices[i] - prices[i - 1];
-      if (diff > 0) gains += diff; else losses -= diff;
-    }
-    let avgGain = gains / period;
-    let avgLoss = losses / period;
-    const rsi = [100 - (100 / (1 + avgGain / avgLoss))];
-    for (let i = period + 1; i < prices.length; i++) {
-      const diff = prices[i] - prices[i - 1];
-      const gain = diff > 0 ? diff : 0;
-      const loss = diff < 0 ? -diff : 0;
-      avgGain = (avgGain * (period - 1) + gain) / period;
-      avgLoss = (avgLoss * (period - 1) + loss) / period;
-      rsi.push(100 - (100 / (1 + avgGain / avgLoss)));
-    }
-    return rsi;
-  }
-
-  // === СИГНАЛЫ ===
-  function checkSignals(candle) {
-    const settings = getSettings();
-    const history = JSON.parse(localStorage.getItem('candles') || '[]');
-    if (history.length < 50) return;
-
-    const closes = history.map(c => c.close);
-    const ema = calculateEMA(closes).pop();
-    const rsi = calculateRSI(closes).pop();
-
-    let signal = null;
-    if (currentStrategy === 'mean') {
-      if (candle.close < ema * 0.98 && rsi < 30) signal = 'BUY';
-      if (candle.close > ema * 1.02 && rsi > 70) signal = 'SELL';
-    }
-    if (currentStrategy === 'momentum') {
-      if (candle.close > ema && rsi > 55) signal = 'BUY';
-      if (candle.close < ema && rsi < 45) signal = 'SELL';
-    }
-    if (currentStrategy === 'hybrid') {
-      const score = (candle.close > ema ? 1 : -1) + (rsi > 50 ? 1 : -1);
-      if (score >= 2) signal = 'BUY';
-      if (score <= -2) signal = 'SELL';
-    }
-
-    if (signal) executeTrade(signal, candle, settings);
-  }
-
-  // === СДЕЛКА ===
-  function executeTrade(signal, candle, settings) {
-    const price = candle.close;
-    const risk = settings.risk / 100;
-    const size = (balance * risk) / price;
-    const tp = price * (signal === 'BUY' ? 1 + settings.tp/100 : 1 - settings.tp/100);
-    const sl = price * (signal === 'BUY' ? 1 - settings.sl/100 : 1 + settings.sl/100);
-
-    const trade = {
-      id: Date.now(), time: candle.time, type: signal,
-      entry: price.toFixed(2), size: size.toFixed(6),
-      tp: tp.toFixed(2), sl: sl.toFixed(2),
-      status: 'open', pnl: 0
-    };
-
-    trades.unshift(trade);
-    balance = signal === 'BUY' ? balance - price * size * 1.001 : balance + price * size * 0.999;
-    equityCurve.push({ time: candle.time, value: balance });
-    sendTelegram(`NEW ${signal} @ $${price.toFixed(2)} | TP: $${tp.toFixed(2)} | SL: $${sl.toFixed(2)}`);
-    updateUI();
-    saveState();
-
-    markers.push({
-      time: candle.time,
-      position: signal === 'BUY' ? 'belowBar' : 'aboveBar',
-      color: signal === 'BUY' ? '#00d4aa' : '#ff5252',
-      shape: signal === 'BUY' ? 'arrowUp' : 'arrowDown',
-      text: signal
+  function updateChart() {
+    candleSeries.setData(candles);
+    const closes = candles.map(c => c.close);
+    const ema = closes.slice(-50).reduce((acc, p, i, arr) => {
+      const k = 2 / (20 + 1);
+      return i === 0 ? p : p * k + acc * (1 - k);
     });
+    emaSeries.setData([{ time: candles[candles.length - 1].time, value: ema }]);
 
-    setTimeout(() => closeTradeWithCheck(trade, candle.close), 1000);
+    volumeSeries.setData(candles.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#00d4aa66' : '#ff525266' })));
+    candleSeries.setMarkers(markers);
   }
 
-  function closeTradeWithCheck(trade, currentPrice) {
-    if (trade.status !== 'open') return;
-    const settings = getSettings();
-    const tp = parseFloat(trade.tp);
-    const sl = parseFloat(trade.sl);
-    const shouldClose = (trade.type === 'BUY' && currentPrice >= tp) || 
-                        (trade.type === 'SELL' && currentPrice <= tp) ||
-                        (trade.type === 'BUY' && currentPrice <= sl) ||
-                        (trade.type === 'SELL' && currentPrice >= sl);
+  function checkSignals(candle) {
+    const risk = parseFloat(document.getElementById('risk').value) / 100;
+    const tp = parseFloat(document.getElementById('tp').value) / 100;
+    const sl = parseFloat(document.getElementById('sl').value) / 100;
 
-    if (shouldClose) {
-      const exitPrice = trade.type === 'BUY' ? (currentPrice >= tp ? tp : sl) : (currentPrice <= tp ? tp : sl);
-      closeTrade(trade, exitPrice);
-    } else {
-      setTimeout(() => closeTradeWithCheck(trade, getLatestPrice()), 1000);
+    if (Math.random() < 0.3) {
+      const signal = Math.random() > 0.5 ? 'BUY' : 'SELL';
+      executeTrade(signal, candle, risk, tp, sl);
     }
   }
 
-  function closeTrade(trade, exitPrice) {
+  function executeTrade(signal, candle, risk, tp, sl) {
+    const price = candle.close;
+    const size = (balance * risk) / price;
+    const trade = {
+      time: candle.time, type: signal, price: price.toFixed(2), size: size.toFixed(6),
+      tp: (price * (signal === 'BUY' ? 1 + tp : 1 - tp)).toFixed(2),
+      sl: (price * (signal === 'BUY' ? 1 - sl : 1 + sl)).toFixed(2),
+      pnl: 0, status: 'open'
+    };
+    trades.unshift(trade);
+    balance *= signal === 'BUY' ? 0.999 : 1.001;
+    markers.push({ time: candle.time, position: signal === 'BUY' ? 'belowBar' : 'aboveBar', color: signal === 'BUY' ? '#00d4aa' : '#ff5252', shape: 'arrowUp', text: signal });
+
+    setTimeout(() => closeTrade(trade), 1000 * 60 * parseFloat(document.getElementById('duration').value));
+  }
+
+  function closeTrade(trade) {
     if (trade.status !== 'open') return;
     trade.status = 'closed';
-    trade.exit = exitPrice.toFixed(2);
-    trade.pnl = trade.type === 'BUY'
-      ? (exitPrice - trade.entry) * trade.size * 0.999
-      : (trade.entry - exitPrice) * trade.size * 0.999;
+    const exit = parseFloat(trade.tp) + (Math.random() - 0.5) * 100;
+    trade.pnl = trade.type === 'BUY' ? (exit - trade.price) * trade.size : (trade.price - exit) * trade.size;
     balance += trade.pnl;
-    equityCurve.push({ time: Date.now() / 1000, value: balance });
-    sendTelegram(`CLOSED ${trade.type} | PnL: $${trade.pnl.toFixed(2)}`);
     updateUI();
-    saveState();
-  }
-
-  function getLatestPrice() {
-    const history = JSON.parse(localStorage.getItem('candles') || '[]');
-    return history.length ? history[history.length - 1].close : 60000;
-  }
-
-  // === TELEGRAM ===
-  function sendTelegram(message) {
-    const token = document.getElementById('telegram').value.trim();
-    const chatId = document.getElementById('chatid').value.trim();
-    if (!token || !chatId) return;
-    fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`)
-      .catch(() => {});
-  }
-
-  // === BACKTEST ===
-  async function runBacktest() {
-    isBacktesting = true;
-    document.getElementById('backtestBtn').textContent = 'Идёт...';
-    document.getElementById('backtestBtn').disabled = true;
-
-    const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentPair.toUpperCase()}&interval=1h&limit=1000`);
-    const data = await response.json();
-    const candles = data.map(d => ({
-      time: d[0] / 1000,
-      open: parseFloat(d[1]), high: parseFloat(d[2]),
-      low: parseFloat(d[3]), close: parseFloat(d[4]),
-      volume: parseFloat(d[5])
-    }));
-
-    balance = 10000;
-    trades = [];
-    equityCurve = [{ time: candles[0].time, value: balance }];
-
-    for (let i = 50; i < candles.length; i++) {
-      checkSignals(candles[i]);
-      equityCurve.push({ time: candles[i].time, value: balance });
-    }
-
-    updateChart(candles);
-    equitySeries.setData(equityCurve);
-    chart.priceScale('equity').applyOptions({ visible: true });
-    updateUI();
-    isBacktesting = false;
-    document.getElementById('backtestBtn').textContent = 'Backtest';
-    document.getElementById('backtestBtn').disabled = false;
-  }
-
-  // === ОБНОВЛЕНИЕ ГРАФИКА ===
-  function updateChart(candles) {
-    const closes = candles.map(c => c.close);
-    const ema = calculateEMA(closes);
-    const rsi = calculateRSI(closes);
-    const volumes = candles.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#00d4aa66' : '#ff525266' }));
-
-    candleSeries.setData(candles);
-    emaSeries.setData(candles.map((c, i) => ({ time: c.time, value: ema[i] || null })));
-    rsiSeries.setData(candles.map((c, i) => ({ time: c.time, value: rsi[i - 14] || null })));
-    volumeSeries.setData(volumes);
-    candleSeries.setMarkers(markers);
-    chart.timeScale().fitContent();
-  }
-
-  // === UI ===
-  function getSettings() {
-    return {
-      risk: parseFloat(document.getElementById('risk').value) || 10,
-      tp: parseFloat(document.getElementById('tp').value) || 5,
-      sl: parseFloat(document.getElementById('sl').value) || 2,
-      telegram: document.getElementById('telegram').value,
-      chatid: document.getElementById('chatid').value
-    };
   }
 
   function updateUI() {
     document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
-    const pnl = balance - initialBalance;
-    const pnlEl = document.getElementById('pnl');
-    pnlEl.textContent = `$${pnl.toFixed(2)}`;
-    pnlEl.className = pnl >= 0 ? 'pnl profit' : 'pnl loss';
-
+    document.getElementById('pnl').textContent = `$${(balance - 10000).toFixed(2)}`;
     document.getElementById('tradesCount').textContent = trades.length;
     const closed = trades.filter(t => t.status === 'closed');
-    const winRate = closed.length ? (closed.filter(t => t.pnl > 0).length / closed.length * 100).toFixed(1) + '%' : '—';
-    document.getElementById('winRate').textContent = winRate;
+    document.getElementById('winRate').textContent = closed.length ? (closed.filter(t => t.pnl > 0).length / closed.length * 100).toFixed(0) + '%' : '—';
 
-    document.getElementById('tradesList').innerHTML = trades.slice(0, 10).map(t => `
+    document.getElementById('tradesList').innerHTML = trades.slice(0, 8).map(t => `
       <div class="trade ${t.type.toLowerCase()}">
         <div>${new Date(t.time * 1000).toLocaleTimeString()}</div>
-        <div>${t.type} @ $${t.entry}</div>
+        <div>${t.type} @ $${t.price}</div>
         <div>${t.pnl > 0 ? '+' : ''}$${t.pnl.toFixed(2)}</div>
       </div>
     `).join('');
-
-    document.getElementById('currentStrategy').textContent = {
-      mean: 'Mean Reversion', momentum: 'Momentum', hybrid: 'Hybrid AI'
-    }[currentStrategy];
-
-    document.getElementById('currentPair').textContent = pairNames[currentPair.slice(0, 3)];
   }
 
-  // === ЭКСПОРТ CSV ===
-  document.getElementById('exportBtn').onclick = () => {
-    const headers = ['Time', 'Type', 'Entry', 'Exit', 'Size', 'PnL'];
-    const rows = trades.map(t => [
-      new Date(t.time * 1000).toISOString(),
-      t.type, t.entry, t.exit || '', t.size, t.pnl.toFixed(2)
-    ]);
-    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `trades_${Date.now()}.csv`; a.click();
+  // === СОБЫТИЯ ===
+  document.querySelectorAll('[data-pair]').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('[data-pair]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPair = btn.dataset.pair;
+      document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
+      candles = []; startSimulation();
+    };
+  });
+
+  document.getElementById('timeframe').onchange = (e) => {
+    currentTF = e.target.value;
+    document.getElementById('currentTF').textContent = e.target.options[e.target.selectedIndex].text;
+    if (intervalId) startSimulation();
   };
 
-  // === СОБЫТИЯ ===
-  document.getElementById('startBtn').onclick = () => { isRunning = true; connectWebSocket(); updateUI(); };
-  document.getElementById('stopBtn').onclick = () => { isRunning = false; if (ws) ws.close(); };
-  document.getElementById('backtestBtn').onclick = runBacktest;
-  document.getElementById('resetBtn').onclick = () => { if (confirm('Сбросить всё?')) { localStorage.clear(); location.reload(); } };
+  document.getElementById('startBtn').onclick = () => startSimulation();
 
-  ['mean', 'momentum', 'hybrid'].forEach(id => {
-    document.getElementById(`strategy-${id}`).onclick = () => {
-      document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`strategy-${id}`).classList.add('active');
-      currentStrategy = id;
-      updateUI();
-      saveState();
-    };
-  });
-
-  ['btc', 'eth', 'sol'].forEach(id => {
-    document.getElementById(`pair-${id}`).onclick = () => {
-      document.querySelectorAll('.pair-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`pair-${id}`).classList.add('active');
-      currentPair = pairs[id];
-      if (isRunning) connectWebSocket();
-      updateUI();
-      saveState();
-    };
-  });
-
-  // === ЧАСЫ ===
   setInterval(() => {
     document.getElementById('clock').textContent = new Date().toLocaleTimeString();
   }, 1000);
@@ -532,8 +293,8 @@
   // === СТАРТ ===
   window.onload = () => {
     initChart();
-    loadState();
-    connectWebSocket();
+    candles = Array(50).fill().map((_, i) => generateCandle({ close: 65000 }));
+    updateChart();
     updateUI();
   };
 </script>
