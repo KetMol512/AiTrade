@@ -276,7 +276,7 @@
     initChart();
     updateUI();
     setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString(), 1000);
-    loadHistoricalData(); // Загрузка при старте
+    loadHistoricalData();
   }
 
   function initChart() {
@@ -312,10 +312,7 @@
     const stream = `${currentPair}@kline_${currentTimeframe}`;
     ws = new WebSocket(`wss://stream.binance.com:9443/ws/${stream}`);
 
-    ws.onopen = () => {
-      console.log('Binance WS подключен:', stream);
-    };
-
+    ws.onopen = () => console.log('Binance WS подключен:', stream);
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.k && data.k.x) {
@@ -331,14 +328,10 @@
         candles.push(candle);
         if (candles.length > 200) candles.shift();
         updateChart();
-        if (isRunning && Math.random() < 0.3) checkSignals(candle);
+        if (isRunning) checkForSignal(candle);
       }
     };
-
-    ws.onclose = () => {
-      console.log('WS закрыт, переподключение...');
-      setTimeout(connectBinanceWS, 3000);
-    };
+    ws.onclose = () => setTimeout(connectBinanceWS, 3000);
   }
 
   function loadHistoricalData() {
@@ -356,9 +349,7 @@
         }));
         updateChart();
       })
-      .catch(err => {
-        console.error('Ошибка загрузки данных:', err);
-        alert('Нет интернета — используется симуляция');
+      .catch(() => {
         candles = generateMockCandles(100);
         updateChart();
       });
@@ -406,17 +397,24 @@
     chart.timeScale().scrollToRealTime();
   }
 
-  function checkSignals(candle) {
+  function checkForSignal(candle) {
     if (candles.length < 21) return;
-    const ema = emaSeries.getData().slice(-1)[0]?.value || candle.close;
-    const signal = candle.close > ema ? 'BUY' : 'SELL';
-    executeTrade(signal, candle);
+    const ema = emaSeries.getData().slice(-1)[0]?.value;
+    if (!ema) return;
+
+    const prevClose = candles[candles.length - 2].close;
+    const signal = prevClose <= ema && candle.close > ema ? 'BUY' :
+                   prevClose >= ema && candle.close < ema ? 'SELL' : null;
+
+    if (signal && !trades.some(t => t.status === 'open')) {
+      openTrade(signal, candle);
+    }
   }
 
-  function executeTrade(signal, candle) {
+  function openTrade(signal, candle) {
     const risk = parseFloat(document.getElementById('risk').value) / 100;
-    const tp = parseFloat(document.getElementById('tp').value) / 100;
-    const sl = parseFloat(document.getElementById('sl').value) / 100;
+    const tpPct = parseFloat(document.getElementById('tp').value) / 100;
+    const slPct = parseFloat(document.getElementById('sl').value) / 100;
     const duration = parseFloat(document.getElementById('duration').value) * 3600000;
 
     const price = candle.close;
@@ -426,16 +424,17 @@
       id: Date.now(),
       time: candle.time,
       type: signal,
-      entry: price.toFixed(2),
-      size: size.toFixed(6),
-      tp: (price * (signal === 'BUY' ? 1 + tp : 1 - tp)).toFixed(2),
-      sl: (price * (signal === 'BUY' ? 1 - sl : 1 + sl)).toFixed(2),
+      entry: price,
+      size: size,
+      tp: price * (signal === 'BUY' ? 1 + tpPct : 1 - tpPct),
+      sl: price * (signal === 'BUY' ? 1 - slPct : 1 + slPct),
       status: 'open',
-      pnl: 0
+      pnl: 0,
+      closed: false
     };
 
     trades.unshift(trade);
-    balance *= signal === 'BUY' ? 0.999 : 1.001;
+    balance *= 0.999; // Комиссия
 
     markers.push({
       time: candle.time,
@@ -445,19 +444,37 @@
       text: signal
     });
 
-    setTimeout(() => closeTrade(trade), duration);
     updateUI();
+
+    // Автозакрытие по времени
+    setTimeout(() => closeTradeByTime(trade), duration);
   }
 
-  function closeTrade(trade) {
-    if (trade.status !== 'open') return;
-    const exit = parseFloat(trade.tp) * (0.95 + Math.random() * 0.1);
-    trade.exit = exit.toFixed(2);
+  function closeTradeByTime(trade) {
+    if (trade.closed) return;
+    const lastCandle = candles[candles.length - 1];
+    const exitPrice = lastCandle.close;
+    closeTrade(trade, exitPrice);
+  }
+
+  function closeTrade(trade, exitPrice) {
+    if (trade.closed) return;
+    trade.closed = true;
+    trade.exit = exitPrice;
     trade.pnl = trade.type === 'BUY'
-      ? (exit - trade.entry) * parseFloat(trade.size) * 0.999
-      : (trade.entry - exit) * parseFloat(trade.size) * 0.999;
+      ? (exitPrice - trade.entry) * trade.size * 0.999
+      : (trade.entry - exitPrice) * trade.size * 0.999;
     trade.status = 'closed';
     balance += trade.pnl;
+
+    markers.push({
+      time: candles[candles.length - 1].time,
+      position: trade.type === 'BUY' ? 'aboveBar' : 'belowBar',
+      color: trade.pnl > 0 ? '#00d4aa' : '#ff5252',
+      shape: 'circle',
+      text: trade.pnl > 0 ? `+$${trade.pnl.toFixed(2)}` : `$${trade.pnl.toFixed(2)}`
+    });
+
     updateUI();
   }
 
@@ -474,8 +491,8 @@
     document.getElementById('tradesList').innerHTML = trades.slice(0, 8).map(t => `
       <div class="trade ${t.type.toLowerCase()}">
         <div>${new Date(t.time * 1000).toLocaleTimeString()}</div>
-        <div>${t.type} @ $${t.entry}</div>
-        <div>${t.pnl > 0 ? '+' : ''}$${t.pnl.toFixed(2)}</div>
+        <div>${t.type} @ $${t.entry.toFixed(2)}</div>
+        <div>${t.status === 'closed' ? (t.pnl > 0 ? '+' : '') + '$' + t.pnl.toFixed(2) : 'Открыта'}</div>
       </div>
     `).join('');
 
@@ -489,8 +506,7 @@
       document.querySelectorAll('[data-pair]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentPair = btn.dataset.pair.toLowerCase() + 'usdt';
-      candles = [];
-      markers = [];
+      candles = []; markers = []; trades = [];
       loadHistoricalData();
       if (isRunning) connectBinanceWS();
       updateUI();
@@ -499,8 +515,7 @@
 
   document.getElementById('timeframe').onchange = () => {
     currentTimeframe = document.getElementById('timeframe').value;
-    candles = [];
-    markers = [];
+    candles = []; markers = []; trades = [];
     loadHistoricalData();
     if (isRunning) connectBinanceWS();
     updateUI();
