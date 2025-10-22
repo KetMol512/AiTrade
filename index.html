@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Trading Bot | Торговля</title>
+  <title>AI Trading Bot</title>
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -14,20 +14,50 @@
       --green: #00d4aa;
       --red: #ff5252;
       --yellow: #ffd700;
-      --blue: #4a90e2;
       --border: #1a2a3a;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
-    .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
 
+    /* === АВТОРИЗАЦИЯ === */
+    #authPage {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .auth-box {
+      background: var(--card); padding: 40px; border-radius: 16px;
+      width: 100%; max-width: 400px; border: 1px solid var(--border);
+      text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .logo { font-size: 2.2rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
+    h2 { margin-bottom: 24px; color: #fff; }
+    input {
+      width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px;
+      background: #0a0e17; border: 1px solid var(--border); color: var(--text);
+      font-size: 1rem; transition: 0.2s;
+    }
+    input:focus { outline: none; border-color: var(--green); }
+    button {
+      width: 100%; padding: 14px; margin-top: 16px; background: var(--green);
+      color: #000; border: none; border-radius: 10px; font-weight: 600;
+      cursor: pointer; font-size: 1.1rem; transition: 0.2s;
+    }
+    button:hover { transform: translateY(-1px); }
+    .switch { margin-top: 20px; color: #888; font-size: 0.95rem; }
+    .switch a { color: var(--green); cursor: pointer; text-decoration: underline; }
+
+    /* === ТОРГОВЫЙ ТЕРМИНАЛ === */
+    #dashboard { display: none; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
     .header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 16px 0; border-bottom: 1px solid var(--border);
     }
-    .logo { font-weight: 700; font-size: 1.5rem; color: var(--green); }
-    .user-info { font-size: 0.9rem; }
-    .logout { background: var(--red); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+    .user-info { font-size: 0.9rem; color: #aaa; }
+    .logout { background: var(--red); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 12px; }
 
     .main { display: grid; grid-template-columns: 1fr 340px; gap: 16px; margin-top: 16px; }
     #chart { height: 580px; border-radius: 12px; overflow: hidden; background: var(--card); }
@@ -39,22 +69,22 @@
     }
     .card h3 { margin-bottom: 12px; color: var(--green); font-size: 1rem; }
 
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
-    button {
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .controls button {
       background: var(--card); color: var(--text); border: none;
       padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
     }
-    button.active { background: var(--green); color: #000; }
+    .controls button.active { background: var(--green); color: #000; }
 
-    .settings { display: grid; gap: 8px; }
+    .settings { display: grid; gap: 10px; }
     input, select {
       background: var(--bg); color: var(--text); border: 1px solid var(--border);
-      padding: 8px; border-radius: 6px; font-size: 0.85rem; width: 100%;
+      padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%;
     }
 
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .stat { background: rgba(0,212,170,0.1); padding: 10px; border-radius: 8px; text-align: center; font-size: 0.85rem; }
-    .stat span { display: block; font-weight: 600; font-size: 1.1rem; }
+    .stat span { display: block; font-weight: 600; font-size: 1.1rem; margin-top: 4px; }
 
     .trades { max-height: 200px; overflow-y: auto; font-size: 0.8rem; }
     .trade { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
@@ -68,89 +98,172 @@
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <div class="logo">AI Trading Bot</div>
-    <div>
-      <span class="user-info" id="username">Пользователь</span>
-      <span class="logout" id="logout">Выйти</span>
+<!-- === СТРАНИЦА АВТОРИЗАЦИИ === -->
+<div id="authPage">
+  <div class="auth-box">
+    <div class="logo">AI Bot</div>
+    <h2 id="authTitle">Вход</h2>
+    <input type="text" id="username" placeholder="Логин" />
+    <input type="password" id="password" placeholder="Пароль" />
+    <button id="authBtn">Войти</button>
+    <div class="switch">
+      <span id="switchText">Нет аккаунта? </span>
+      <a id="switchLink">Зарегистрироваться</a>
     </div>
   </div>
+</div>
 
-  <div class="main">
-    <div id="chart"></div>
-
-    <div class="sidebar">
-      <div class="card">
-        <h3>Пара и таймфрейм</h3>
-        <div class="controls">
-          <button class="active" data-pair="BTC">BTC/USDT</button>
-          <button data-pair="ETH">ETH/USDT</button>
-          <button data-pair="SOL">SOL/USDT</button>
-        </div>
-        <select id="timeframe">
-          <option value="1">1 минута</option>
-          <option value="5">5 минут</option>
-          <option value="15" selected>15 минут</option>
-          <option value="60">1 час</option>
-          <option value="240">4 часа</option>
-          <option value="1440">1 день</option>
-        </select>
-      </div>
-
-      <div class="card">
-        <h3>Настройки бота</h3>
-        <div class="settings">
-          <input type="number" id="risk" placeholder="Риск %" value="10" min="1" max="50">
-          <input type="number" id="tp" placeholder="TP %" value="3" min="0.1">
-          <input type="number" id="sl" placeholder="SL %" value="1.5" min="0.1">
-          <input type="number" id="duration" placeholder="Длительность (ч)" value="24">
-        </div>
-        <button id="startBtn" class="active" style="margin-top: 12px; width: 100%;">Запустить</button>
-      </div>
-
-      <div class="card">
-        <h3>Статистика</h3>
-        <div class="stats">
-          <div class="stat"><div>Баланс</div><span id="balance">$10,000</span></div>
-          <div class="stat"><div>PnL</div><span id="pnl">$0</span></div>
-          <div class="stat"><div>Сделок</div><span id="tradesCount">0</span></div>
-          <div class="stat"><div>Win Rate</div><span id="winRate">—</span></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>Последние сделки</h3>
-        <div id="tradesList" class="trades"></div>
+<!-- === ТОРГОВЫЙ ТЕРМИНАЛ === -->
+<div id="dashboard">
+  <div class="container">
+    <div class="header">
+      <div class="logo">AI Trading Bot</div>
+      <div>
+        <span class="user-info" id="usernameDisplay">Пользователь</span>
+        <span class="logout" id="logout">Выйти</span>
       </div>
     </div>
-  </div>
 
-  <div class="info-bar">
-    <div>Симуляция: <strong id="currentPair">BTC/USDT</strong> | <span id="currentTF">15m</span></div>
-    <div>Время: <span id="clock">--:--:--</span></div>
+    <div class="main">
+      <div id="chart"></div>
+
+      <div class="sidebar">
+        <div class="card">
+          <h3>Торговая пара</h3>
+          <div class="controls">
+            <button class="active" data-pair="BTC">BTC/USDT</button>
+            <button data-pair="ETH">ETH/USDT</button>
+            <button data-pair="SOL">SOL/USDT</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Таймфрейм</h3>
+          <select id="timeframe">
+            <option value="1">1 минута</option>
+            <option value="5">5 минут</option>
+            <option value="15" selected>15 минут</option>
+            <option value="60">1 час</option>
+            <option value="240">4 часа</option>
+            <option value="1440">1 день</option>
+          </select>
+        </div>
+
+        <div class="card">
+          <h3>Настройки бота</h3>
+          <div class="settings">
+            <input type="number" id="risk" placeholder="Риск %" value="10" min="1" max="100">
+            <input type="number" id="tp" placeholder="TP %" value="3" min="0.1">
+            <input type="number" id="sl" placeholder="SL %" value="1.5" min="0.1">
+            <input type="number" id="duration" placeholder="Длительность (ч)" value="24">
+          </div>
+          <button id="startBtn" style="margin-top: 12px; width: 100%; background: var(--green); color: #000;">Запустить</button>
+        </div>
+
+        <div class="card">
+          <h3>Статистика</h3>
+          <div class="stats">
+            <div class="stat"><div>Баланс</div><span id="balance">$10,000</span></div>
+            <div class="stat"><div>PnL</div><span id="pnl">$0</span></div>
+            <div class="stat"><div>Сделок</div><span id="tradesCount">0</span></div>
+            <div class="stat"><div>Win Rate</div><span id="winRate">—</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Последние сделки</h3>
+          <div id="tradesList" class="trades"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-bar">
+      <div>Пара: <strong id="currentPair">BTC/USDT</strong> | Таймфрейм: <span id="currentTF">15m</span></div>
+      <div>Время: <span id="clock">--:--:--</span></div>
+    </div>
   </div>
 </div>
 
 <script>
-  // === ПРОВЕРКА АВТОРИЗАЦИИ ===
-  const user = JSON.parse(localStorage.getItem('currentUser') || 'null');
-  if (!user) window.location.href = 'index.html';
-  document.getElementById('username').textContent = user.username;
-  document.getElementById('logout').onclick = () => {
-    localStorage.removeItem('currentUser');
-    window.location.href = 'index.html';
+  // === ПЕРЕМЕННЫЕ ===
+  const authPage = document.getElementById('authPage');
+  const dashboard = document.getElementById('dashboard');
+  let users = JSON.parse(localStorage.getItem('tradingBotUsers') || '[]');
+  let session = JSON.parse(localStorage.getItem('tradingBotSession') || 'null');
+  let isLogin = true;
+
+  // === АВТОРИЗАЦИЯ ===
+  const title = document.getElementById('authTitle');
+  const btn = document.getElementById('authBtn');
+  const switchText = document.getElementById('switchText');
+  const switchLink = document.getElementById('switchLink');
+
+  function toggleMode() {
+    isLogin = !isLogin;
+    title.textContent = isLogin ? 'Вход' : 'Регистрация';
+    btn.textContent = isLogin ? 'Войти' : 'Создать аккаунт';
+    switchText.innerHTML = isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? ';
+    switchLink.textContent = isLogin ? 'Зарегистрироваться' : 'Войти';
+  }
+  switchLink.onclick = toggleMode;
+
+  btn.onclick = () => {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    if (!username || !password) return alert('Заполните все поля!');
+
+    if (isLogin) {
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        session = { username };
+        localStorage.setItem('tradingBotSession', JSON.stringify(session));
+        startDashboard();
+      } else {
+        alert('Неверный логин или пароль');
+      }
+    } else {
+      if (users.some(u => u.username === username)) return alert('Пользователь уже существует');
+      users.push({ username, password });
+      localStorage.setItem('tradingBotUsers', JSON.stringify(users));
+      session = { username };
+      localStorage.setItem('tradingBotSession', JSON.stringify(session));
+      startDashboard();
+    }
   };
 
-  // === ГРАФИК ===
+  function startDashboard() {
+    authPage.style.display = 'none';
+    dashboard.style.display = 'block';
+    document.getElementById('usernameDisplay').textContent = session.username;
+    initTradingTerminal();
+  }
+
+  document.getElementById('logout').onclick = () => {
+    localStorage.removeItem('tradingBotSession');
+    location.reload();
+  };
+
+  // === ПРОВЕРКА СЕССИИ ПРИ ЗАГРУЗКЕ ===
+  if (session) {
+    startDashboard();
+  }
+
+  // === ТОРГОВЫЙ ТЕРМИНАЛ ===
   let chart, candleSeries, emaSeries, volumeSeries;
   let candles = [];
   let balance = 10000;
+  let initialBalance = 10000;
   let trades = [];
   let markers = [];
   let intervalId = null;
   let currentPair = 'BTC';
-  let currentTF = 15;
+  let isRunning = false;
+
+  function initTradingTerminal() {
+    initChart();
+    updateUI();
+    setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString(), 1000);
+  }
 
   function initChart() {
     const el = document.getElementById('chart');
@@ -163,54 +276,66 @@
 
     candleSeries = chart.addCandlestickSeries({ upColor: '#00d4aa', downColor: '#ff5252' });
     emaSeries = chart.addLineSeries({ color: '#ffd700', lineWidth: 2 });
-    volumeSeries = chart.addHistogramSeries({ color: '#26a69a', priceScaleId: 'volume' });
+    volumeSeries bacteria= chart.addHistogramSeries({ color: '#26a69a', priceScaleId: 'volume' });
 
     window.addEventListener('resize', () => chart.applyOptions({ width: el.clientWidth }));
   }
 
-  // === СИМУЛЯЦИЯ СВЕЧЕЙ ===
-  function generateCandle(prev) {
-    const volatility = currentPair === 'BTC' ? 0.003 : currentPair === 'ETH' ? 0.005 : 0.008;
-    const trend = Math.sin(Date.now() / 1000000) * 0.001;
-    const change = (Math.random() - 0.5) * volatility + trend;
-    const close = prev.close * (1 + change);
-    const open = prev.close;
-    const high = Math.max(open, close) * (1 + Math.random() * 0.001);
-    const low = Math.min(open, close) * (1 - Math.random() * 0.001);
-    const volume = 1000 + Math.random() * 5000;
+  function getBasePrice() {
+    return currentPair === 'BTC' ? 65000 : currentPair === 'ETH' ? 3400 : 140;
+  }
 
-    return { time: Date.now() / 1000, open, high, low, close, volume };
+  function generateCandle(prevClose) {
+    const volatility = currentPair === 'BTC' ? 0.002 : currentPair === 'ETH' ? 0.004 : 0.007;
+    const trend = Math.sin(Date.now() / 1000000) * 0.0005;
+    const change = (Math.random() - 0.5) * volatility + trend;
+    const close = prevClose * (1 + change);
+    const open = prevClose;
+    const high = close * (1 + Math.random() * 0.001);
+    const low = close * (1 - Math.random() * 0.001);
+    const volume = 1000 + Math.random() * 4000;
+    return { time: Math.floor(Date.now() / 1000), open, high, low, close, volume };
   }
 
   function startSimulation() {
-    if (intervalId) clearInterval(intervalId);
-    const last = candles.length ? candles[candles.length - 1] : { close: 65000 };
-    const newCandle = generateCandle(last);
-    candles.push(newCandle);
-    if (candles.length > 200) candles.shift();
+    if (isRunning) return;
+    isRunning = true;
+    document.getElementById('startBtn').textContent = 'Идёт...';
+    document.getElementById('startBtn').disabled = true;
+
+    const basePrice = getBasePrice();
+    candles = Array(50).fill().map((_, i) => {
+      const price = basePrice * (1 + (Math.random() - 0.5) * 0.05);
+      return { time: Date.now()/1000 - (50-i)*60, open: price, high: price*1.001, low: price*0.999, close: price*1.0005, volume: 2000 };
+    });
 
     updateChart();
-    checkSignals(newCandle);
 
-    const tfMinutes = document.getElementById('timeframe').value;
+    const tfMinutes = parseInt(document.getElementById('timeframe').value);
     intervalId = setInterval(() => {
-      const newCandle = generateCandle(candles[candles.length - 1]);
+      const lastClose = candles[candles.length - 1].close;
+      const newCandle = generateCandle(lastClose);
       candles.push(newCandle);
       if (candles.length > 200) candles.shift();
       updateChart();
-      checkSignals(newCandle);
+      if (Math.random() < 0.35) checkSignals(newCandle);
     }, tfMinutes * 60 * 1000);
+  }
+
+  function stopSimulation() {
+    if (intervalId) clearInterval(intervalId);
+    isRunning = false;
+    document.getElementById('startBtn').textContent = 'Запустить';
+    document.getElementById('startBtn').disabled = false;
   }
 
   function updateChart() {
     candleSeries.setData(candles);
     const closes = candles.map(c => c.close);
-    const ema = closes.slice(-50).reduce((acc, p, i, arr) => {
-      const k = 2 / (20 + 1);
-      return i === 0 ? p : p * k + acc * (1 - k);
-    });
-    emaSeries.setData([{ time: candles[candles.length - 1].time, value: ema }]);
-
+    const emaValues = closes.slice(-20).reduce((acc, p, i, arr) => {
+      return i === 0 ? [p] : [...acc, p * (2/21) + acc[acc.length-1] * (19/21)];
+    }, []);
+    emaSeries.setData(candles.slice(-20).map((c, i) => ({ time: c.time, value: emaValues[i] })));
     volumeSeries.setData(candles.map(c => ({ time: c.time, value: c.volume, color: c.close >= c.open ? '#00d4aa66' : '#ff525266' })));
     candleSeries.setMarkers(markers);
   }
@@ -219,52 +344,73 @@
     const risk = parseFloat(document.getElementById('risk').value) / 100;
     const tp = parseFloat(document.getElementById('tp').value) / 100;
     const sl = parseFloat(document.getElementById('sl').value) / 100;
+    const duration = parseFloat(document.getElementById('duration').value) * 3600000;
 
-    if (Math.random() < 0.3) {
-      const signal = Math.random() > 0.5 ? 'BUY' : 'SELL';
-      executeTrade(signal, candle, risk, tp, sl);
-    }
-  }
+    if (Math.random() > 0.6) return;
 
-  function executeTrade(signal, candle, risk, tp, sl) {
+    const signal = Math.random() > 0.5 ? 'BUY' : 'SELL';
     const price = candle.close;
     const size = (balance * risk) / price;
+
     const trade = {
-      time: candle.time, type: signal, price: price.toFixed(2), size: size.toFixed(6),
+      id: Date.now(),
+      time: candle.time,
+      type: signal,
+      entry: price.toFixed(2),
+      size: size.toFixed(6),
       tp: (price * (signal === 'BUY' ? 1 + tp : 1 - tp)).toFixed(2),
       sl: (price * (signal === 'BUY' ? 1 - sl : 1 + sl)).toFixed(2),
-      pnl: 0, status: 'open'
+      status: 'open',
+      pnl: 0
     };
-    trades.unshift(trade);
-    balance *= signal === 'BUY' ? 0.999 : 1.001;
-    markers.push({ time: candle.time, position: signal === 'BUY' ? 'belowBar' : 'aboveBar', color: signal === 'BUY' ? '#00d4aa' : '#ff5252', shape: 'arrowUp', text: signal });
 
-    setTimeout(() => closeTrade(trade), 1000 * 60 * parseFloat(document.getElementById('duration').value));
+    trades.unshift(trade);
+    balance = signal === 'BUY' ? balance - price * size * 1.001 : balance + price * size * 0.999;
+
+    markers.push({
+      time: candle.time,
+      position: signal === 'BUY' ? 'belowBar' : 'aboveBar',
+      color: signal === 'BUY' ? '#00d4aa' : '#ff5252',
+      shape: signal === 'BUY' ? 'arrowUp' : 'arrowDown',
+      text: signal
+    });
+
+    setTimeout(() => closeTrade(trade), duration);
+    updateUI();
   }
 
   function closeTrade(trade) {
     if (trade.status !== 'open') return;
+    const exit = parseFloat(trade.tp) + (Math.random() - 0.5) * 50;
+    trade.exit = exit.toFixed(2);
+    trade.pnl = trade.type === 'BUY'
+      ? (exit - trade.entry) * trade.size * 0.999
+      : (trade.entry - exit) * trade.size * 0.999;
     trade.status = 'closed';
-    const exit = parseFloat(trade.tp) + (Math.random() - 0.5) * 100;
-    trade.pnl = trade.type === 'BUY' ? (exit - trade.price) * trade.size : (trade.price - exit) * trade.size;
     balance += trade.pnl;
     updateUI();
   }
 
   function updateUI() {
     document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
-    document.getElementById('pnl').textContent = `$${(balance - 10000).toFixed(2)}`;
+    const pnl = balance - initialBalance;
+    document.getElementById('pnl').textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
     document.getElementById('tradesCount').textContent = trades.length;
+
     const closed = trades.filter(t => t.status === 'closed');
-    document.getElementById('winRate').textContent = closed.length ? (closed.filter(t => t.pnl > 0).length / closed.length * 100).toFixed(0) + '%' : '—';
+    const winRate = closed.length ? Math.round(closed.filter(t => t.pnl > 0).length / closed.length * 100) + '%' : '—';
+    document.getElementById('winRate').textContent = winRate;
 
     document.getElementById('tradesList').innerHTML = trades.slice(0, 8).map(t => `
       <div class="trade ${t.type.toLowerCase()}">
         <div>${new Date(t.time * 1000).toLocaleTimeString()}</div>
-        <div>${t.type} @ $${t.price}</div>
+        <div>${t.type} @ $${t.entry}</div>
         <div>${t.pnl > 0 ? '+' : ''}$${t.pnl.toFixed(2)}</div>
       </div>
     `).join('');
+
+    document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
+    document.getElementById('currentTF').textContent = document.getElementById('timeframe').selectedOptions[0].text;
   }
 
   // === СОБЫТИЯ ===
@@ -273,29 +419,22 @@
       document.querySelectorAll('[data-pair]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentPair = btn.dataset.pair;
-      document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
-      candles = []; startSimulation();
+      candles = [];
+      stopSimulation();
+      updateUI();
     };
   });
 
-  document.getElementById('timeframe').onchange = (e) => {
-    currentTF = e.target.value;
-    document.getElementById('currentTF').textContent = e.target.options[e.target.selectedIndex].text;
-    if (intervalId) startSimulation();
+  document.getElementById('timeframe').onchange = () => {
+    if (isRunning) {
+      stopSimulation();
+      startSimulation();
+    }
   };
 
-  document.getElementById('startBtn').onclick = () => startSimulation();
-
-  setInterval(() => {
-    document.getElementById('clock').textContent = new Date().toLocaleTimeString();
-  }, 1000);
-
-  // === СТАРТ ===
-  window.onload = () => {
-    initChart();
-    candles = Array(50).fill().map((_, i) => generateCandle({ close: 65000 }));
-    updateChart();
-    updateUI();
+  document.getElementById('startBtn').onclick = () => {
+    if (isRunning) stopSimulation();
+    else startSimulation();
   };
 </script>
 
