@@ -34,16 +34,13 @@
         radial-gradient(circle at 80% 20%, rgba(255,215,0,0.05) 0%, transparent 50%);
     }
 
-    /* === АНИМАЦИИ === */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulse { 0%, 100% { box-shadow: 0 0 15px var(--green-glow); } 50% { box-shadow: 0 0 25px var(--green-glow); } }
     .animate { animation: fadeIn 0.6s ease-out forwards; }
 
-    /* === СКРЫТЬ ДО ВХОДА === */
     #plansPage, #dashboard { display: none; opacity: 0; transition: opacity 0.4s ease; }
     #plansPage.show, #dashboard.show { display: block; opacity: 1; }
 
-    /* === АВТОРИЗАЦИЯ === */
     #authPage {
       display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;
     }
@@ -124,14 +121,12 @@
     }
     .switch a:hover { color: #00b894; text-decoration: underline; }
 
-    /* === КОНТЕЙНЕР === */
     .container {
       max-width: 1600px;
       margin: 0 auto;
       padding: 20px;
     }
 
-    /* === ХЕДЕР === */
     .header {
       display: flex;
       justify-content: space-between;
@@ -166,7 +161,6 @@
       transform: translateY(-1px);
     }
 
-    /* === ТАРИФЫ === */
     .section-title {
       text-align: center;
       font-size: 2.2rem;
@@ -261,7 +255,6 @@
       box-shadow: 0 10px 25px rgba(0,212,170,0.4);
     }
 
-    /* === ДЭШБОРД === */
     .main {
       display: grid;
       grid-template-columns: 1fr 380px;
@@ -406,7 +399,6 @@
       border: 1px solid var(--border);
     }
 
-    /* === АДАПТИВ === */
     @media (max-width: 1200px) {
       .main { grid-template-columns: 1fr; }
       #chart { height: 500px; }
@@ -427,7 +419,7 @@
     <h2 id="authTitle">Вход</h2>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Пароль" />
-    <input type="password" id="confirmPassword" placeholder="Подтвержите пароль" style="display:none;" />
+    <input type="password" id="confirmPassword" placeholder="Подтвердите пароль" style="display:none;" />
     <button id="authBtn">Войти</button>
     <div class="switch">
       <span id="switchText">Нет аккаунта? </span>
@@ -447,62 +439,8 @@
       </div>
     </div>
     <h2 class="section-title">Выберите тариф</h2>
-    <div class="tariffs">
-      <div class="tariff-card animate">
-        <div class="tariff-name">Starter</div>
-        <div class="tariff-price">$49</div>
-        <div class="tariff-duration">1 месяц</div>
-        <ul class="tariff-features">
-          <li>Порог входа: $100</li>
-          <li>Только BTC</li>
-          <li>EMA стратегия</li>
-        </ul>
-        <button class="buy-btn" data-plan="starter" data-pair="BTC">Купить</button>
-      </div>
-      <div class="tariff-card animate" style="animation-delay: 0.1s;">
-        <div class="tariff-name">Basic</div>
-        <div class="tariff-price">$99</div>
-        <div class="tariff-duration">3 месяца</div>
-        <ul class="tariff-features">
-          <li>Порог входа: $500</li>
-          <li>Топ-5 пар</li>
-          <li>EMA + RSI</li>
-        </ul>
-        <button class="buy-btn" data-plan="basic" data-pair="ETH">Купить</button>
-      </div>
-      <div class="tariff-card animate" style="animation-delay: 0.2s;">
-        <div class="tariff-name">Pro</div>
-        <div class="tariff-price">$199</div>
-        <div class="tariff-duration">6 месяцев</div>
-        <ul class="tariff-features">
-          <li>Порог входа: $1,000</li>
-          <li>Топ-10 пар</li>
-          <li>Гибрид</li>
-        </ul>
-        <button class="buy-btn" data-plan="pro" data-pair="SOL">Купить</button>
-      </div>
-      <div class="tariff-card animate" style="animation-delay: 0.3s;">
-        <div class="tariff-name">Premium</div>
-        <div class="tariff-price">$399</div>
-        <div class="tariff-duration">12 месяцев</div>
-        <ul class="tariff-features">
-          <li>Порог входа: $5,000</li>
-          <li>Топ-20 пар</li>
-          <li>AI</li>
-        </ul>
-        <button class="buy-btn" data-plan="premium" data-pair="BNB">Купить</button>
-      </div>
-      <div class="tariff-card animate" style="animation-delay: 0.4s;">
-        <div class="tariff-name">Elite</div>
-        <div class="tariff-price">$999</div>
-        <div class="tariff-duration">24 месяца</div>
-        <ul class="tariff-features">
-          <li>Порог входа: $10,000</li>
-          <li>Топ-30 пар</li>
-          <li>Полный AI</li>
-        </ul>
-        <button class="buy-btn" data-plan="elite" data-pair="XRP">Купить</button>
-      </div>
+    <div class="tariffs" id="tariffsContainer">
+      <!-- Карточки будут добавлены через JS -->
     </div>
   </div>
 </div>
@@ -523,14 +461,14 @@
 
       <div class="sidebar">
         <div class="card">
-          <h3><i class="fas fa-robot"></i> Торговая пара</h3>
+          <h3>Торговая пара</h3>
           <div class="controls" id="pairButtons">
             <button class="active" data-mode="auto">Автоматически</button>
           </div>
         </div>
 
         <div class="card">
-          <h3><i class="fas fa-chart-line"></i> Доходность</h3>
+          <h3>Доходность</h3>
           <div class="income-card">
             <div class="income-percent" id="incomePercent">15%</div>
             <div class="income-dollar" id="incomeDollar">$1,500</div>
@@ -540,14 +478,14 @@
         </div>
 
         <div class="card">
-          <h3><i class="fas fa-play-circle"></i> Управление</h3>
+          <h3>Управление</h3>
           <button id="startBtn" style="width:100%;background:var(--gradient);color:#000;font-weight:700;padding:14px;border-radius:14px;font-size:1.1rem;box-shadow:0 8px 20px rgba(0,212,170,0.3);transition:all 0.3s;">
             Запустить
           </button>
         </div>
 
         <div class="card">
-          <h3><i class="fas fa-tachometer-alt"></i> Статистика</h3>
+          <h3>Статистика</h3>
           <div class="stats">
             <div class="stat"><div>Баланс</div><span id="balance">$10,000</span></div>
             <div class="stat"><div>PnL</div><span id="pnl">$0</span></div>
@@ -557,7 +495,7 @@
         </div>
 
         <div class="card">
-          <h3><i class="fas fa-exchange-alt"></i> Последние сделки</h3>
+          <h3>Последние сделки</h3>
           <div id="tradesList" class="trades"></div>
         </div>
       </div>
@@ -581,6 +519,15 @@
   const authPage = document.getElementById('authPage');
   const plansPage = document.getElementById('plansPage');
   const dashboard = document.getElementById('dashboard');
+  const tariffsContainer = document.getElementById('tariffsContainer');
+
+  const tariffs = [
+    { plan: 'starter', pair: 'BTC', price: '$49', duration: '1 месяц', features: ['Порог входа: $100', 'Только BTC', 'EMA стратегия'] },
+    { plan: 'basic', pair: 'ETH', price: '$99', duration: '3 месяца', features: ['Порог входа: $500', 'Топ-5 пар', 'EMA + RSI'] },
+    { plan: 'pro', pair: 'SOL', price: '$199', duration: '6 месяцев', features: ['Порог входа: $1,000', 'Топ-10 пар', 'Гибрид'] },
+    { plan: 'premium', pair: 'BNB', price: '$399', duration: '12 месяцев', features: ['Порог входа: $5,000', 'Топ-20 пар', 'AI'] },
+    { plan: 'elite', pair: 'XRP', price: '$999', duration: '24 месяца', features: ['Порог входа: $10,000', 'Топ-30 пар', 'Полный AI'] }
+  ];
 
   // === АВТОРИЗАЦИЯ ===
   const title = document.getElementById('authTitle');
@@ -628,6 +575,36 @@
     authPage.style.display = 'none';
     plansPage.classList.add('show');
     document.getElementById('usernamePlans').textContent = session.email;
+
+    // Динамически создаём карточки с анимацией
+    tariffsContainer.innerHTML = '';
+    tariffs.forEach((t, i) => {
+      const card = document.createElement('div');
+      card.className = 'tariff-card';
+      card.innerHTML = `
+        <div class="tariff-name">${t.plan.charAt(0).toUpperCase() + t.plan.slice(1)}</div>
+        <div class="tariff-price">${t.price}</div>
+        <div class="tariff-duration">${t.duration}</div>
+        <ul class="tariff-features">
+          ${t.features.map(f => `<li>${f}</li>`).join('')}
+        </ul>
+        <button class="buy-btn" data-plan="${t.plan}" data-pair="${t.pair}">Купить</button>
+      `;
+      setTimeout(() => card.classList.add('animate'), i * 100);
+      tariffsContainer.appendChild(card);
+    });
+
+    // Добавляем обработчики кнопок
+    document.querySelectorAll('.buy-btn').forEach(btn => {
+      btn.onclick = () => {
+        currentPlan = btn.dataset.plan;
+        currentPair = btn.dataset.pair;
+        localStorage.setItem('currentPlan', currentPlan);
+        localStorage.setItem('currentPair', currentPair);
+        alert(`Тариф ${currentPlan.toUpperCase()} активирован!`);
+        showDashboard();
+      };
+    });
   }
 
   // === ВЫХОД ===
@@ -648,18 +625,6 @@
       showPlansPage();
     }
   }
-
-  // === ПОКУПКА ТАРИФА ===
-  document.querySelectorAll('.buy-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentPlan = btn.dataset.plan;
-      currentPair = btn.dataset.pair;
-      localStorage.setItem('currentPlan', currentPlan);
-      localStorage.setItem('currentPair', currentPair);
-      alert(`Тариф ${currentPlan.toUpperCase()} активирован!`);
-      showDashboard();
-    });
-  });
 
   function showDashboard() {
     plansPage.style.display = 'none';
@@ -831,7 +796,7 @@
       sec--;
       el.textContent = sec;
       if (sec === 0) {
-        const rates = { starter: 15, basic: 25, pro: 35, premium: 50, elite: 75 };
+        const rates = { starter: 15, basic: 25, pro: 35, premium selfie: 50, elite: 75 };
         const rate = rates[currentPlan] || 15;
         const income = balance * (rate / 100);
         document.getElementById('incomePercent').textContent = `${rate}%`;
