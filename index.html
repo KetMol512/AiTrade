@@ -5,122 +5,429 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Trading Bot</title>
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
       --bg: #0a0e17;
       --card: #111722;
-      --text: #d1d4dc;
+      --text: #e0e0e0;
       --green: #00d4aa;
+      --green-glow: #00d4aa33;
       --red: #ff5252;
       --yellow: #ffd700;
-      --border: #1a2a3a;
-      --hover: #1e2a38;
+      --border: #1e2a38;
+      --hover: #1a2530;
+      --gradient: linear-gradient(135deg, #00d4aa, #00b894);
+      --shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow: hidden; }
 
-    /* === СКРЫТЬ ВСЁ ДО ВХОДА === */
-    #plansPage, #dashboard { display: none; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 80%, rgba(0,212,170,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,215,0,0.05) 0%, transparent 50%);
+    }
+
+    /* === АНИМАЦИИ === */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 15px var(--green-glow); } 50% { box-shadow: 0 0 25px var(--green-glow); } }
+    .animate { animation: fadeIn 0.6s ease-out forwards; }
+
+    /* === СКРЫТЬ ДО ВХОДА === */
+    #plansPage, #dashboard { display: none; opacity: 0; transition: opacity 0.4s ease; }
+    #plansPage.show, #dashboard.show { display: block; opacity: 1; }
 
     /* === АВТОРИЗАЦИЯ === */
     #authPage {
       display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;
     }
     .auth-box {
-      background: var(--card); padding: 40px; border-radius: 16px; width: 100%; max-width: 420px;
-      border: 1px solid var(--border); text-align: center; box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+      background: var(--card);
+      padding: 50px 40px;
+      border-radius: 24px;
+      width: 100%; max-width: 440px;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: var(--shadow), 0 0 40px rgba(0,212,170,0.1);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.8s ease-out;
     }
-    .logo { font-size: 2.5rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
-    h2 { margin-bottom: 24px; color: #fff; font-size: 1.5rem; }
+    .logo {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+      text-shadow: 0 0 20px rgba(0,212,170,0.3);
+    }
+    h2 {
+      margin-bottom: 28px;
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
     input {
-      width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px;
-      background: #0a0e17; border: 1px solid var(--border); color: var(--text);
-      font-size: 1rem; transition: all 0.2s;
+      width: 100%;
+      padding: 16px;
+      margin: 12px 0;
+      border-radius: 14px;
+      background: rgba(10,14,23,0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
     }
-    input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 2px rgba(0,212,170,0.2); }
+    input:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-glow);
+      transform: scale(1.02);
+    }
     button {
-      width: 100%; padding: 14px; margin-top: 16px; background: var(--green);
-      color: #000; border: none; border-radius: 10px; font-weight: 600;
-      cursor: pointer; font-size: 1.1rem; transition: all 0.2s;
+      width: 100%;
+      padding: 16px;
+      margin-top: 20px;
+      background: var(--gradient);
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0,212,170,0.3);
     }
-    button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,212,170,0.3); }
-    .switch { margin-top: 20px; color: #888; font-size: 0.95rem; }
-    .switch a { color: var(--green); cursor: pointer; text-decoration: underline; }
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,212,170,0.4);
+      animation: pulse 1.5s infinite;
+    }
+    .switch {
+      margin-top: 24px;
+      color: #888;
+      font-size: 0.95rem;
+    }
+    .switch a {
+      color: var(--green);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .switch a:hover { color: #00b894; text-decoration: underline; }
+
+    /* === КОНТЕЙНЕР === */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* === ХЕДЕР === */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .header .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .user-info {
+      font-size: 1rem;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logout {
+      background: var(--red);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: 0.3s;
+      font-weight: 600;
+    }
+    .logout:hover {
+      background: #cc4141;
+      transform: translateY(-1px);
+    }
 
     /* === ТАРИФЫ === */
-    .container { max-width: 1500px; margin: 0 auto; padding: 16px; }
-    .header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 16px 0; border-bottom: 1px solid var(--border);
+    .section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 40px 0 30px;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .user-info { font-size: 0.9rem; color: #aaa; }
-    .logout { background: var(--red); color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 12px; font-size: 0.85rem; transition: 0.2s; }
-    .logout:hover { background: #cc4141; }
-
-    .tariffs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 40px 0; }
+    .tariffs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin: 40px 0;
+    }
     .tariff-card {
-      background: var(--card); border-radius: 14px; padding: 20px; border: 1px solid var(--border); text-align: center;
-      transition: all 0.2s;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      text-align: center;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
     }
-    .tariff-card:hover { border-color: var(--green); transform: translateY(-2px); }
-    .tariff-name { font-size: 1.4rem; font-weight: 700; color: var(--green); margin-bottom: 10px; }
-    .tariff-price { font-size: 2rem; font-weight: 700; color: var(--yellow); margin-bottom: 10px; }
-    .tariff-duration { color: #888; margin-bottom: 15px; }
-    .tariff-features { list-style: none; margin-bottom: 20px; text-align: left; }
-    .tariff-features li { padding: 5px 0; color: var(--text); }
-    .buy-btn { background: var(--green); color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; }
-    .buy-btn:hover { background: #00b894; }
+    .tariff-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: var(--gradient);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .tariff-card:hover {
+      transform: translateY(-12px);
+      border-color: var(--green);
+      box-shadow: 0 20px 40px rgba(0,212,170,0.15);
+    }
+    .tariff-card:hover::before { opacity: 1; }
+    .tariff-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+    .tariff-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--yellow);
+      margin-bottom: 8px;
+    }
+    .tariff-duration {
+      color: #888;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+    .tariff-features {
+      list-style: none;
+      margin-bottom: 24px;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    .tariff-features li {
+      padding: 8px 0;
+      color: var(--text);
+      position: relative;
+      padding-left: 24px;
+    }
+    .tariff-features li::before {
+      content: 'check';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      color: var(--green);
+      position: absolute;
+      left: 0;
+    }
+    .buy-btn {
+      background: var(--gradient);
+      color: #000;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(0,212,170,0.3);
+    }
+    .buy-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,212,170,0.4);
+    }
 
     /* === ДЭШБОРД === */
-    .main { display: grid; grid-template-columns: 1fr 360px; gap: 16px; margin-top: 16px; }
-    #chart { height: 580px; border-radius: 14px; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    #chart {
+      height: 600px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
 
-    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
     .card {
-      background: var(--card); border-radius: 14px; padding: 18px; border: 1px solid var(--border);
-      transition: all 0.2s;
+      background: var(--card);
+      border-radius: 18px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
-    .card:hover { border-color: var(--green); }
-    .card h3 { margin-bottom: 14px; color: var(--green); font-size: 1.05rem; font-weight: 600; }
+    .card:hover {
+      border-color: var(--green);
+      box-shadow: 0 15px 35px rgba(0,212,170,0.1);
+    }
+    .card h3 {
+      margin-bottom: 16px;
+      color: var(--green);
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h3 i { color: var(--yellow); }
 
-    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
     .controls button {
-      background: var(--hover); color: var(--text); border: none;
-      padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
-      transition: all 0.2s; flex: 1; min-width: 60px;
+      background: var(--hover);
+      color: var(--text);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      font-weight: 600;
+      flex: 1;
+      min-width: 80px;
     }
-    .controls button.active { background: var(--green); color: #000; font-weight: 600; }
+    .controls button.active {
+      background: var(--gradient);
+      color: #000;
+      font-weight: 700;
+      box-shadow: 0 0 15px var(--green-glow);
+    }
 
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .stat { background: rgba(0,212,170,0.1); padding: 12px; border-radius: 10px; text-align: center; font-size: 0.9rem; }
-    .stat span { display: block; font-weight: 600; font-size: 1.2rem; margin-top: 4px; color: var(--green); }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .stat {
+      background: rgba(0,212,170,0.1);
+      padding: 16px;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 0.95rem;
+      border: 1px solid rgba(0,212,170,0.2);
+    }
+    .stat span {
+      display: block;
+      font-weight: 700;
+      font-size: 1.4rem;
+      margin-top: 6px;
+      color: var(--green);
+    }
 
-    .income-card { background: rgba(255,215,0,0.1); border: 1px solid var(--yellow); padding: 16px; border-radius: 12px; text-align: center; }
-    .income-percent { font-size: 1.8rem; font-weight: 700; color: var(--yellow); }
-    .income-dollar { font-size: 1.2rem; color: var(--text); margin: 8px 0; }
-    .timer { font-size: 0.9rem; color: var(--green); }
+    .income-card {
+      background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+      border: 1px solid var(--yellow);
+      padding: 20px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255,215,0,0.1);
+    }
+    .income-percent {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--yellow);
+      text-shadow: 0 0 10px rgba(255,215,0,0.3);
+    }
+    .income-dollar {
+      font-size: 1.3rem;
+      color: var(--text);
+      margin: 10px 0;
+      font-weight: 600;
+    }
+    .timer {
+      font-size: 0.95rem;
+      color: var(--green);
+      font-weight: 500;
+    }
 
-    .trades { max-height: 220px; overflow-y: auto; font-size: 0.85rem; }
-    .trade { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .trades {
+      max-height: 240px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+    }
+    .trade {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+      animation: fadeIn 0.5s ease-out;
+    }
     .trade.buy { color: var(--green); }
     .trade.sell { color: var(--red); }
 
-    .info-bar { margin-top: 16px; font-size: 0.9rem; color: #888; display: flex; justify-content: space-between; }
+    .info-bar {
+      margin-top: 24px;
+      font-size: 0.95rem;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
 
-    @media (max-width: 968px) { .main { grid-template-columns: 1fr; } }
+    /* === АДАПТИВ === */
+    @media (max-width: 1200px) {
+      .main { grid-template-columns: 1fr; }
+      #chart { height: 500px; }
+    }
+    @media (max-width: 768px) {
+      .tariffs { grid-template-columns: 1fr; }
+      .auth-box { padding: 40px 30px; }
+      .section-title { font-size: 1.8rem; }
+    }
   </style>
 </head>
 <body>
 
-<!-- === СТРАНИЦА АВТОРИЗАЦИИ === -->
+<!-- === АВТОРИЗАЦИЯ === -->
 <div id="authPage">
   <div class="auth-box">
     <div class="logo">AI Bot</div>
     <h2 id="authTitle">Вход</h2>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Пароль" />
-    <input type="password" id="confirmPassword" placeholder="Подтвердите пароль" style="display:none;" />
+    <input type="password" id="confirmPassword" placeholder="Подтвержите пароль" style="display:none;" />
     <button id="authBtn">Войти</button>
     <div class="switch">
       <span id="switchText">Нет аккаунта? </span>
@@ -129,19 +436,19 @@
   </div>
 </div>
 
-<!-- === СТРАНИЦА ТАРИФОВ === -->
+<!-- === ТАРИФЫ === -->
 <div id="plansPage">
   <div class="container">
     <div class="header">
       <div class="logo">AI Trading Bot</div>
-      <div>
-        <span class="user-info" id="usernamePlans">Пользователь</span>
+      <div class="user-info">
+        <span id="usernamePlans">user@example.com</span>
         <span class="logout" id="logoutPlans">Выйти</span>
       </div>
     </div>
-    <h2 style="text-align:center;margin:40px 0 20px;color:#fff;">Выберите тариф</h2>
+    <h2 class="section-title">Выберите тариф</h2>
     <div class="tariffs">
-      <div class="tariff-card">
+      <div class="tariff-card animate">
         <div class="tariff-name">Starter</div>
         <div class="tariff-price">$49</div>
         <div class="tariff-duration">1 месяц</div>
@@ -152,7 +459,7 @@
         </ul>
         <button class="buy-btn" data-plan="starter" data-pair="BTC">Купить</button>
       </div>
-      <div class="tariff-card">
+      <div class="tariff-card animate" style="animation-delay: 0.1s;">
         <div class="tariff-name">Basic</div>
         <div class="tariff-price">$99</div>
         <div class="tariff-duration">3 месяца</div>
@@ -163,7 +470,7 @@
         </ul>
         <button class="buy-btn" data-plan="basic" data-pair="ETH">Купить</button>
       </div>
-      <div class="tariff-card">
+      <div class="tariff-card animate" style="animation-delay: 0.2s;">
         <div class="tariff-name">Pro</div>
         <div class="tariff-price">$199</div>
         <div class="tariff-duration">6 месяцев</div>
@@ -174,7 +481,7 @@
         </ul>
         <button class="buy-btn" data-plan="pro" data-pair="SOL">Купить</button>
       </div>
-      <div class="tariff-card">
+      <div class="tariff-card animate" style="animation-delay: 0.3s;">
         <div class="tariff-name">Premium</div>
         <div class="tariff-price">$399</div>
         <div class="tariff-duration">12 месяцев</div>
@@ -185,7 +492,7 @@
         </ul>
         <button class="buy-btn" data-plan="premium" data-pair="BNB">Купить</button>
       </div>
-      <div class="tariff-card">
+      <div class="tariff-card animate" style="animation-delay: 0.4s;">
         <div class="tariff-name">Elite</div>
         <div class="tariff-price">$999</div>
         <div class="tariff-duration">24 месяца</div>
@@ -205,8 +512,8 @@
   <div class="container">
     <div class="header">
       <div class="logo">AI Trading Bot</div>
-      <div>
-        <span class="user-info" id="usernameDashboard">Пользователь</span>
+      <div class="user-info">
+        <span id="usernameDashboard">user@example.com</span>
         <span class="logout" id="logoutDashboard">Выйти</span>
       </div>
     </div>
@@ -216,14 +523,14 @@
 
       <div class="sidebar">
         <div class="card">
-          <h3>Торговая пара</h3>
+          <h3><i class="fas fa-robot"></i> Торговая пара</h3>
           <div class="controls" id="pairButtons">
             <button class="active" data-mode="auto">Автоматически</button>
           </div>
         </div>
 
         <div class="card">
-          <h3>Доходность тарифа</h3>
+          <h3><i class="fas fa-chart-line"></i> Доходность</h3>
           <div class="income-card">
             <div class="income-percent" id="incomePercent">15%</div>
             <div class="income-dollar" id="incomeDollar">$1,500</div>
@@ -233,12 +540,14 @@
         </div>
 
         <div class="card">
-          <h3>Управление</h3>
-          <button id="startBtn" style="width:100%;background:var(--green);color:#000;font-weight:600;padding:12px;">Запустить</button>
+          <h3><i class="fas fa-play-circle"></i> Управление</h3>
+          <button id="startBtn" style="width:100%;background:var(--gradient);color:#000;font-weight:700;padding:14px;border-radius:14px;font-size:1.1rem;box-shadow:0 8px 20px rgba(0,212,170,0.3);transition:all 0.3s;">
+            Запустить
+          </button>
         </div>
 
         <div class="card">
-          <h3>Статистика</h3>
+          <h3><i class="fas fa-tachometer-alt"></i> Статистика</h3>
           <div class="stats">
             <div class="stat"><div>Баланс</div><span id="balance">$10,000</span></div>
             <div class="stat"><div>PnL</div><span id="pnl">$0</span></div>
@@ -248,7 +557,7 @@
         </div>
 
         <div class="card">
-          <h3>Последние сделки</h3>
+          <h3><i class="fas fa-exchange-alt"></i> Последние сделки</h3>
           <div id="tradesList" class="trades"></div>
         </div>
       </div>
@@ -268,7 +577,6 @@
   let session = JSON.parse(localStorage.getItem('tradingBotSession') || 'null');
   let currentPlan = localStorage.getItem('currentPlan') || null;
   let currentPair = localStorage.getItem('currentPair') || null;
-  let autoMode = true;
 
   const authPage = document.getElementById('authPage');
   const plansPage = document.getElementById('plansPage');
@@ -288,41 +596,37 @@
     switchText.innerHTML = isLogin ? 'Нет аккаунта? ' : 'Уже есть аккаунт? ';
     switchLink.textContent = isLogin ? 'Зарегистрироваться' : 'Войти';
     confirmPassword.style.display = isLogin ? 'none' : 'block';
-    updateAuthHandler();
   };
 
-  function updateAuthHandler() {
-    authBtn.onclick = () => {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+  authBtn.onclick = () => {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
 
-      if (!email || !password) return alert('Заполните поля!');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('Неверный email!');
+    if (!email || !password) return alert('Заполните поля!');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('Неверный email!');
 
-      if (isLogin) {
-        const user = users.find(u => u.email === email && u.password === password);
-        if (user) {
-          session = { email };
-          localStorage.setItem('tradingBotSession', JSON.stringify(session));
-          showPlansPage();
-        } else alert('Неверные данные');
-      } else {
-        const confirm = document.getElementById('confirmPassword').value;
-        if (password !== confirm) return alert('Пароли не совпадают!');
-        if (users.some(u => u.email === email)) return alert('Email занят!');
-        users.push({ email, password });
-        localStorage.setItem('tradingBotUsers', JSON.stringify(users));
-        alert('Аккаунт создан! Входите.');
-        isLogin = true;
-        switchLink.onclick();
-      }
-    };
-  }
-  updateAuthHandler();
+    if (isLogin) {
+      const user = users.find(u => u.email === email && u.password === password);
+      if (user) {
+        session = { email };
+        localStorage.setItem('tradingBotSession', JSON.stringify(session));
+        showPlansPage();
+      } else alert('Неверные данные');
+    } else {
+      const confirm = document.getElementById('confirmPassword').value;
+      if (password !== confirm) return alert('Пароли не совпадают!');
+      if (users.some(u => u.email === email)) return alert('Email занят!');
+      users.push({ email, password });
+      localStorage.setItem('tradingBotUsers', JSON.stringify(users));
+      alert('Аккаунт создан! Входите.');
+      isLogin = true;
+      switchLink.onclick();
+    }
+  };
 
   function showPlansPage() {
     authPage.style.display = 'none';
-    plansPage.style.display = 'block';
+    plansPage.classList.add('show');
     document.getElementById('usernamePlans').textContent = session.email;
   }
 
@@ -345,22 +649,21 @@
     }
   }
 
-  // === ПОКУПКА ТАРИФА — РАБОТАЕТ 100% ===
+  // === ПОКУПКА ТАРИФА ===
   document.querySelectorAll('.buy-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       currentPlan = btn.dataset.plan;
       currentPair = btn.dataset.pair;
-      autoMode = true;
       localStorage.setItem('currentPlan', currentPlan);
       localStorage.setItem('currentPair', currentPair);
-      alert(`Тариф ${currentPlan.toUpperCase()} активирован! Пара: ${currentPair}/USDT`);
+      alert(`Тариф ${currentPlan.toUpperCase()} активирован!`);
       showDashboard();
     });
   });
 
   function showDashboard() {
     plansPage.style.display = 'none';
-    dashboard.style.display = 'block';
+    dashboard.classList.add('show');
     document.getElementById('usernameDashboard').textContent = session.email;
     document.getElementById('currentPlan').textContent = currentPlan.toUpperCase();
     document.getElementById('currentPair').textContent = `${currentPair}/USDT`;
@@ -379,22 +682,16 @@
 
   function initTradingTerminal() {
     initChart();
-    renderAutoMode();
     updateUI();
     setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleTimeString(), 1000);
     loadHistoricalData();
     startIncomeTimer();
   }
 
-  function renderAutoMode() {
-    const container = document.getElementById('pairButtons');
-    container.innerHTML = '<button class="active" data-mode="auto">Автоматически</button>';
-  }
-
   function initChart() {
     const el = document.getElementById('chart');
     chart = LightweightCharts.createChart(el, {
-      width: el.clientWidth, height: 580,
+      width: el.clientWidth, height: 600,
       layout: { backgroundColor: '#111722', textColor: '#d1d4dc', fontFamily: 'Inter' },
       grid: { vertLines: { color: '#1a2a3a' }, horzLines: { color: '#1a2a3a' } },
       rightPriceScale: { borderColor: '#1a2a3a' },
@@ -551,9 +848,11 @@
     if (isBotRunning) {
       connectBinanceWS();
       btn.textContent = 'Остановить';
+      btn.style.background = 'linear-gradient(135deg, #ff5252, #cc4141)';
     } else {
       if (ws) ws.close();
       btn.textContent = 'Запустить';
+      btn.style.background = 'var(--gradient)';
     }
   };
 
